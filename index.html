@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mimi Home｜生活尋家 台中租屋</title>
+  <link rel="shortcut icon" href="favicon.png?t=20260710c"/>
+  <link rel="icon" href="favicon.png?t=20260710c"/>
+  <link rel="apple-touch-icon" href="logo.png?v=20260710"/>
+  <meta name="theme-color" content="#A3AB9B"/>
+  <link rel="stylesheet" href="style.css?v=20260705o" />
+  <!-- GLightbox Lightbox -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox/dist/css/glightbox.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/glightbox/dist/js/glightbox.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase.js?v=20260705o"></script>
+  <!-- Google Analytics 4 -->
+  <script>
+    // 如果是後台管理員，不送流量資料
+    if (!localStorage.getItem('mimi_admin_token')) {
+      (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+      new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+      j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;
+      j.src='https://www.googletagmanager.com/gtag/js?id=G-1SYY48GRRC';
+      f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','G-1SYY48GRRC');
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-1SYY48GRRC');
+    }
+  </script>
+</head>
+<body>
+
+<!-- TOAST -->
+<div id="toast-container"></div>
+
+<!-- HEADER -->
+<header id="header">
+  <div class="header-inner">
+    <a href="index.html" class="logo">
+      <img src="logo.png" alt="Mimi Home Logo" style="width:44px;height:44px;object-fit:contain;border-radius:8px;" />
+      <div class="logo-text">
+        <div class="logo-name">Mimi Home</div>
+        <div class="logo-sub">生活尋家｜米米</div>
+      </div>
+    </a>
+    <nav class="nav-links">
+      <a href="#filters" class="nav-link">物件搜尋</a>
+      <a href="#appointment" class="nav-link">預約看屋＆流程</a>
+      <a href="https://www.threads.com/@mimi_find.home" target="_blank" class="nav-link nav-link-social">Threads</a>
+      <a href="https://lin.ee/q3oHrS1" target="_blank" class="nav-link nav-link-social">官方 LINE</a>
+    </nav>
+    <button class="hamburger" id="hamburger" aria-label="選單">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<!-- 手機選單（移到 header 外，避免 backdrop-filter stacking context 問題） -->
+<div class="mobile-nav-overlay" id="nav-overlay"></div>
+<nav class="mobile-nav" id="mobile-nav">
+  <a href="#filters" class="nav-link" onclick="closeMobileNav()">物件搜尋</a>
+  <a href="#appointment" class="nav-link" onclick="closeMobileNav()">預約看屋＆流程</a>
+  <div style="height:4px;"></div>
+  <a href="https://www.threads.com/@mimi_find.home" target="_blank" class="nav-link nav-link-social">Threads</a>
+  <a href="https://lin.ee/q3oHrS1" target="_blank" class="nav-link nav-link-social">官方 LINE</a>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-layout">
+    <div class="hero-content">
+      <div class="hero-badge">台中租屋｜生活尋家</div>
+      <h1 class="hero-title">生活尋家｜米米</h1>
+      <p class="hero-sub">幫你找到適合生活的家</p>
+      <p class="hero-desc">
+        台中租屋｜套房｜住家｜可租補｜可寵物<br />
+        用簡單的方式，快速找到符合需求的物件。
+      </p>
+      <div class="hero-btns">
+        <a href="#filters" class="btn btn-primary btn-lg">🔍 開始找房</a>
+        <a href="#appointment" class="btn btn-outline btn-lg">📝 留下需求</a>
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat"><span class="hero-stat-num" id="stat-count">6</span><span class="hero-stat-label">筆物件</span></div>
+        <div class="hero-stat-div"></div>
+        <div class="hero-stat"><span class="hero-stat-num">20</span><span class="hero-stat-label">個區域</span></div>
+        <div class="hero-stat-div"></div>
+        <div class="hero-stat"><span class="hero-stat-num">100%</span><span class="hero-stat-label">用心服務</span></div>
+      </div>
+    </div>
+    <div class="hero-illustration" aria-hidden="true">
+      <svg viewBox="0 0 420 380" xmlns="http://www.w3.org/2000/svg" class="hero-svg">
+        <!-- Sky bg -->
+        <ellipse cx="210" cy="340" rx="190" ry="28" fill="rgba(255,255,255,0.08)" />
+        <!-- House shadow -->
+        <ellipse cx="210" cy="328" rx="130" ry="14" fill="rgba(79,91,78,0.18)" />
+        <!-- House body -->
+        <rect x="90" y="190" width="240" height="140" rx="8" fill="rgba(255,255,255,0.22)" />
+        <!-- House door -->
+        <rect x="175" y="258" width="50" height="72" rx="6" fill="rgba(79,91,78,0.35)" />
+        <circle cx="218" cy="296" r="4" fill="rgba(255,255,255,0.7)" />
+        <!-- Windows -->
+        <rect x="108" y="210" width="52" height="46" rx="5" fill="rgba(255,255,255,0.55)" />
+        <line x1="134" y1="210" x2="134" y2="256" stroke="rgba(163,171,155,0.6)" stroke-width="2"/>
+        <line x1="108" y1="233" x2="160" y2="233" stroke="rgba(163,171,155,0.6)" stroke-width="2"/>
+        <rect x="260" y="210" width="52" height="46" rx="5" fill="rgba(255,255,255,0.55)" />
+        <line x1="286" y1="210" x2="286" y2="256" stroke="rgba(163,171,155,0.6)" stroke-width="2"/>
+        <line x1="260" y1="233" x2="312" y2="233" stroke="rgba(163,171,155,0.6)" stroke-width="2"/>
+        <!-- Roof -->
+        <polygon points="75,198 210,80 345,198" fill="rgba(255,255,255,0.30)" />
+        <polygon points="75,198 210,80 345,198" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2"/>
+        <!-- Chimney -->
+        <rect x="268" y="100" width="26" height="52" rx="3" fill="rgba(255,255,255,0.22)" />
+        <!-- Chimney smoke -->
+        <ellipse cx="281" cy="93" rx="9" ry="7" fill="rgba(255,255,255,0.12)" />
+        <ellipse cx="275" cy="80" rx="7" ry="6" fill="rgba(255,255,255,0.08)" />
+        <!-- Sparkles -->
+        <text x="330" y="105" font-size="22" fill="rgba(255,255,255,0.7)">✦</text>
+        <text x="352" y="140" font-size="13" fill="rgba(255,255,255,0.5)">✦</text>
+        <text x="62" y="135" font-size="16" fill="rgba(255,255,255,0.5)">✦</text>
+        <!-- Plant stem left -->
+        <path d="M90 330 Q80 290 95 260 Q110 235 105 200" stroke="rgba(255,255,255,0.5)" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <!-- Leaves left -->
+        <ellipse cx="85" cy="250" rx="20" ry="11" fill="rgba(255,255,255,0.3)" transform="rotate(-30,85,250)" />
+        <ellipse cx="108" cy="225" rx="22" ry="10" fill="rgba(255,255,255,0.22)" transform="rotate(20,108,225)" />
+        <ellipse cx="78" cy="272" rx="18" ry="9" fill="rgba(255,255,255,0.2)" transform="rotate(-50,78,272)" />
+        <!-- Plant stem right -->
+        <path d="M330 330 Q340 295 325 268 Q310 240 318 205" stroke="rgba(255,255,255,0.45)" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <!-- Leaves right -->
+        <ellipse cx="340" cy="258" rx="18" ry="9" fill="rgba(255,255,255,0.25)" transform="rotate(25,340,258)" />
+        <ellipse cx="315" cy="232" rx="20" ry="9" fill="rgba(255,255,255,0.18)" transform="rotate(-15,315,232)" />
+        <!-- Ground line -->
+        <path d="M50 330 Q210 320 370 330" stroke="rgba(255,255,255,0.2)" stroke-width="2" fill="none"/>
+        <!-- Path -->
+        <ellipse cx="200" cy="332" rx="20" ry="5" fill="rgba(255,255,255,0.12)" />
+        <ellipse cx="210" cy="340" rx="15" ry="4" fill="rgba(255,255,255,0.1)" />
+        <!-- Heart -->
+        <text x="292" y="172" font-size="18" fill="rgba(255,255,255,0.55)">♡</text>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- FILTERS -->
+<section id="filters">
+  <!-- 手機版收合切換列 -->
+  <div class="filter-toggle-bar">
+    <button class="filter-toggle-btn" onclick="toggleMobileFilter()" id="filter-toggle-btn">
+      <span>🔍</span> 快速篩選
+      <span class="filter-active-count" id="filter-active-count">0</span>
+    </button>
+  </div>
+
+  <div class="filter-panel" id="filter-panel">
+  <div class="filters-inner">
+    <div class="filters-title">快速篩選</div>
+    <div class="filters-row">
+      <!-- 地區 -->
+      <div class="filter-group district-filter-group">
+        <div class="filter-label">地區</div>
+        <div class="district-ms" id="district-ms">
+          <button class="filter-select district-trigger" id="district-trigger" type="button" onclick="toggleDistrictDropdown(event)">
+            <span id="district-trigger-text">全部地區</span>
+            <span class="district-arrow" id="district-arrow">▾</span>
+          </button>
+          <div class="district-dropdown" id="district-dropdown">
+            <div class="district-clear-row" onclick="clearDistrictFilter()">全部地區 ／ 清除選擇</div>
+            <div class="district-grid">
+              <label class="district-opt"><input type="checkbox" value="中區"  onchange="onDistrictChange()"><span>中區</span></label>
+              <label class="district-opt"><input type="checkbox" value="東區"  onchange="onDistrictChange()"><span>東區</span></label>
+              <label class="district-opt"><input type="checkbox" value="南區"  onchange="onDistrictChange()"><span>南區</span></label>
+              <label class="district-opt"><input type="checkbox" value="西區"  onchange="onDistrictChange()"><span>西區</span></label>
+              <label class="district-opt"><input type="checkbox" value="北區"  onchange="onDistrictChange()"><span>北區</span></label>
+              <label class="district-opt"><input type="checkbox" value="北屯區" onchange="onDistrictChange()"><span>北屯區</span></label>
+              <label class="district-opt"><input type="checkbox" value="西屯區" onchange="onDistrictChange()"><span>西屯區</span></label>
+              <label class="district-opt"><input type="checkbox" value="南屯區" onchange="onDistrictChange()"><span>南屯區</span></label>
+              <label class="district-opt"><input type="checkbox" value="太平區" onchange="onDistrictChange()"><span>太平區</span></label>
+              <label class="district-opt"><input type="checkbox" value="大里區" onchange="onDistrictChange()"><span>大里區</span></label>
+              <label class="district-opt"><input type="checkbox" value="霧峰區" onchange="onDistrictChange()"><span>霧峰區</span></label>
+              <label class="district-opt"><input type="checkbox" value="烏日區" onchange="onDistrictChange()"><span>烏日區</span></label>
+              <label class="district-opt"><input type="checkbox" value="豐原區" onchange="onDistrictChange()"><span>豐原區</span></label>
+              <label class="district-opt"><input type="checkbox" value="潭子區" onchange="onDistrictChange()"><span>潭子區</span></label>
+              <label class="district-opt"><input type="checkbox" value="大雅區" onchange="onDistrictChange()"><span>大雅區</span></label>
+              <label class="district-opt"><input type="checkbox" value="沙鹿區" onchange="onDistrictChange()"><span>沙鹿區</span></label>
+              <label class="district-opt"><input type="checkbox" value="清水區" onchange="onDistrictChange()"><span>清水區</span></label>
+              <label class="district-opt"><input type="checkbox" value="梧棲區" onchange="onDistrictChange()"><span>梧棲區</span></label>
+              <label class="district-opt"><input type="checkbox" value="龍井區" onchange="onDistrictChange()"><span>龍井區</span></label>
+              <label class="district-opt"><input type="checkbox" value="大肚區" onchange="onDistrictChange()"><span>大肚區</span></label>
+              <label class="district-opt"><input type="checkbox" value="大甲區" onchange="onDistrictChange()"><span>大甲區</span></label>
+              <label class="district-opt"><input type="checkbox" value="后里區" onchange="onDistrictChange()"><span>后里區</span></label>
+            </div>
+          </div>
+        </div>
+        <div class="district-tags" id="district-tags"></div>
+      </div>
+      <!-- 格局 -->
+      <div class="filter-group">
+        <div class="filter-label">格局</div>
+        <select class="filter-select" id="filter-layout">
+          <option value="">全部格局</option>
+          <option>套房</option><option>1房</option><option>2房</option>
+          <option>3房</option><option>4房</option><option>5房以上</option>
+        </select>
+      </div>
+      <!-- 類型 -->
+      <div class="filter-group">
+        <div class="filter-label">類型</div>
+        <div class="district-ms" id="type-ms">
+          <button class="filter-select district-trigger" id="type-trigger" type="button" onclick="toggleTypeDropdown(event)">
+            <span id="type-trigger-text">全部類型</span>
+            <span class="district-arrow" id="type-arrow">▾</span>
+          </button>
+          <div class="district-dropdown" id="type-dropdown">
+            <div class="district-clear-row" onclick="clearTypeFilter()">全部類型 ／ 清除選擇</div>
+            <div class="district-grid">
+              <label class="district-opt"><input type="checkbox" class="filter-type-checkbox" value="公寓" onchange="onTypeChange()"><span>公寓</span></label>
+              <label class="district-opt"><input type="checkbox" class="filter-type-checkbox" value="電梯大樓" onchange="onTypeChange()"><span>電梯大樓</span></label>
+              <label class="district-opt"><input type="checkbox" class="filter-type-checkbox" value="電梯透天" onchange="onTypeChange()"><span>電梯透天</span></label>
+              <label class="district-opt"><input type="checkbox" class="filter-type-checkbox" value="透天" onchange="onTypeChange()"><span>透天</span></label>
+            </div>
+          </div>
+        </div>
+        <div class="district-tags" id="type-tags"></div>
+      </div>
+      <!-- 租金最低 -->
+      <div class="filter-group">
+        <div class="filter-label">租金最低</div>
+        <input type="number" class="filter-select filter-rent-input" id="filter-rent-min" placeholder="最低（元）" min="0" step="1000" />
+      </div>
+      <!-- 租金最高 -->
+      <div class="filter-group">
+        <div class="filter-label">租金最高</div>
+        <input type="number" class="filter-select filter-rent-input" id="filter-rent-max" placeholder="最高（元）" min="0" step="1000" />
+      </div>
+      <!-- 搜尋 / 清除 -->
+      <div class="filter-group filter-actions-group">
+        <div class="filter-label">&nbsp;</div>
+        <div class="filter-actions-btns">
+          <button class="btn btn-primary filter-action-btn" onclick="applyFilters()">搜尋</button>
+          <button class="btn btn-ghost filter-action-btn" onclick="clearFilters()">清除</button>
+        </div>
+      </div>
+    </div>
+    <div class="filters-row" style="margin-top:10px;">
+      <div class="filter-group" style="flex:1;max-width:480px;">
+        <div class="filter-label">搜尋地標 / 商圈 / 學校 / 路名</div>
+        <input type="text" class="filter-select" id="filter-keyword" placeholder="例：逢甲商圈、中興大學、文心路…" oninput="applyFilters()" style="width:100%;" />
+      </div>
+    </div>
+    <div style="margin-top:14px;">
+      <div class="filter-tags-label">特色標籤（可多選）</div>
+      <div class="filter-tags" id="filter-tags">
+        <button class="filter-tag-btn" data-tag="可租補">可租補</button>
+        <button class="filter-tag-btn" data-tag="可狗">可狗</button>
+        <button class="filter-tag-btn" data-tag="可貓">可貓</button>
+        <button class="filter-tag-btn" data-tag="獨洗曬">獨洗曬</button>
+        <button class="filter-tag-btn" data-tag="可開伙">可開伙</button>
+        <button class="filter-tag-btn" data-tag="車位">車位</button>
+        <button class="filter-tag-btn" data-tag="陽台">陽台</button>
+        <button class="filter-tag-btn" data-tag="台水">台水</button>
+        <button class="filter-tag-btn" data-tag="台電">台電</button>
+        <button class="filter-tag-btn" data-tag="衛浴乾濕分離">衛浴乾濕分離</button>
+        <button class="filter-tag-btn" data-tag="變頻冷氣">變頻冷氣</button>
+        <button class="filter-tag-btn" data-tag="管理室">管理室</button>
+        <button class="filter-tag-btn" data-tag="子母車">子母車</button>
+        <button class="filter-tag-btn" data-tag="飲水機">飲水機</button>
+        <button class="filter-tag-btn" data-tag="網路">網路</button>
+      </div>
+    </div>
+  </div>
+  </div><!-- /filter-panel -->
+</section>
+
+<!-- DISTRICT CARDS SECTION -->
+<!-- PROPERTIES -->
+<section id="properties">
+  <div class="properties-header">
+    <div class="properties-count">共找到 <strong id="prop-count">0</strong> 個物件</div>
+    <select class="properties-sort" id="properties-sort" onchange="applySorting()">
+      <option value="">排序</option>
+      <option value="price-low">租金：低→高</option>
+      <option value="price-high">租金：高→低</option>
+      <option value="newest">最新上架</option>
+      <option value="area-small">坪數：小→大</option>
+      <option value="area-large">坪數：大→小</option>
+    </select>
+    <div style="font-size:13px;color:var(--color-text-muted);" id="filter-active-hint"></div>
+  </div>
+  <div class="properties-grid" id="properties-grid">
+    <!-- rendered by JS -->
+  </div>
+</section>
+
+<!-- PROCESS + APPOINTMENT -->
+<!-- APPOINTMENT -->
+<section id="appointment">
+  <div class="appt-layout">
+
+    <!-- 左欄：流程與須知 -->
+    <div class="appt-left">
+      <h2 class="appt-left-title">預約看屋</h2>
+      <p class="appt-left-intro">找到喜歡的房子了嗎？🏡<br>留下您的基本資料後，<br>米米會協助您確認物件狀況、安排看屋時間，<br>並協助與房東聯繫。</p>
+
+      <div class="appt-process-label">看屋流程</div>
+      <div class="appt-steps">
+        <div class="appt-step">
+          <div class="appt-step-num">1</div>
+          <div class="appt-step-body">
+            <div class="appt-step-title">選擇喜歡的物件</div>
+            <div class="appt-step-desc">挑選有興趣的房子，可先比較租金、地點、格局與需求。</div>
+          </div>
+        </div>
+        <div class="appt-step">
+          <div class="appt-step-num">2</div>
+          <div class="appt-step-body">
+            <div class="appt-step-title">填寫預約資料</div>
+            <div class="appt-step-desc">留下基本資料與入住需求，方便提前確認是否符合房東條件。</div>
+          </div>
+        </div>
+        <div class="appt-step">
+          <div class="appt-step-num">3</div>
+          <div class="appt-step-body">
+            <div class="appt-step-title">米米 協助確認物件狀況</div>
+            <div class="appt-step-desc">確認物件是否可看屋、是否已出租，以及租補、寵物等條件。</div>
+          </div>
+        </div>
+        <div class="appt-step">
+          <div class="appt-step-num">4</div>
+          <div class="appt-step-body">
+            <div class="appt-step-title">安排看屋時間</div>
+            <div class="appt-step-desc">確認時間後，協助安排看屋，並提供集合資訊與注意事項。</div>
+          </div>
+        </div>
+        <div class="appt-step">
+          <div class="appt-step-num">5</div>
+          <div class="appt-step-body">
+            <div class="appt-step-title">喜歡再協助送審與簽約</div>
+            <div class="appt-step-desc">看完喜歡後，協助與房東溝通、送審資料，確認後安排下定與簽約。</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="appt-notice">
+        <div class="appt-notice-title">看屋須知</div>
+        <ul class="appt-notice-list">
+          <li>✔ 所有資料僅供房東審核入住資格使用，絕不外流。</li>
+          <li>✔ 熱門物件依實際出租狀況為主，建議盡早預約。</li>
+          <li>✔ 物件未下定前皆無法保留，依實際出租狀況為主。</li>
+          <li>✔ 成交時收取租金 50% 服務費。</li>
+          <li>✔ 如需取消或改期，請提前告知，方便重新安排時間。</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 右欄：表單 -->
+    <div class="appt-right">
+      <div class="appt-form-card">
+        <h3 class="appt-form-title">填寫預約資料</h3>
+        <p class="appt-form-sub">請留下您的基本資料，米米會協助確認物件與看屋時間。</p>
+
+        <form id="appt-form">
+          <div class="form-group">
+            <label class="form-label">有意預約的物件 <span style="color:var(--color-text-muted);font-weight:400;font-size:12px;">（從物件點擊預約可自動帶入）</span></label>
+            <input type="text" class="form-input" id="appt-property" placeholder="請輸入或選擇物件名稱（可留空）" />
+          </div>
+          <div class="form-row form-row-2">
+            <div class="form-group">
+              <label class="form-label">怎麼稱呼 <span class="required">*</span></label>
+              <input type="text" class="form-input" id="appt-name" placeholder="您的姓名或暱稱" required />
+              <div class="form-error" id="err-name">請填寫稱呼</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">手機號碼 <span class="required">*</span></label>
+              <input type="tel" class="form-input" id="appt-phone" placeholder="09xxxxxxxx" required />
+              <div class="form-error" id="err-phone">請填寫有效的手機號碼</div>
+            </div>
+          </div>
+          <div class="form-row form-row-2">
+            <div class="form-group">
+              <label class="form-label">預約日期 <span class="required">*</span></label>
+              <input type="date" class="form-input" id="appt-date" required />
+              <div class="form-error" id="err-date">請選擇日期</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">預約時間 <span class="required">*</span></label>
+              <select class="form-select" id="appt-time" required>
+                <option value="">選擇時間</option>
+                <option value="09:00">09:00</option><option value="09:30">09:30</option><option value="10:00">10:00</option><option value="10:30">10:30</option>
+                <option value="11:00">11:00</option><option value="11:30">11:30</option><option value="12:00">12:00</option><option value="12:30">12:30</option>
+                <option value="13:00">13:00</option><option value="13:30">13:30</option><option value="14:00">14:00</option><option value="14:30">14:30</option>
+                <option value="15:00">15:00</option><option value="15:30">15:30</option><option value="16:00">16:00</option><option value="16:30">16:30</option>
+                <option value="17:00">17:00</option><option value="17:30">17:30</option><option value="18:00">18:00</option><option value="18:30">18:30</option>
+                <option value="19:00">19:00</option><option value="19:30">19:30</option><option value="20:00">20:00</option><option value="20:30">20:30</option>
+                <option value="21:00">21:00</option>
+              </select>
+              <div class="form-error" id="err-time">請選擇時間</div>
+            </div>
+          </div>
+          <div class="form-row form-row-2">
+            <div class="form-group">
+              <label class="form-label">入住人數</label>
+              <input type="text" class="form-input" id="appt-occupants" placeholder="例：2人" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">入住成員關係</label>
+              <input type="text" class="form-input" id="appt-relationship" placeholder="例：夫妻、朋友、一人" />
+            </div>
+          </div>
+          <div class="form-row form-row-2">
+            <div class="form-group">
+              <label class="form-label">入住人職業</label>
+              <input type="text" class="form-input" id="appt-occupation" placeholder="例：上班族、學生" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">入住人年齡</label>
+              <input type="text" class="form-input" id="appt-age" placeholder="例：28歲" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">預計入住時間</label>
+            <input type="text" class="form-input" id="appt-movein" placeholder="例：2025年2月、愈快愈好" />
+          </div>
+
+          <div class="divider"></div>
+          <div style="font-size:13px;font-weight:600;color:var(--color-text);margin-bottom:12px;">以下請填寫 是／否</div>
+
+          <div class="form-group">
+            <label class="form-label">是否養寵物</label>
+            <div class="yes-no-group">
+              <label class="yes-no-option"><input type="radio" name="pet" value="是" onchange="togglePetDetail()" /> 是</label>
+              <label class="yes-no-option"><input type="radio" name="pet" value="否" checked onchange="togglePetDetail()" /> 否</label>
+            </div>
+            <div class="pet-detail-row" id="pet-detail-row" style="display:none;">
+              <div class="pet-row">
+                <div class="pet-field">
+                  <label class="form-label pet-label">物種</label>
+                  <select class="form-select" id="appt-pet-type" onchange="togglePetSize();togglePetOther()">
+                    <option value="">選擇物種</option>
+                    <option>貓咪</option>
+                    <option>狗狗</option>
+                    <option>鼠寶</option>
+                    <option>兔兔</option>
+                    <option>其他</option>
+                  </select>
+                </div>
+                <div class="pet-field">
+                  <label class="form-label pet-label">數量</label>
+                  <select class="form-select" id="appt-pet-count">
+                    <option value="">選擇數量</option>
+                    <option>1隻</option>
+                    <option>2隻</option>
+                    <option>3隻</option>
+                    <option>4隻</option>
+                    <option>5隻以上</option>
+                  </select>
+                </div>
+                <div class="pet-field" id="pet-size-field" style="display:none;">
+                  <label class="form-label pet-label">體型</label>
+                  <select class="form-select" id="appt-pet-size">
+                    <option value="">體型</option>
+                    <option>小型</option>
+                    <option>中型</option>
+                    <option>大型</option>
+                  </select>
+                </div>
+                <div class="pet-field" id="pet-other-field" style="display:none;">
+                  <label class="form-label pet-label">自行填寫</label>
+                  <input type="text" class="form-input" id="appt-pet-other" placeholder="請填寫物種名稱" />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">是否有抽菸習慣</label>
+            <div class="yes-no-group">
+              <label class="yes-no-option"><input type="radio" name="smoke" value="是" /> 是</label>
+              <label class="yes-no-option"><input type="radio" name="smoke" value="否" checked /> 否</label>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">是否清楚成交需收取租金 50% 服務費</label>
+            <div class="yes-no-group">
+              <label class="yes-no-option"><input type="radio" name="knowfee" value="是" checked /> 是，我清楚</label>
+              <label class="yes-no-option"><input type="radio" name="knowfee" value="否" /> 否</label>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">是否需要申請租屋補助</label>
+            <div class="yes-no-group">
+              <label class="yes-no-option"><input type="radio" name="subsidy" value="是" /> 是</label>
+              <label class="yes-no-option"><input type="radio" name="subsidy" value="否" checked /> 否</label>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">是否需要遷入戶籍</label>
+            <div class="yes-no-group">
+              <label class="yes-no-option"><input type="radio" name="registration" value="是" /> 是</label>
+              <label class="yes-no-option"><input type="radio" name="registration" value="否" checked /> 否</label>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">是否可配合提供工作證明或名片（如房東需要）</label>
+            <div class="yes-no-group">
+              <label class="yes-no-option"><input type="radio" name="proof" value="是" checked /> 是</label>
+              <label class="yes-no-option"><input type="radio" name="proof" value="否" /> 否</label>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">備註（其他需求或說明）</label>
+            <textarea class="form-textarea" id="appt-notes" placeholder="例：希望低樓層、有特殊需求等..."></textarea>
+          </div>
+
+          <div style="font-size:13px;color:var(--color-text-muted);margin-bottom:16px;">
+            ✔ 熱門物件依實際出租狀況為主，建議盡早預約。
+          </div>
+          <button type="submit" class="btn btn-primary btn-lg btn-full">送出預約資料</button>
+        </form>
+
+        <div class="appt-success" id="appt-success">
+          <div class="icon">✅</div>
+          <h3>預約資料已送出！</h3>
+          <p>已收到您的預約資料，米米 會盡快協助確認物件與看屋時間。</p>
+          <div style="margin:20px 0;padding:16px 18px;background:rgba(163,171,155,0.12);border:1.5px solid var(--color-border);border-radius:12px;text-align:left;font-size:14px;line-height:1.8;">
+            <div style="font-weight:600;margin-bottom:6px;">📌 提醒您</div>
+            送出表單後，請加入米米官方 LINE，<span style="color:#D9534F;font-weight:600;">並傳訊告知：</span><br/>
+            「<strong><span id="appt-success-name-line"></span>已填寫預約表單</strong>」<br/>
+            這樣米米才能更快確認預約資料與看屋時間。<br/>
+            <span style="color:#D9534F;">⚠️ 只加好友但沒傳訊息，米米無法收到通知！</span><br/>
+            若未加入 LINE，可能會因電話未接通而延誤聯繫，謝謝您的配合 ♡
+            <div style="margin-top:14px;">
+              <a href="https://lin.ee/q3oHrS1" target="_blank"
+                 style="display:inline-flex;align-items:center;gap:8px;background:#06C755;color:#fff;padding:10px 22px;border-radius:22px;font-weight:600;font-size:14px;text-decoration:none;">
+                <span style="font-size:18px;">💬</span> 加入官方 LINE
+              </a>
+            </div>
+          </div>
+          <button class="btn btn-outline" onclick="resetApptForm()">再次預約</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer id="footer">
+  <div class="footer-inner">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <div class="logo">
+          <img src="logo.png" alt="Mimi Home Logo" style="width:44px;height:44px;object-fit:contain;border-radius:8px;background:rgba(255,255,255,0.15);padding:2px;" />
+          <div class="logo-text">
+            <div class="logo-name">Mimi Home</div>
+            <div class="logo-sub">生活尋家租賃管理顧問有限公司</div>
+          </div>
+        </div>
+      </div>
+      <div class="footer-links">
+        <a href="https://www.threads.com/@mimi_find.home" target="_blank" class="footer-link">
+          <span>🧵</span> Threads
+        </a>
+        <a href="https://lin.ee/q3oHrS1" target="_blank" class="footer-link">
+          <span>📱</span> 官方 LINE
+        </a>
+        <button onclick="openFeedbackCenter()" class="footer-link footer-link-btn">
+          <span>💌</span> 網站回饋
+        </button>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>生活尋家租賃管理顧問有限公司｜台中市西屯區至善路93號</p>
+      <p>經紀業證號｜趙修平（113）南市字第00966號</p>
+      <p>營業員證號｜（115）登字第506668號</p>
+    </div>
+  </div>
+</footer>
+
+<!-- COMPARE BAR -->
+<div id="compare-bar">
+  <div class="compare-bar-count" id="compare-count-text">已選 0 件</div>
+  <div class="compare-bar-items" id="compare-bar-items"></div>
+  <div class="compare-bar-actions">
+    <button class="btn btn-ghost btn-sm" onclick="clearCompare()">清空</button>
+    <button class="btn btn-primary btn-sm" id="compare-start-btn" onclick="openCompareModal()">開始比較</button>
+  </div>
+</div>
+
+<!-- PROPERTY DETAIL MODAL -->
+<div class="modal-overlay hidden" id="detail-modal">
+  <div class="modal-box modal-box-lg">
+    <div class="modal-header">
+      <div class="modal-title" id="detail-modal-title">物件詳情</div>
+      <button class="modal-close" onclick="closeDetailModal()">✕</button>
+    </div>
+    <div class="modal-body" id="detail-modal-body">
+      <!-- rendered by JS -->
+    </div>
+    <div class="modal-footer" id="detail-modal-footer">
+      <button class="btn btn-ghost" onclick="closeDetailModal()">關閉</button>
+      <button class="btn btn-ghost" id="detail-share-btn" onclick="shareProperty()">🔗 分享</button>
+      <button class="btn btn-outline" id="detail-compare-btn">加入比較</button>
+      <button class="btn btn-primary" id="detail-appt-btn">📅 預約看屋</button>
+    </div>
+  </div>
+</div>
+
+<!-- COMPARE MODAL -->
+<div class="modal-overlay hidden" id="compare-modal">
+  <div class="compare-modal-box">
+    <div class="modal-header">
+      <div class="modal-title">物件比較</div>
+      <button class="modal-close" onclick="closeCompareModal()">✕</button>
+    </div>
+    <div class="compare-modal-body" id="compare-modal-body">
+      <!-- rendered by JS -->
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="clearCompare(); closeCompareModal()">清空比較清單</button>
+      <button class="btn btn-outline" onclick="closeCompareModal()">關閉</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 全屏圖片預覽 MODAL ===== -->
+<!-- ===== 媒體輪播 Lightbox（圖片+影片） ===== -->
+<div class="media-lightbox-overlay hidden" id="media-lightbox">
+  <div class="media-lightbox-container">
+    <!-- 圖片容器 -->
+    <img id="media-lightbox-img" class="media-lightbox-content" src="" alt="" />
+
+    <!-- 影片容器 -->
+    <div id="media-lightbox-video-wrapper" class="media-lightbox-video-wrapper hidden">
+      <video id="media-lightbox-video" class="media-lightbox-video" controls playsInline preload="metadata">
+        <source id="media-lightbox-video-source" src="" type="video/mp4" />
+        你的瀏覽器不支援影片播放
+      </video>
+    </div>
+
+    <!-- YouTube 嵌入容器 -->
+    <div id="media-lightbox-youtube-wrapper" class="media-lightbox-youtube-wrapper hidden">
+      <iframe id="media-lightbox-youtube" class="media-lightbox-youtube"
+        src=""
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowfullscreen>
+      </iframe>
+    </div>
+
+    <!-- 左右箭頭（電腦版） -->
+    <button class="media-lightbox-arrow media-lightbox-prev gprev" onclick="prevMediaItem()">◀</button>
+    <button class="media-lightbox-arrow media-lightbox-next gnext" onclick="nextMediaItem()">▶</button>
+
+    <!-- 關閉按鈕 -->
+    <button class="media-lightbox-close gclose" onclick="closeMediaLightbox(event)">✕</button>
+
+    <!-- 計數器 -->
+    <div class="media-lightbox-counter" id="media-lightbox-counter"></div>
+  </div>
+</div>
+
+<!-- ===== 網站回饋中心 MODAL ===== -->
+<div class="modal-overlay hidden" id="feedback-modal">
+  <div class="modal-box feedback-modal-box">
+    <div class="modal-header">
+      <div class="modal-title">💌 網站回饋中心</div>
+      <button class="modal-close" onclick="closeFeedbackCenter()">✕</button>
+    </div>
+    <div class="feedback-tabs">
+      <button class="feedback-tab active" onclick="switchFeedbackTab('report')" id="ftab-report">🐛 問題回報</button>
+      <button class="feedback-tab" onclick="switchFeedbackTab('announce')" id="ftab-announce">📢 更新公告</button>
+      <button class="feedback-tab" onclick="switchFeedbackTab('wish')" id="ftab-wish">✨ 許願池</button>
+    </div>
+
+    <!-- 問題回報 -->
+    <div class="feedback-panel active" id="fpanel-report">
+      <p class="feedback-desc">發現網站問題嗎？告訴我們，我們會盡快處理！</p>
+      <form id="report-form" onsubmit="submitReport(event)">
+        <div class="form-group">
+          <label class="form-label">問題類型 <span class="req">*</span></label>
+          <select class="form-input" id="report-type" required>
+            <option value="">請選擇</option>
+            <option>物件資訊有誤</option>
+            <option>圖片無法顯示</option>
+            <option>篩選功能異常</option>
+            <option>預約功能問題</option>
+            <option>頁面顯示錯誤</option>
+            <option>其他問題</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">問題描述 <span class="req">*</span></label>
+          <textarea class="form-input" id="report-desc" rows="4" placeholder="請詳細描述您遇到的問題..." required></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">相關物件（選填）</label>
+          <input type="text" class="form-input" id="report-prop" placeholder="例如：西屯區｜2房｜電梯大樓" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">聯絡方式（選填）</label>
+          <input type="text" class="form-input" id="report-contact" placeholder="Email 或電話，方便我們回覆您" />
+        </div>
+        <button type="submit" class="btn btn-primary btn-full">送出回報</button>
+      </form>
+      <div class="feedback-success hidden" id="report-success">
+        <div class="feedback-success-icon">✓</div>
+        <div>感謝您的回報！我們會盡快處理。</div>
+      </div>
+    </div>
+
+    <!-- 更新公告 -->
+    <div class="feedback-panel" id="fpanel-announce">
+      <p class="feedback-desc">最新網站更新與功能改版公告。</p>
+      <div id="announce-list" class="announce-list">
+        <div class="announce-empty">目前沒有公告。</div>
+      </div>
+    </div>
+
+    <!-- 許願池 -->
+    <div class="feedback-panel" id="fpanel-wish">
+      <p class="feedback-desc">希望網站新增什麼功能？許個願吧！</p>
+      <form id="wish-form" onsubmit="submitWish(event)">
+        <div class="form-group">
+          <label class="form-label">許願類型 <span class="req">*</span></label>
+          <select class="form-input" id="wish-type" required>
+            <option value="">請選擇</option>
+            <option>新增篩選條件</option>
+            <option>物件資訊顯示</option>
+            <option>功能優化</option>
+            <option>新增物件</option>
+            <option>其他建議</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">許願內容 <span class="req">*</span></label>
+          <textarea class="form-input" id="wish-content" rows="4" placeholder="請描述您希望的功能或改善..." required></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">聯絡方式（選填）</label>
+          <input type="text" class="form-input" id="wish-contact" placeholder="Email 或電話" />
+        </div>
+        <button type="submit" class="btn btn-primary btn-full">送出許願</button>
+      </form>
+      <div class="feedback-success hidden" id="wish-success">
+        <div class="feedback-success-icon">✨</div>
+        <div>許願成功！我們會認真考慮您的建議。</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 地區底部彈窗（手機） — 移至 body 層級避免 filter-panel display:none 干擾 -->
+<div class="district-backdrop" id="district-backdrop" onclick="closeDistrictDropdown()"></div>
+<div class="district-sheet" id="district-sheet">
+  <div class="district-sheet-header">
+    <span>選擇地區</span>
+    <button class="district-sheet-close" onclick="closeDistrictDropdown()">✕</button>
+  </div>
+  <div class="district-clear-row" onclick="clearDistrictFilter()">全部地區 ／ 清除選擇</div>
+  <div class="district-sheet-grid">
+    <label class="district-opt"><input type="checkbox" value="中區"  data-mobile onchange="onDistrictChange()"><span>中區</span></label>
+    <label class="district-opt"><input type="checkbox" value="東區"  data-mobile onchange="onDistrictChange()"><span>東區</span></label>
+    <label class="district-opt"><input type="checkbox" value="南區"  data-mobile onchange="onDistrictChange()"><span>南區</span></label>
+    <label class="district-opt"><input type="checkbox" value="西區"  data-mobile onchange="onDistrictChange()"><span>西區</span></label>
+    <label class="district-opt"><input type="checkbox" value="北區"  data-mobile onchange="onDistrictChange()"><span>北區</span></label>
+    <label class="district-opt"><input type="checkbox" value="北屯區" data-mobile onchange="onDistrictChange()"><span>北屯區</span></label>
+    <label class="district-opt"><input type="checkbox" value="西屯區" data-mobile onchange="onDistrictChange()"><span>西屯區</span></label>
+    <label class="district-opt"><input type="checkbox" value="南屯區" data-mobile onchange="onDistrictChange()"><span>南屯區</span></label>
+    <label class="district-opt"><input type="checkbox" value="太平區" data-mobile onchange="onDistrictChange()"><span>太平區</span></label>
+    <label class="district-opt"><input type="checkbox" value="大里區" data-mobile onchange="onDistrictChange()"><span>大里區</span></label>
+    <label class="district-opt"><input type="checkbox" value="霧峰區" data-mobile onchange="onDistrictChange()"><span>霧峰區</span></label>
+    <label class="district-opt"><input type="checkbox" value="烏日區" data-mobile onchange="onDistrictChange()"><span>烏日區</span></label>
+    <label class="district-opt"><input type="checkbox" value="豐原區" data-mobile onchange="onDistrictChange()"><span>豐原區</span></label>
+    <label class="district-opt"><input type="checkbox" value="潭子區" data-mobile onchange="onDistrictChange()"><span>潭子區</span></label>
+    <label class="district-opt"><input type="checkbox" value="大雅區" data-mobile onchange="onDistrictChange()"><span>大雅區</span></label>
+    <label class="district-opt"><input type="checkbox" value="沙鹿區" data-mobile onchange="onDistrictChange()"><span>沙鹿區</span></label>
+    <label class="district-opt"><input type="checkbox" value="清水區" data-mobile onchange="onDistrictChange()"><span>清水區</span></label>
+    <label class="district-opt"><input type="checkbox" value="梧棲區" data-mobile onchange="onDistrictChange()"><span>梧棲區</span></label>
+    <label class="district-opt"><input type="checkbox" value="龍井區" data-mobile onchange="onDistrictChange()"><span>龍井區</span></label>
+    <label class="district-opt"><input type="checkbox" value="大肚區" data-mobile onchange="onDistrictChange()"><span>大肚區</span></label>
+    <label class="district-opt"><input type="checkbox" value="大甲區" data-mobile onchange="onDistrictChange()"><span>大甲區</span></label>
+  </div>
+  <button class="btn btn-primary" style="width:100%;margin-top:16px;" onclick="closeDistrictDropdown()">確認</button>
+</div>
+
+<script src="script.js?v=20260705o"></script>
+</body>
+</html>

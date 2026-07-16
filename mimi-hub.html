@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>後台管理｜Mimi Home</title>
+  <link rel="shortcut icon" href="favicon.png?t=20260711a"/>
+  <link rel="icon" href="favicon.png?t=20260711a"/>
+  <link rel="apple-touch-icon" href="logo.png?v=20260710"/>
+  <meta name="theme-color" content="#A3AB9B"/>
+  <link rel="stylesheet" href="style.css?v=20260705bo" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase.js?v=20260705bo"></script>
+</head>
+<body class="admin-page">
+
+<div id="toast-container"></div>
+
+<!-- ===== LOGIN OVERLAY ===== -->
+<div id="login-overlay" class="login-overlay">
+  <div class="login-card">
+    <div class="login-header">
+      <div class="login-logo" style="background:none;padding:0;">
+        <img src="logo.png" alt="Mimi Home Logo" style="width:56px;height:56px;object-fit:contain;border-radius:12px;" />
+      </div>
+      <div class="login-title">Mimi Home 後台</div>
+      <div class="login-sub">請登入以管理物件資料</div>
+    </div>
+    <div class="alert alert-error hidden" id="login-error">帳號或密碼錯誤，請再試一次。</div>
+    <form id="login-form" onsubmit="handleLogin(event)">
+      <div class="form-group">
+        <label class="form-label">電子郵件</label>
+        <input type="text" class="form-input" id="login-username" placeholder="請輸入帳號或 Email" autocomplete="username" required />
+      </div>
+      <div class="form-group">
+        <label class="form-label">密碼</label>
+        <div style="position:relative;">
+          <input type="password" class="form-input" id="login-password" placeholder="請輸入密碼" autocomplete="current-password" required style="padding-right:44px;" />
+          <button type="button" onclick="toggleLoginPw()" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--color-text-muted);cursor:pointer;font-size:16px;">👁</button>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary btn-full btn-lg" style="margin-top:8px;">登入</button>
+    </form>
+    <div style="margin-top:20px;text-align:center;">
+      <a href="index.html" style="font-size:13px;color:var(--color-text-muted);">← 前往前台</a>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN HEADER -->
+<header class="admin-header">
+  <div class="admin-logo">
+    <img src="logo.png" alt="Mimi Home" style="width:32px;height:32px;object-fit:contain;border-radius:6px;background:rgba(255,255,255,0.15);padding:2px;" />
+    <span>Mimi Home 後台</span>
+  </div>
+  <nav class="admin-nav" id="admin-nav">
+    <button class="admin-nav-link active" onclick="showSection('props')">📦 物件管理</button>
+    <button class="admin-nav-link" onclick="showSection('add')">➕ 新增物件</button>
+    <button class="admin-nav-link" onclick="showSection('appts')">📅 預約資料</button>
+    <button class="admin-nav-link" onclick="showSection('pw')">⚙️ 帳號設定</button>
+    <button class="admin-nav-link" onclick="showSection('feedback')">💌 回饋中心</button>
+  </nav>
+  <div class="admin-header-actions">
+    <a href="index.html" target="_blank" class="admin-header-btn"><span>🌐 </span>前往前台</a>
+    <button class="admin-header-btn" onclick="logout()">登出</button>
+    <button class="admin-hamburger" id="admin-hamburger" onclick="toggleAdminNav()">☰</button>
+  </div>
+</header>
+<nav class="admin-mobile-nav" id="admin-mobile-nav">
+  <button class="admin-nav-link" onclick="showSection('props');closeAdminMobileNav()">📦 物件管理</button>
+  <button class="admin-nav-link" onclick="showSection('add');closeAdminMobileNav()">➕ 新增物件</button>
+  <button class="admin-nav-link" onclick="showSection('appts');closeAdminMobileNav()">📅 預約資料</button>
+  <button class="admin-nav-link" onclick="showSection('pw');closeAdminMobileNav()">⚙️ 帳號設定</button>
+  <button class="admin-nav-link" onclick="showSection('feedback');closeAdminMobileNav()">💌 回饋中心</button>
+  <div style="border-top:1px solid rgba(255,255,255,0.12);margin:4px 0;"></div>
+  <div class="admin-mobile-nav-row">
+    <a href="index.html" target="_blank" class="admin-nav-link admin-nav-link-sm" style="text-decoration:none;">🌐 前往前台</a>
+    <button class="admin-nav-link admin-nav-link-sm" onclick="logout()" style="color:rgba(255,180,180,0.9);">🚪 登出</button>
+  </div>
+</nav>
+
+<div class="admin-content">
+
+  <!-- ===== PROPERTY LIST ===== -->
+  <div class="admin-section active" id="section-props">
+    <div class="admin-section-title">物件管理</div>
+    <div class="admin-section-sub">管理所有租屋物件，可新增、編輯、刪除、上下架。</div>
+
+    <!-- 上架 / 下架 Tab -->
+    <div class="props-tab-bar">
+      <button class="props-tab active" id="tab-active" onclick="switchPropsTab('1')">上架中</button>
+      <button class="props-tab" id="tab-inactive" onclick="switchPropsTab('0')">已下架</button>
+    </div>
+    <!-- 隱藏的狀態篩選（由 Tab 控制） -->
+    <select id="admin-filter-status" style="display:none;">
+      <option value="">全部</option>
+      <option value="1" selected>上架中</option>
+      <option value="0">已下架</option>
+    </select>
+
+    <div class="admin-filters">
+      <div class="filter-group">
+        <div class="filter-label">地區</div>
+        <select class="filter-select" id="admin-filter-district">
+          <option value="">全部</option>
+          <option>中區</option><option>東區</option><option>南區</option><option>西區</option><option>北區</option>
+          <option>北屯區</option><option>西屯區</option><option>南屯區</option><option>太平區</option><option>大里區</option>
+          <option>霧峰區</option><option>烏日區</option><option>豐原區</option><option>潭子區</option><option>大雅區</option>
+          <option>沙鹿區</option><option>清水區</option><option>梧棲區</option><option>龍井區</option><option>大肚區</option><option>大甲區</option><option>后里區</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <div class="filter-label">格局</div>
+        <select class="filter-select" id="admin-filter-layout">
+          <option value="">全部</option>
+          <option>套房</option><option>1房</option><option>2房</option>
+          <option>3房</option><option>4房</option><option>5房以上</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <div class="filter-label">搜尋</div>
+        <input type="text" class="filter-select" id="admin-search" placeholder="標題關鍵字" style="min-width:160px;" oninput="renderAdminProps()" />
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="clearAdminFilters()">清除</button>
+    </div>
+
+    <div style="display:flex;justify-content:flex-end;margin-bottom:12px;">
+      <button class="btn btn-primary btn-sm" onclick="showSection('add')">➕ 新增物件</button>
+    </div>
+
+    <!-- 手機版卡片容器 -->
+    <div id="admin-props-cards" class="admin-props-cards" style="display:none;"></div>
+
+    <!-- 桌機版表格 -->
+    <div id="admin-props-table-wrap" class="admin-table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th style="width:100px;">縮圖</th>
+            <th style="width:160px;">標題</th>
+            <th style="width:200px;">地址</th>
+            <th style="width:70px;">地區</th>
+            <th style="width:70px;">租金</th>
+            <th style="width:80px;">格局／坪數</th>
+            <th style="width:100px;">類型</th>
+            <th style="width:100px;">狀態</th>
+            <th style="width:70px;">建立</th>
+            <th style="width:120px;">推薦</th>
+            <th style="width:130px;">操作</th>
+          </tr>
+        </thead>
+        <tbody id="admin-props-tbody">
+          <tr><td colspan="10" style="text-align:center;padding:32px;color:var(--color-text-muted);">載入中...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ===== ADD / EDIT PROPERTY ===== -->
+  <div class="admin-section" id="section-add">
+    <div class="d-flex align-center justify-between mb-16">
+      <div>
+        <div class="admin-section-title" id="form-section-title">新增物件</div>
+        <div class="admin-section-sub">填寫物件資料，也可使用 AI 一鍵整理。</div>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="showSection('props')">← 返回列表</button>
+    </div>
+
+    <!-- PROPERTY FORM -->
+    <form id="prop-form">
+      <input type="hidden" id="edit-prop-id" value="" />
+
+      <!-- AI 一鍵整理（左半欄） -->
+      <div class="ai-section form-half">
+        <div class="ai-section-title">🤖 AI 一鍵整理</div>
+        <div class="ai-section-desc">將原始物件資料貼入下方，點擊「AI 整理」後自動填入欄位。</div>
+        <textarea class="ai-textarea" id="ai-raw-text" placeholder="請貼上原始物件資料，例如：&#10;地址：台中市北屯區昌平路一段100號&#10;租金：$8,000/月（含管理費）&#10;格局：套房，8坪&#10;設備：冷氣、洗衣機、冰箱、台水台電、可養貓&#10;附近：全聯、大坑、北屯區公所"></textarea>
+        <div class="ai-btn-row">
+          <button type="button" class="btn btn-primary btn-sm" onclick="runAI()">🤖 AI 整理</button>
+          <button type="button" class="btn btn-ghost btn-sm" onclick="document.getElementById('ai-raw-text').value=''">清除</button>
+        </div>
+        <div class="ai-result-hint" id="ai-hint">✅ AI 整理完成，請確認並補充欄位後再儲存。</div>
+      </div>
+
+      <!-- 標題 | 地址 -->
+      <div class="form-row form-row-2">
+        <div class="form-group">
+          <label class="form-label">物件標題 <span class="required">*</span></label>
+          <input type="text" class="form-input" id="f-title" placeholder="例：北屯區溫馨套房｜近大坑｜可租補可寵物" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">地址 <span style="color:var(--color-text-muted);font-weight:400;font-size:11px;">（後台搜尋用，前台只顯示路名）</span></label>
+          <input type="text" class="form-input" id="f-address" placeholder="例：台中市烏日區高鐵一路268號14F-11" />
+        </div>
+      </div>
+
+      <!-- 地區 | 類型 | 附近商圈 -->
+      <div class="form-row form-row-3 form-row-district">
+        <div class="form-group">
+          <label class="form-label">地區 <span class="required">*</span></label>
+          <select class="form-select" id="f-district" required>
+            <option value="">請選擇地區</option>
+            <option>中區</option><option>東區</option><option>南區</option><option>西區</option><option>北區</option>
+            <option>北屯區</option><option>西屯區</option><option>南屯區</option><option>太平區</option><option>大里區</option>
+            <option>霧峰區</option><option>烏日區</option><option>豐原區</option><option>潭子區</option><option>大雅區</option>
+            <option>沙鹿區</option><option>清水區</option><option>梧棲區</option><option>龍井區</option><option>大肚區</option><option>大甲區</option><option>后里區</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">類型</label>
+          <select class="form-select" id="f-type">
+            <option value="">請選擇</option>
+            <option>公寓</option>
+            <option>電梯大樓</option>
+            <option>電梯透天</option>
+            <option>透天</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">附近商圈和地標</label>
+          <input type="text" class="form-input" id="f-nearby" placeholder="例：大坑、全聯、北屯區公所" />
+        </div>
+      </div>
+
+      <!-- 格局 | 格局分類 | 坪數 | 租金 -->
+      <div class="form-row form-row-3 form-row-layout">
+        <div class="form-group">
+          <label class="form-label">完整格局</label>
+          <input type="text" class="form-input" id="f-layout" placeholder="例：1房1衛1陽台 / 3房2廳2衛" autocomplete="off" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">格局分類 <span style="color:var(--color-text-muted);font-weight:400;font-size:11px;">（篩選用）</span></label>
+          <select class="form-select" id="f-layout-cat">
+            <option value="">請選擇</option>
+            <option>套房</option>
+            <option>1房</option>
+            <option>2房</option>
+            <option>3房</option>
+            <option>4房</option>
+            <option>5房以上</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">坪數</label>
+          <input type="number" class="form-input" id="f-size" placeholder="例：12" min="0" step="0.5" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">租金（元/月）<span class="required">*</span></label>
+          <input type="number" class="form-input" id="f-rent" placeholder="例：8000" min="0" required />
+        </div>
+      </div>
+      <!-- 樓層 | 總樓層 -->
+      <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="form-group">
+          <label class="form-label">樓層 <span style="color:var(--color-text-muted);font-weight:400;font-size:11px;">（例：5 或 整棟4樓）</span></label>
+          <input type="text" class="form-input" id="f-floor" placeholder="例：5" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">總樓層</label>
+          <input type="number" class="form-input" id="f-total-floors" placeholder="例：9" min="0" />
+        </div>
+      </div>
+
+      <!-- 特色標籤 | 物件重點 -->
+      <div class="form-row form-row-2 form-row-align-top">
+        <div class="form-group">
+          <label class="form-label">特色標籤</label>
+          <div class="tags-selector" id="tags-selector">
+            <button type="button" class="tag-btn" data-tag="可租補">可租補</button>
+            <button type="button" class="tag-btn" data-tag="可狗">可狗</button>
+            <button type="button" class="tag-btn" data-tag="可貓">可貓</button>
+            <button type="button" class="tag-btn" data-tag="獨洗曬">獨洗曬</button>
+            <button type="button" class="tag-btn" data-tag="可開伙">可開伙</button>
+            <button type="button" class="tag-btn" data-tag="車位">車位</button>
+            <button type="button" class="tag-btn" data-tag="陽台">陽台</button>
+            <button type="button" class="tag-btn" data-tag="台水">台水</button>
+            <button type="button" class="tag-btn" data-tag="台電">台電</button>
+            <button type="button" class="tag-btn" data-tag="衛浴乾濕分離">衛浴乾濕分離</button>
+            <button type="button" class="tag-btn" data-tag="變頻冷氣">變頻冷氣</button>
+            <button type="button" class="tag-btn" data-tag="管理室">管理室</button>
+            <button type="button" class="tag-btn" data-tag="子母車">子母車</button>
+            <button type="button" class="tag-btn" data-tag="飲水機">飲水機</button>
+            <button type="button" class="tag-btn" data-tag="網路">網路</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">物件重點</label>
+          <textarea class="form-textarea" id="f-highlights" placeholder="整理成客人容易懂的短句，例如：獨立套房，環境安靜，可申請租屋補助，可養貓。" style="min-height:140px;"></textarea>
+        </div>
+      </div>
+
+      <!-- 優點 | 可能需要注意的地方 -->
+      <div class="form-row form-row-2 form-row-align-top">
+        <div class="form-group">
+          <label class="form-label">✅ 優點</label>
+          <textarea class="form-textarea" id="f-pros" placeholder="條列優點，每行一條，例如：&#10;• 租金實惠，可申請租屋補助&#10;• 可養貓，寵物友善環境" style="min-height:120px;"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">⚠️ 可能需要注意的地方</label>
+          <textarea class="form-textarea" id="f-cons" placeholder="條列注意事項，請用溫和文字，例如：&#10;• 坪數較小，適合單身或一人居住&#10;• 無附車位，需自行尋找停車" style="min-height:120px;"></textarea>
+        </div>
+      </div>
+
+      <!-- 上傳照片（左半欄） -->
+      <div class="form-group form-half">
+        <label class="form-label">上傳照片</label>
+        <div class="photo-upload-area" id="photo-drop-area" onclick="document.getElementById('photo-input').click()">
+          <div class="upload-icon">📷</div>
+          <p>點擊或拖曳圖片到此處上傳（可多張）</p>
+          <p style="font-size:11px;margin-top:4px;color:var(--color-text-muted);">支援 JPG、PNG、WEBP，單張建議不超過 2MB</p>
+        </div>
+        <input type="file" id="photo-input" accept="image/*" multiple style="display:none;" />
+        <div style="font-size:12px;color:var(--color-text-muted);margin-top:6px;">點擊縮圖設為封面，拖動調整順序</div>
+        <div class="photo-preview-grid" id="photo-preview-grid"></div>
+      </div>
+
+      <!-- 上傳影片（右半欄） -->
+      <div class="form-group form-half">
+        <label class="form-label">上傳影片</label>
+        <div class="photo-upload-area" id="video-drop-area" onclick="document.getElementById('video-input').click()" style="border-color:#7cb342;">
+          <div class="upload-icon">🎥</div>
+          <p>點擊或拖曳影片到此處上傳</p>
+          <p style="font-size:11px;margin-top:4px;color:var(--color-text-muted);">支援 MP4、WebM，建議不超過 50MB</p>
+        </div>
+        <input type="file" id="video-input" accept="video/*" style="display:none;" />
+        <div style="font-size:12px;color:var(--color-text-muted);margin-top:6px;">
+          <div id="video-preview" style="margin-top:8px;"></div>
+        </div>
+      </div>
+
+      <!-- 是否上架 + 儲存（左半欄） -->
+      <div class="form-half">
+        <div class="form-group">
+          <label class="form-label">是否上架</label>
+          <div class="yes-no-group">
+            <label class="yes-no-option"><input type="radio" name="f-active" value="1" checked /> 上架（前台顯示）</label>
+            <label class="yes-no-option"><input type="radio" name="f-active" value="0" /> 下架（隱藏）</label>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">首頁推薦分類</label>
+          <div class="yes-no-group" style="flex-direction:column;gap:8px;">
+            <label class="yes-no-option"><input type="checkbox" name="f-recommend" value="♡ 最新物件" /> ♡ 最新物件</label>
+            <label class="yes-no-option"><input type="checkbox" name="f-recommend" value="♡ 近期熱門" /> ♡ 近期熱門</label>
+            <label class="yes-no-option"><input type="checkbox" name="f-recommend" value="♡ 學生首選" /> ♡ 學生首選</label>
+            <label class="yes-no-option"><input type="checkbox" name="f-recommend" value="♡ 私心推薦" /> ♡ 私心推薦</label>
+          </div>
+        </div>
+        <div class="d-flex gap-8" style="margin-top:16px;">
+          <button type="submit" class="btn btn-primary btn-lg">💾 儲存物件</button>
+          <button type="button" class="btn btn-ghost" onclick="resetPropForm(); showSection('props')">取消</button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- ===== APPOINTMENTS ===== -->
+  <div class="admin-section" id="section-appts">
+    <div class="admin-section-title">預約資料</div>
+    <div class="admin-section-sub">查看前台送出的預約看屋表單，可標記處理狀態。</div>
+
+    <div class="admin-filters">
+      <div class="filter-group">
+        <div class="filter-label">狀態篩選</div>
+        <select class="filter-select" id="appt-filter-status" onchange="renderAppts()">
+          <option value="">全部</option>
+          <option>未處理</option>
+          <option>已聯繫</option>
+          <option>已預約</option>
+          <option>已取消</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <div class="filter-label">搜尋姓名</div>
+        <input type="text" class="filter-select" id="appt-search" placeholder="搜尋姓名" oninput="renderAppts()" style="min-width:140px;" />
+      </div>
+      <div class="filter-group">
+        <button class="btn btn-primary btn-sm" onclick="checkGhostAppointments()" style="align-self: flex-end;">🔍 檢查預約</button>
+        <button class="btn btn-ghost btn-sm" onclick="exportAppointmentsData()" style="align-self: flex-end;">📥 導出預約資料</button>
+      </div>
+    </div>
+
+    <!-- 預約日曆 -->
+    <div class="appt-calendar-section">
+      <div class="appt-calendar-header">
+        <h3 style="margin: 0; font-size: 16px; font-weight: 600;">📅 預約日曆</h3>
+      </div>
+
+      <!-- 控制區 -->
+      <div class="appt-calendar-controls">
+        <div class="appt-month-display">
+          <span id="appt-calendar-month">2026 年 7 月</span>
+        </div>
+        <div class="appt-month-buttons">
+          <button class="btn btn-ghost btn-sm" onclick="prevApptMonth()">← 上月</button>
+          <button class="btn btn-ghost btn-sm" onclick="nextApptMonth()">下月 →</button>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="openAddBlockedTimeModal()">+ 新增不可預約時間</button>
+      </div>
+
+      <!-- 桌機版月曆 -->
+      <div id="appt-calendar-desktop" class="appt-calendar-desktop">
+        <div style="text-align:center;padding:40px;color:var(--color-text-muted);">載入中...</div>
+      </div>
+
+      <!-- 手機版日期列表 -->
+      <div id="appt-calendar-mobile" class="appt-calendar-mobile">
+        <div style="text-align:center;padding:40px;color:var(--color-text-muted);">載入中...</div>
+      </div>
+    </div>
+
+    <!-- 預約列表 -->
+    <div style="margin-top: 24px;">
+      <h3 style="margin: 0 0 16px 0; font-size: 16px; font-weight: 600;">📋 預約列表</h3>
+      <div id="appts-list">
+        <div style="text-align:center;padding:40px;color:var(--color-text-muted);">載入中...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 帳號設定（修改密碼 + Google Key）===== -->
+  <div class="admin-section" id="section-pw">
+    <div class="admin-section-title">⚙️ 帳號與設定</div>
+
+    <div style="max-width:520px;display:flex;flex-direction:column;gap:32px;">
+
+      <!-- 修改密碼 -->
+      <div>
+        <div class="admin-section-sub" style="font-weight:600;color:var(--color-text);margin-bottom:12px;">🔑 修改密碼</div>
+        <div class="alert alert-error hidden" id="pw-error"></div>
+        <div class="alert alert-success hidden" id="pw-success"></div>
+        <form id="pw-form">
+          <div class="form-group">
+            <label class="form-label">新密碼 <span class="required">*</span></label>
+            <input type="password" class="form-input" id="pw-new" placeholder="請輸入新密碼" required autocomplete="new-password" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">再次輸入新密碼 <span class="required">*</span></label>
+            <input type="password" class="form-input" id="pw-confirm" placeholder="再次輸入新密碼" required autocomplete="new-password" />
+          </div>
+          <button type="submit" class="btn btn-primary">確認修改密碼</button>
+        </form>
+      </div>
+
+      <!-- Google Maps API Key -->
+      <div>
+        <div class="admin-section-sub" style="font-weight:600;color:var(--color-text);margin-bottom:12px;">🗺️ Google Maps API Key（地標查詢）</div>
+        <div class="form-group">
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input type="password" class="form-input" id="settings-google-key" placeholder="貼上你的 Google Maps Geocoding API Key" autocomplete="off" style="flex:1;" />
+            <button type="button" class="btn btn-primary btn-sm" onclick="saveGoogleKey()">儲存</button>
+            <button type="button" class="btn btn-ghost btn-sm" onclick="clearGoogleKey()">清除</button>
+          </div>
+          <div id="settings-key-status" style="margin-top:8px;font-size:13px;"></div>
+        </div>
+        <div style="background:#f5f5ef;border-radius:10px;padding:14px;font-size:13px;line-height:1.8;color:var(--color-text-muted);">
+          1. 前往 <b>console.cloud.google.com</b><br>
+          2. 左側「API 和服務」→「程式庫」→ 搜尋啟用「<b>Geocoding API</b>」<br>
+          3. 左側「API 和服務」→「<b>憑證</b>」→「建立憑證」→「API 金鑰」<br>
+          4. 複製金鑰貼到上方儲存<br><br>
+          <b style="color:var(--color-primary-dark);">每月 $200 免費額度（約 4 萬次），後台日常使用完全免費。</b>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===== 回饋中心 ===== -->
+  <div class="admin-section" id="section-feedback">
+    <div class="admin-section-title">💌 網站回饋中心</div>
+
+    <!-- 更新公告管理 -->
+    <div class="admin-card" style="margin-bottom:20px;">
+      <div class="admin-section-sub" style="font-weight:600;color:var(--color-text);margin-bottom:12px;">📢 更新公告</div>
+      <form id="announce-form" onsubmit="addAnnouncement(event)">
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <input type="text" class="form-input" id="ann-date" placeholder="日期（如 2026/07/04）" style="width:160px;flex-shrink:0;" />
+          <input type="text" class="form-input" id="ann-title" placeholder="公告標題" style="flex:1;min-width:180px;" />
+        </div>
+        <textarea class="form-input" id="ann-body" rows="3" placeholder="公告內容..." style="margin-top:8px;"></textarea>
+        <button type="submit" class="btn btn-primary btn-sm" style="margin-top:8px;">新增公告</button>
+      </form>
+      <div id="admin-announce-list" style="margin-top:16px;display:flex;flex-direction:column;gap:8px;"></div>
+    </div>
+
+    <!-- 問題回報列表 -->
+    <div class="admin-card" style="margin-bottom:20px;">
+      <div class="admin-section-sub" style="font-weight:600;color:var(--color-text);margin-bottom:12px;">🐛 問題回報 <span id="report-count" style="font-weight:400;font-size:13px;color:var(--color-text-muted);"></span></div>
+      <div id="admin-report-list" style="display:flex;flex-direction:column;gap:8px;"></div>
+    </div>
+
+    <!-- 許願池列表 -->
+    <div class="admin-card">
+      <div class="admin-section-sub" style="font-weight:600;color:var(--color-text);margin-bottom:12px;">✨ 許願池 <span id="wish-count" style="font-weight:400;font-size:13px;color:var(--color-text-muted);"></span></div>
+      <div id="admin-wish-list" style="display:flex;flex-direction:column;gap:8px;"></div>
+    </div>
+  </div>
+
+</div><!-- /admin-content -->
+
+<!-- CONFIRM DIALOG -->
+<!-- 新增不可預約時間 Modal -->
+<div class="modal-overlay hidden" id="add-blocked-time-modal">
+  <div class="modal-box" style="max-width:450px;">
+    <div class="modal-header">
+      <div class="modal-title">🔒 新增不可預約時間</div>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">日期 <span class="required">*</span></label>
+        <input type="date" class="form-input" id="blocked-date" required />
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <div class="form-group">
+          <label class="form-label">開始時間 <span class="required">*</span></label>
+          <select class="form-select" id="blocked-time-start" required>
+            <option value="">選擇時間</option>
+            <option value="09:00">09:00</option><option value="09:30">09:30</option><option value="10:00">10:00</option><option value="10:30">10:30</option>
+            <option value="11:00">11:00</option><option value="11:30">11:30</option><option value="12:00">12:00</option><option value="12:30">12:30</option>
+            <option value="13:00">13:00</option><option value="13:30">13:30</option><option value="14:00">14:00</option><option value="14:30">14:30</option>
+            <option value="15:00">15:00</option><option value="15:30">15:30</option><option value="16:00">16:00</option><option value="16:30">16:30</option>
+            <option value="17:00">17:00</option><option value="17:30">17:30</option><option value="18:00">18:00</option><option value="18:30">18:30</option>
+            <option value="19:00">19:00</option><option value="19:30">19:30</option><option value="20:00">20:00</option><option value="20:30">20:30</option>
+            <option value="21:00">21:00</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">結束時間 <span class="required">*</span></label>
+          <select class="form-select" id="blocked-time-end" required>
+            <option value="">選擇時間</option>
+            <option value="09:00">09:00</option><option value="09:30">09:30</option><option value="10:00">10:00</option><option value="10:30">10:30</option>
+            <option value="11:00">11:00</option><option value="11:30">11:30</option><option value="12:00">12:00</option><option value="12:30">12:30</option>
+            <option value="13:00">13:00</option><option value="13:30">13:30</option><option value="14:00">14:00</option><option value="14:30">14:30</option>
+            <option value="15:00">15:00</option><option value="15:30">15:30</option><option value="16:00">16:00</option><option value="16:30">16:30</option>
+            <option value="17:00">17:00</option><option value="17:30">17:30</option><option value="18:00">18:00</option><option value="18:30">18:30</option>
+            <option value="19:00">19:00</option><option value="19:30">19:30</option><option value="20:00">20:00</option><option value="20:30">20:30</option>
+            <option value="21:00">21:00</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">原因</label>
+        <input type="text" class="form-input" id="blocked-reason" placeholder="例：已預約、老闆來訪、維修房屋" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">物件 (選擇性)</label>
+        <input type="text" class="form-input" id="blocked-property-search" placeholder="搜尋地址或標題..." oninput="searchBlockedProperty()" />
+        <div id="blocked-property-results" style="margin-top: 8px; max-height: 200px; overflow-y: auto; border: 1px solid #e0e0e0; border-radius: 4px; display: none;">
+        </div>
+        <div id="blocked-property-selected" style="margin-top: 8px; padding: 8px; background: #e8f5e9; border-radius: 4px; display: none; font-size: 12px;">
+          選擇: <span id="blocked-property-name"></span> <button type="button" class="btn btn-link btn-sm" onclick="clearBlockedProperty()" style="padding: 0; margin-left: 8px;">清除</button>
+        </div>
+        <input type="hidden" id="blocked-property" value="" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeAddBlockedTimeModal()">取消</button>
+      <button class="btn btn-primary" onclick="saveBlockedTime()">新增</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="confirm-modal">
+  <div class="modal-box" style="max-width:400px;">
+    <div class="modal-header">
+      <div class="modal-title" id="confirm-title">確認操作</div>
+    </div>
+    <div class="modal-body">
+      <p id="confirm-msg" style="font-size:15px;color:var(--color-text);"></p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeConfirm()">取消</button>
+      <button class="btn btn-danger" id="confirm-ok-btn">確認</button>
+    </div>
+  </div>
+</div>
+
+<!-- 縮圖放大檢視 -->
+<div class="admin-lightbox hidden" id="admin-lightbox" onclick="closeAdminImages(event)">
+  <button class="admin-lightbox-close" onclick="closeAdminImages(event)">✕</button>
+  <button class="admin-lightbox-nav admin-lightbox-prev" onclick="adminImageStep(-1, event)">‹</button>
+  <img id="admin-lightbox-img" src="" alt="" onclick="event.stopPropagation()" />
+  <button class="admin-lightbox-nav admin-lightbox-next" onclick="adminImageStep(1, event)">›</button>
+  <div class="admin-lightbox-counter" id="admin-lightbox-counter"></div>
+</div>
+
+<script src="admin.js?v=20260705bo"></script>
+</body>
+</html>
