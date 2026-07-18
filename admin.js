@@ -2434,40 +2434,56 @@ function showApptsByDate(dateStr) {
   const dateObj = new Date(dateStr + 'T00:00:00');
   const dateDisplay = dateObj.toLocaleDateString('zh-TW', { year: 'numeric', month: '2-digit', day: '2-digit' });
 
-  // 對已鎖定的記錄進行分組（同一個時間區間）
-  const groupedAppts = {};
-  const otherAppts = [];
-
-  appts.forEach(a => {
-    if (a.status === '已鎖定') {
-      const groupId = a.id.substring(0, a.id.lastIndexOf('_'));
-      if (!groupedAppts[groupId]) {
-        groupedAppts[groupId] = {
-          appt: a,
-          times: []
-        };
-      }
-      groupedAppts[groupId].times.push(a.time);
-    } else {
-      otherAppts.push(a);
-    }
-  });
-
   // 時間排序函數
   const timeToMinutes = (time) => {
     const [h, m] = time.split(':').map(Number);
     return h * 60 + m;
   };
 
-  // 對已鎖定時間排序（按最早時間）
-  const sortedGroupedAppts = Object.entries(groupedAppts).sort(([, a], [, b]) => {
-    const aMinTime = Math.min(...a.times.map(timeToMinutes));
-    const bMinTime = Math.min(...b.times.map(timeToMinutes));
-    return aMinTime - bMinTime;
-  });
+  // 分離活躍和已取消預約
+  const activeAppts = appts.filter(a => a.status !== '已取消');
+  const cancelledAppts = appts.filter(a => a.status === '已取消');
 
-  // 對普通預約排序
-  otherAppts.sort((a, b) => timeToMinutes(a.time) - timeToMinutes(b.time));
+  activeAppts.sort((a, b) => timeToMinutes(a.time) - timeToMinutes(b.time));
+  cancelledAppts.sort((a, b) => timeToMinutes(a.time) - timeToMinutes(b.time));
+
+  const expandId = 'cancelled-' + dateStr;
+
+  // 構建活躍預約 HTML
+  const activeApptHtml = activeAppts.map(a => {
+    const prop = (allProps || []).find(p => p.title === a.propertyTitle);
+    const displayAddress = (prop && prop.address) ? prop.address : (a.propertyTitle || '未指定');
+    return `
+      <div style="background: #f5f5f5; border-radius: 6px; padding: 12px; margin-bottom: 8px; font-size: 13px; border-left: 4px solid transparent;">
+        <div style="font-weight: 600; margin-bottom: 4px;">🕐 ${a.time}</div>
+        <div>👤 ${a.name} (${a.phone})</div>
+        <div style="color: var(--color-text-muted); margin-top: 4px;">📍 ${displayAddress}</div>
+        <div style="color: var(--color-text-muted); font-size: 12px; margin-top: 4px;">狀態: <span style="background: #e8f5e9; padding: 2px 6px; border-radius: 3px;">${a.status}</span></div>
+        <div style="display: flex; gap: 8px; margin-top: 8px;">
+          <button class="btn btn-sm btn-primary" onclick="editApptProperty('${a.id}', '${a.propertyTitle || ''}')">🏠 修改物件</button>
+          <button class="btn btn-sm btn-ghost" onclick="editApptDateTime('${a.id}')">📅 改日期</button>
+          <button class="btn btn-sm btn-danger" onclick="deleteAppt('${a.id}')">🗑️ 刪除</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  // 構建已取消預約 HTML
+  const cancelledApptHtml = cancelledAppts.map(a => {
+    const prop = (allProps || []).find(p => p.title === a.propertyTitle);
+    const displayAddress = (prop && prop.address) ? prop.address : (a.propertyTitle || '未指定');
+    return `
+      <div style="background: #fafafa; border-radius: 6px; padding: 12px; margin-top: 8px; font-size: 13px; border-left: 4px solid #ccc; opacity: 0.7;">
+        <div style="font-weight: 600; margin-bottom: 4px;">🕐 ${a.time}</div>
+        <div>👤 ${a.name} (${a.phone})</div>
+        <div style="color: var(--color-text-muted); margin-top: 4px;">📍 ${displayAddress}</div>
+        <div style="display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap;">
+          <button class="btn btn-sm btn-primary" onclick="updateApptStatus('${a.id}', '未處理')">✏️ 恢復</button>
+          <button class="btn btn-sm btn-danger" onclick="deleteAppt('${a.id}')">🗑️ 刪除</button>
+        </div>
+      </div>
+    `;
+  }).join('');
 
   modal.innerHTML = `
     <div class="modal-box" style="max-width: 500px;">
@@ -2476,72 +2492,17 @@ function showApptsByDate(dateStr) {
         <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">✕</button>
       </div>
       <div class="modal-body">
-        ${(() => {
-          // 合併已鎖定和普通預約，按時間排序
-          const allItems = [];
-
-          sortedGroupedAppts.forEach(([groupId, group]) => {
-            allItems.push({
-              type: 'locked',
-              minTime: Math.min(...group.times.map(timeToMinutes)),
-              groupId,
-              group
-            });
-          });
-
-          otherAppts.forEach(a => {
-            allItems.push({
-              type: 'normal',
-              minTime: timeToMinutes(a.time),
-              appt: a
-            });
-          });
-
-          allItems.sort((a, b) => a.minTime - b.minTime);
-
-          return allItems.map((item, idx) => {
-            if (item.type === 'locked') {
-              const { groupId, group } = item;
-              // 根據propertyTitle查詢實際地址
-              const prop = (allProps || []).find(p => p.title === group.appt.propertyTitle);
-              const displayAddress = (prop && prop.address) ? prop.address : (group.appt.propertyTitle || '全域鎖定');
-
-              return `
-                <div style="background: #fff3e0; border-radius: 6px; padding: 12px; margin-bottom: 8px; font-size: 13px; border-left: 4px solid #ff9800;">
-                  <div style="font-weight: 600; margin-bottom: 8px;">🔒 已鎖定時間</div>
-                  <div style="margin-bottom: 4px;">⏰ ${group.times.sort((a, b) => timeToMinutes(a) - timeToMinutes(b)).join('、')}</div>
-                  <div style="color: var(--color-text-muted); font-size: 12px; margin-bottom: 4px;">📍 ${displayAddress}</div>
-                  <div style="color: var(--color-text-muted); font-size: 12px; margin-bottom: 8px;">📝 ${group.appt.notes || '無原因'}</div>
-                  <div style="display: flex; gap: 8px;">
-                    <button class="btn btn-sm btn-primary" data-date="${group.appt.date}" data-notes="${encodeURIComponent(group.appt.notes)}" onclick="editBlockedTimeFromData(this)">✏️ 修改</button>
-                    <button class="btn btn-sm btn-danger" onclick="deleteBlockedTime('${groupId}', '${group.appt.date}')">🗑️ 刪除</button>
-                  </div>
-                </div>
-              `;
-            } else {
-              const a = item.appt;
-              // 根據propertyTitle查詢實際地址
-              const prop = (allProps || []).find(p => p.title === a.propertyTitle);
-              const displayAddress = (prop && prop.address) ? prop.address : (a.propertyTitle || '未指定');
-
-              const hasPrevAppt = idx > 0;
-              const hasNextAppt = idx < allItems.length - 1;
-              const hasAdjacentAppt = hasPrevAppt || hasNextAppt;
-
-              return `
-                <div style="background: #f5f5f5; border-radius: 6px; padding: 12px; margin-bottom: 8px; font-size: 13px; border-left: 4px solid transparent;">
-                  <div style="font-weight: 600; margin-bottom: 4px;">🕐 ${a.time}</div>
-                  <div>👤 ${a.name} (${a.phone})</div>
-                  <div style="color: var(--color-text-muted); margin-top: 4px;">📍 ${displayAddress}</div>
-                  <div style="color: var(--color-text-muted); font-size: 12px; margin-top: 4px;">狀態: <span style="background: #e8f5e9; padding: 2px 6px; border-radius: 3px;">${a.status}</span></div>
-                  <div style="display: flex; gap: 8px; margin-top: 8px;">
-                    <button class="btn btn-sm btn-primary" onclick="editApptProperty('${a.id}', '${a.propertyTitle || ''}')">🏠 修改物件</button>
-                  </div>
-                </div>
-              `;
-            }
-          }).join('');
-        })()}
+        ${activeApptHtml}
+        ${cancelledAppts.length > 0 ? `
+          <div style="margin-top: 16px; border-top: 2px solid #ddd; padding-top: 12px;">
+            <button onclick="toggleCancelledAppts('${expandId}')" style="background: none; border: none; color: #999; font-weight: 600; cursor: pointer; font-size: 13px; padding: 8px 0; width: 100%; text-align: left;">
+              ▶ 已取消預約 (${cancelledAppts.length})
+            </button>
+            <div id="${expandId}" style="display: none;">
+              ${cancelledApptHtml}
+            </div>
+          </div>
+        ` : ''}
       </div>
     </div>
   `;
