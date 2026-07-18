@@ -2615,6 +2615,52 @@ input[type="date"].form-input {
   .admin-page .ai-section.form-half { max-width: 100%; }
   .admin-page .form-group.form-half { max-width: 100%; }
   .admin-page .form-half { max-width: 100%; }
+
+  /* 預約日曆手機版排列 */
+  .appt-calendar-section {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+    align-items: center;
+    row-gap: 12px;
+  }
+
+  .appt-calendar-header {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .appt-calendar-section > .btn-primary {
+    grid-column: 2;
+    grid-row: 1;
+    padding: 8px 12px;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  .appt-calendar-controls {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .appt-month-buttons {
+    flex: 0;
+  }
+
+  .appt-month-display {
+    flex: 1;
+    text-align: center;
+    font-size: 14px;
+  }
+
+  .appt-month-buttons .btn {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
 }
 
 /* ===== PAGINATION (admin) ===== */
@@ -3024,31 +3070,18 @@ input[type="date"].form-input {
 .appt-calendar-section {
   margin-top: 24px;
   padding: 0 16px;
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 16px;
-  align-items: center;
-  margin-bottom: 16px;
 }
 
 .appt-calendar-header {
-  grid-column: 1;
-  grid-row: 1;
-}
-
-.appt-calendar-section > .btn-primary {
-  grid-column: 2;
-  grid-row: 1;
+  margin-bottom: 16px;
 }
 
 .appt-calendar-controls {
-  grid-column: 1 / -1;
-  grid-row: 2;
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 20px;
+  gap: 16px;
   margin-bottom: 16px;
+  flex-wrap: wrap;
 }
 
 .appt-month-display {
