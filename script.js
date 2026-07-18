@@ -143,7 +143,6 @@ let currentGalleryImages = [];
 document.addEventListener('DOMContentLoaded', async () => {
   initFilters();
   initAppointmentForm();
-  initLightbox();
   setMinDate();
   await initData();
   renderProperties();
