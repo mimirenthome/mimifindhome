@@ -2743,9 +2743,14 @@ async function checkGhostAppointments() {
       </div>
       ${ghosts.map(g => {
         const [date, time] = g.key.split('_');
+        const extraAppts = g.appts.slice(1);
+        const resolveHandler = `resolveGhost('${date}', '${time}', [${extraAppts.map(a => `'${a.id}'`).join(',')}])`;
         return `<div style="background: #fff3cd; border: 1px solid #ffc107; border-radius: 6px; padding: 12px; margin-bottom: 8px;">
-          <div style="font-weight: 600; margin-bottom: 8px;">📅 ${date} ${time} (${g.count} 筆預約)</div>
-          ${g.appts.map((a, i) => `<div style="font-size: 12px; margin-bottom: 4px; padding-left: 8px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <div style="font-weight: 600;">📅 ${date} ${time} (${g.count} 筆預約)</div>
+            <button style="padding: 4px 10px; background: #28a745; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 11px; font-weight: 600;" onclick="${resolveHandler}">✓ 解決</button>
+          </div>
+          ${g.appts.map((a, i) => `<div style="font-size: 12px; margin-bottom: 4px; padding-left: 8px; ${i === 0 ? 'opacity: 0.7; text-decoration: line-through;' : ''}">
             ${i+1}. ${a.name} (${a.phone}) - ${a.property_title || '未指定'}
             <button style="margin-left: 8px; padding: 2px 8px; background: #dc3545; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 11px;" onclick="deleteAppt('${a.id}')">刪除</button>
           </div>`).join('')}
@@ -2769,6 +2774,25 @@ async function checkGhostAppointments() {
     </div>
   `;
   document.body.appendChild(modal);
+}
+
+async function resolveGhost(date, time, apptIdsToDelete) {
+  if (!apptIdsToDelete || apptIdsToDelete.length === 0) {
+    showToast('已解決', 'success');
+    return;
+  }
+
+  const ids = apptIdsToDelete.filter(id => typeof id === 'string' && id.trim());
+  let deleted = 0;
+
+  for (const id of ids) {
+    const { error } = await db.from('appointments').delete().eq('id', id);
+    if (!error) deleted++;
+  }
+
+  showToast(`已刪除 ${deleted} 筆多餘預約`, 'success');
+  await renderAppts();
+  document.querySelector('.modal-overlay')?.remove();
 }
 
 // ===== CHANGE PASSWORD (Supabase Auth) =====
