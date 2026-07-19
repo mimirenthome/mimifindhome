@@ -2447,14 +2447,17 @@ function showApptsByDate(dateStr) {
     return h * 60 + m;
   };
 
-  // 分離活躍和已取消預約
-  const activeAppts = appts.filter(a => a.status !== '已取消');
+  // 分離活躍、已鎖定和已取消預約
+  const lockedAppts = appts.filter(a => a.status === '已鎖定');
+  const activeAppts = appts.filter(a => a.status !== '已取消' && a.status !== '已鎖定');
   const cancelledAppts = appts.filter(a => a.status === '已取消');
 
   activeAppts.sort((a, b) => timeToMinutes(a.time) - timeToMinutes(b.time));
+  lockedAppts.sort((a, b) => timeToMinutes(a.time) - timeToMinutes(b.time));
   cancelledAppts.sort((a, b) => timeToMinutes(a.time) - timeToMinutes(b.time));
 
-  const expandId = 'cancelled-' + dateStr;
+  const lockedExpandId = 'locked-' + dateStr;
+  const cancelledExpandId = 'cancelled-' + dateStr;
 
   // 構建活躍預約 HTML
   const activeApptHtml = activeAppts.map(a => {
@@ -2470,6 +2473,22 @@ function showApptsByDate(dateStr) {
           <button class="btn btn-sm btn-primary" onclick="editApptProperty('${a.id}', '${a.propertyTitle || ''}')">🏠 修改物件</button>
           <button class="btn btn-sm btn-ghost" onclick="editApptDateTime('${a.id}')">📅 改日期</button>
           <button class="btn btn-sm btn-danger" onclick="deleteAppt('${a.id}')">🗑️ 刪除</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  // 構建已鎖定時間 HTML
+  const lockedApptHtml = lockedAppts.map(a => {
+    const prop = (allProps || []).find(p => p.title === a.propertyTitle);
+    const displayAddress = (prop && prop.address) ? prop.address : (a.propertyTitle || '未指定');
+    return `
+      <div style="background: #fff3cd; border-radius: 6px; padding: 12px; margin-top: 8px; font-size: 13px; border-left: 4px solid #ffc107; opacity: 0.7;">
+        <div style="font-weight: 600; margin-bottom: 4px;">🔒 ${a.time} - 未開放</div>
+        <div style="color: var(--color-text-muted); margin-top: 4px;">📝 ${a.notes || '無原因'}</div>
+        <div style="display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap;">
+          <button class="btn btn-sm btn-primary" onclick="editBlockedTimeFromData(this)" data-date="${a.date}" data-notes="${encodeURIComponent(a.notes)}">✏️ 修改</button>
+          <button class="btn btn-sm btn-danger" onclick="deleteBlockedTime('${a.id.substring(0, a.id.lastIndexOf('_'))}', '${a.date}')">🗑️ 刪除</button>
         </div>
       </div>
     `;
@@ -2500,12 +2519,22 @@ function showApptsByDate(dateStr) {
       </div>
       <div class="modal-body">
         ${activeApptHtml}
+        ${lockedAppts.length > 0 ? `
+          <div style="margin-top: 16px; border-top: 2px solid #ddd; padding-top: 12px;">
+            <button onclick="toggleSection('${lockedExpandId}')" style="background: none; border: none; color: #999; font-weight: 600; cursor: pointer; font-size: 13px; padding: 8px 0; width: 100%; text-align: left;">
+              <span id="${lockedExpandId}-btn">▶</span> 未開放時間 (${lockedAppts.length})
+            </button>
+            <div id="${lockedExpandId}" style="display: none;">
+              ${lockedApptHtml}
+            </div>
+          </div>
+        ` : ''}
         ${cancelledAppts.length > 0 ? `
           <div style="margin-top: 16px; border-top: 2px solid #ddd; padding-top: 12px;">
-            <button onclick="toggleCancelledAppts('${expandId}')" style="background: none; border: none; color: #999; font-weight: 600; cursor: pointer; font-size: 13px; padding: 8px 0; width: 100%; text-align: left;">
-              ▶ 已取消預約 (${cancelledAppts.length})
+            <button onclick="toggleSection('${cancelledExpandId}')" style="background: none; border: none; color: #999; font-weight: 600; cursor: pointer; font-size: 13px; padding: 8px 0; width: 100%; text-align: left;">
+              <span id="${cancelledExpandId}-btn">▶</span> 已取消預約 (${cancelledAppts.length})
             </button>
-            <div id="${expandId}" style="display: none;">
+            <div id="${cancelledExpandId}" style="display: none;">
               ${cancelledApptHtml}
             </div>
           </div>
@@ -2514,6 +2543,18 @@ function showApptsByDate(dateStr) {
     </div>
   `;
   document.body.appendChild(modal);
+}
+
+function toggleSection(sectionId) {
+  const elem = document.getElementById(sectionId);
+  const btn = document.getElementById(sectionId + '-btn');
+  if (elem.style.display === 'none') {
+    elem.style.display = 'block';
+    btn.textContent = '▼';
+  } else {
+    elem.style.display = 'none';
+    btn.textContent = '▶';
+  }
 }
 
 function prevApptMonth() {
