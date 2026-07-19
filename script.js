@@ -155,7 +155,7 @@ async function updateAvailableTimeSlots() {
       if (bookedTimes.includes(option.value)) {
         option.disabled = true;
         const status = bookedStatus[option.value];
-        const label = status === '已鎖定' ? '(已鎖定)' : '(已預約)';
+        const label = status === '已鎖定' ? '(未開放)' : '(已預約)';
         option.textContent = option.value + ' ' + label;
       } else {
         option.disabled = false;
