@@ -2224,6 +2224,7 @@ function detectParkingFee(notes) {
 async function renderAppts() {
   const statusFilter = document.getElementById('appt-filter-status').value;
   const search = (document.getElementById('appt-search').value || '').toLowerCase();
+  const phoneSearch = (document.getElementById('appt-search-phone').value || '').trim();
   const list = document.getElementById('appts-list');
   list.innerHTML = `<div style="text-align:center;padding:40px;color:var(--color-text-muted);">載入中...</div>`;
 
@@ -2243,6 +2244,12 @@ async function renderAppts() {
     filtered = filtered.filter(a =>
       (a.name || '').toLowerCase().includes(search) ||
       (a.propertyTitle || '').toLowerCase().includes(search)
+    );
+  }
+
+  if (phoneSearch) {
+    filtered = filtered.filter(a =>
+      (a.phone || '').includes(phoneSearch)
     );
   }
 
