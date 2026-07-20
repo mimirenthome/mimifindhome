@@ -2487,8 +2487,7 @@ function showApptsByDate(dateStr) {
         <div style="font-weight: 600; margin-bottom: 4px;">🔒 ${a.time} - 未開放</div>
         <div style="color: var(--color-text-muted); margin-top: 4px;">📝 ${a.notes || '無原因'}</div>
         <div style="display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap;">
-          <button class="btn btn-sm btn-primary" onclick="editBlockedTimeFromData(this)" data-date="${a.date}" data-notes="${encodeURIComponent(a.notes)}">✏️ 修改</button>
-          <button class="btn btn-sm btn-danger" onclick="deleteBlockedTime('${a.id.substring(0, a.id.lastIndexOf('_'))}', '${a.date}')">🗑️ 刪除</button>
+          <button class="btn btn-sm btn-danger" onclick="deleteAppt('${a.id}')">🗑️ 刪除</button>
         </div>
       </div>
     `;
@@ -2896,9 +2895,12 @@ function closeConfirm() {
   confirmCallback = null;
 }
 
-document.getElementById('confirm-modal').addEventListener('click', function(e) {
-  if (e.target === this) closeConfirm();
-});
+const confirmModal = document.getElementById('confirm-modal');
+if (confirmModal) {
+  confirmModal.addEventListener('click', function(e) {
+    if (e.target === this) closeConfirm();
+  });
+}
 
 // ===== TOAST =====
 function showToast(msg, type = 'info') {
