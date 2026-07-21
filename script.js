@@ -1414,8 +1414,12 @@ async function validateApptForm() {
   const occupation = document.getElementById('appt-occupation').value.trim();
   const vagueOccupations = ['上班族', '學生', '自由業者', '待業', '無業', '其他', '餐飲業', '服務業', '製造業', '零售業', '金融業', '教育業', '醫療業', '自營', '自由業', '公司職員'];
   if (!occupation || vagueOccupations.includes(occupation)) {
-    showToast('⚠️ 請填寫實際職務，例如：會計、行政助理、廚師、護理師、超商店員。\n請勿填寫：上班族、服務業、餐飲業、自營、自由業、公司職員等籠統名稱。', 'warning');
-    return false;
+    const errOccupation = document.getElementById('err-occupation');
+    if (errOccupation) {
+      errOccupation.textContent = '請填寫實際職務，例如：會計、行政助理、廚師、護理師、超商店員。請勿填寫：上班族、服務業、餐飲業、自營、自由業、公司職員等籠統名稱。';
+      errOccupation.classList.add('show');
+    }
+    valid = false;
   }
 
   // 📌 直接查詢 Supabase，檢查該時間是否已被預約
