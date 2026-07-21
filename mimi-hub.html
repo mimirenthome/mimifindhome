@@ -388,19 +388,17 @@
     <!-- 預約日曆 -->
     <div class="appt-calendar-section">
       <div class="appt-calendar-header">
-        <h3 style="margin: 0; font-size: 16px; font-weight: 600;">📅 預約日曆</h3>
+        <h3 style="margin: 0; font-size: 16px; font-weight: 600;">📅 預約日期</h3>
+        <button class="btn btn-primary btn-sm" onclick="openAddBlockedTimeModal()" style="align-self: flex-start;">+ 新增不可預約時間</button>
       </div>
 
       <!-- 控制區 -->
       <div class="appt-calendar-controls">
-        <div class="appt-month-display">
-          <span id="appt-calendar-month">2026 年 7 月</span>
-        </div>
         <div class="appt-month-buttons">
           <button class="btn btn-ghost btn-sm" onclick="prevApptMonth()">← 上月</button>
+          <span id="appt-calendar-month" style="text-align: center; flex: 1;">2026 年 7 月</span>
           <button class="btn btn-ghost btn-sm" onclick="nextApptMonth()">下月 →</button>
         </div>
-        <button class="btn btn-primary btn-sm" onclick="openAddBlockedTimeModal()">+ 新增不可預約時間</button>
       </div>
 
       <!-- 桌機版月曆 -->

@@ -2310,6 +2310,13 @@ input[type="date"].form-input {
     max-width: 400px;
     max-height: 80vh;
   }
+
+  #detail-modal .modal-box {
+    width: 100vw;
+    max-width: none;
+    max-height: 100vh;
+    border-radius: 0;
+  }
 }
 
 @media (max-width: 480px) {
@@ -3074,6 +3081,11 @@ input[type="date"].form-input {
 
 .appt-calendar-header {
   margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .appt-calendar-controls {
@@ -3312,33 +3324,41 @@ input[type="date"].form-input {
     display: grid;
   }
 
-  .appt-calendar-controls {
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 8px;
+  .appt-calendar-header {
+    flex-direction: column;
+    align-items: flex-start;
   }
 
-  .appt-month-display {
+  .appt-calendar-header .btn-primary {
     width: 100%;
-    order: 0;
-    margin: 0;
+  }
+
+  .appt-calendar-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
   }
 
   .appt-month-buttons {
-    order: -1;
-    margin-left: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
   }
 
   .appt-month-buttons .btn {
-    flex: 0 1 auto;
+    flex: 0 0 auto;
     padding: 6px 12px;
     font-size: 13px;
   }
 
-  .appt-calendar-controls > .btn-primary {
-    width: 100%;
-    order: 1;
-    margin-left: 0;
+  #appt-calendar-month {
+    text-align: center;
+    flex: 1;
+    font-size: 16px;
+    font-weight: 600;
   }
 
   /* 手機版隱藏左右按鈕 */
