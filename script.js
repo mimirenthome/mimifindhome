@@ -1412,13 +1412,9 @@ async function validateApptForm() {
 
   // 檢查職業是否太籠統
   const occupation = document.getElementById('appt-occupation').value.trim();
-  const vagueOccupations = ['上班族', '學生', '自由業者', '待業', '無業', '其他'];
-  if (occupation && vagueOccupations.includes(occupation)) {
-    showToast('⚠️ 職業填寫過於籠統，請提供具體職稱或工作內容（例如：會計師、軟體工程師、美髮師等）', 'warning');
-    return false;
-  }
-  if (!occupation) {
-    showToast('⚠️ 請填寫具體的職稱或工作內容', 'warning');
+  const vagueOccupations = ['上班族', '學生', '自由業者', '待業', '無業', '其他', '餐飲業', '服務業', '製造業', '零售業', '金融業', '教育業', '醫療業', '自營', '自由業', '公司職員'];
+  if (!occupation || vagueOccupations.includes(occupation)) {
+    showToast('⚠️ 請填寫實際職務，例如：會計、行政助理、廚師、護理師、超商店員。\n請勿填寫：上班族、服務業、餐飲業、自營、自由業、公司職員等籠統名稱。', 'warning');
     return false;
   }
 
