@@ -1410,6 +1410,18 @@ async function validateApptForm() {
   if (!date) { document.getElementById('err-date').classList.add('show'); valid = false; }
   if (!time) { document.getElementById('err-time').classList.add('show'); valid = false; }
 
+  // 檢查職業是否太籠統
+  const occupation = document.getElementById('appt-occupation').value.trim();
+  const vagueOccupations = ['上班族', '學生', '自由業者', '待業', '無業', '其他'];
+  if (occupation && vagueOccupations.includes(occupation)) {
+    showToast('⚠️ 職業填寫過於籠統，請提供具體職稱或工作內容（例如：會計師、軟體工程師、美髮師等）', 'warning');
+    return false;
+  }
+  if (!occupation) {
+    showToast('⚠️ 請填寫具體的職稱或工作內容', 'warning');
+    return false;
+  }
+
   // 📌 直接查詢 Supabase，檢查該時間是否已被預約
   if (valid && date && time) {
     try {
