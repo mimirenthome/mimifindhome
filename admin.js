@@ -2329,11 +2329,21 @@ async function renderApptCalendar() {
 
   // 按日期分組預約（按時間排序）- 過濾掉已取消的，已鎖定的若有填寫物件才顯示
   const apptsByDate = {};
+  const lockedTimesByDate = {}; // 追蹤每日已鎖定時間（只取第一個）
   appts.forEach(a => {
     if (a.status === '已取消') return;
     if (a.status === '已鎖定' && !a.propertyTitle) return;
     if (!apptsByDate[a.date]) apptsByDate[a.date] = [];
-    apptsByDate[a.date].push(a.time);
+
+    // 已鎖定時間只取第一個開始時間
+    if (a.status === '已鎖定') {
+      if (!lockedTimesByDate[a.date]) {
+        lockedTimesByDate[a.date] = true;
+        apptsByDate[a.date].push(a.time);
+      }
+    } else {
+      apptsByDate[a.date].push(a.time);
+    }
   });
 
   // 對每個日期的時間進行排序
@@ -2457,6 +2467,10 @@ function showApptsByDate(dateStr) {
   lockedAppts.sort((a, b) => timeToMinutes(a.time) - timeToMinutes(b.time));
   cancelledAppts.sort((a, b) => timeToMinutes(a.time) - timeToMinutes(b.time));
 
+  // 分離已鎖定：有物件的和沒物件的
+  const lockedWithProp = lockedAppts.filter(a => a.propertyTitle);
+  const lockedNoProp = lockedAppts.filter(a => !a.propertyTitle);
+
   const lockedExpandId = 'locked-' + dateStr;
   const cancelledExpandId = 'cancelled-' + dateStr;
 
@@ -2479,10 +2493,24 @@ function showApptsByDate(dateStr) {
     `;
   }).join('');
 
-  // 構建已鎖定時間 HTML
-  const lockedApptHtml = lockedAppts.map(a => {
+  // 構建有物件的已鎖定時間 HTML（不折疊）
+  const lockedWithPropHtml = lockedWithProp.map(a => {
     const prop = (allProps || []).find(p => p.title === a.propertyTitle);
     const displayAddress = (prop && prop.address) ? prop.address : (a.propertyTitle || '未指定');
+    return `
+      <div style="background: #fff3cd; border-radius: 6px; padding: 12px; margin-bottom: 8px; font-size: 13px; border-left: 4px solid #ffc107;">
+        <div style="font-weight: 600; margin-bottom: 4px;">🔒 ${a.time} - 未開放</div>
+        <div style="color: var(--color-primary-dark); font-weight: 600; margin-bottom: 4px;">🏢 ${displayAddress}</div>
+        <div style="color: var(--color-text-muted); margin-top: 4px;">📝 ${a.notes || '無原因'}</div>
+        <div style="display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap;">
+          <button class="btn btn-sm btn-danger" onclick="deleteAppt('${a.id}')">🗑️ 刪除</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  // 構建沒物件的已鎖定時間 HTML（折疊）
+  const lockedNoPropHtml = lockedNoProp.map(a => {
     return `
       <div style="background: #fff3cd; border-radius: 6px; padding: 12px; margin-top: 8px; font-size: 13px; border-left: 4px solid #ffc107; opacity: 0.7;">
         <div style="font-weight: 600; margin-bottom: 4px;">🔒 ${a.time} - 未開放</div>
@@ -2519,13 +2547,19 @@ function showApptsByDate(dateStr) {
       </div>
       <div class="modal-body">
         ${activeApptHtml}
-        ${lockedAppts.length > 0 ? `
+        ${lockedWithProp.length > 0 ? `
+          <div style="margin-top: 16px; border-top: 2px solid #ddd; padding-top: 12px;">
+            <div style="font-weight: 600; color: #333; font-size: 13px; padding: 8px 0; margin-bottom: 8px;">🔒 未開放時間</div>
+            ${lockedWithPropHtml}
+          </div>
+        ` : ''}
+        ${lockedNoProp.length > 0 ? `
           <div style="margin-top: 16px; border-top: 2px solid #ddd; padding-top: 12px;">
             <button onclick="toggleSection('${lockedExpandId}')" style="background: none; border: none; color: #999; font-weight: 600; cursor: pointer; font-size: 13px; padding: 8px 0; width: 100%; text-align: left;">
-              <span id="${lockedExpandId}-btn">▶</span> 未開放時間 (${lockedAppts.length})
+              <span id="${lockedExpandId}-btn">▶</span> 未開放時間（無物件） (${lockedNoProp.length})
             </button>
             <div id="${lockedExpandId}" style="display: none;">
-              ${lockedApptHtml}
+              ${lockedNoPropHtml}
             </div>
           </div>
         ` : ''}
