@@ -107,10 +107,11 @@ async function updateAvailableTimeSlots() {
   if (!selectedDate) return;
 
   try {
-    // 📌 直接查詢 Supabase，不依賴舊的 allAppointments
+    // 📌 直接查詢 Supabase，不依賴舊的 allAppointments，排除已取消的預約
     const { data: appts, error } = await db.from('appointments')
       .select('date, time, status')
-      .eq('date', selectedDate);
+      .eq('date', selectedDate)
+      .neq('status', '已取消');
 
     if (error) throw error;
 
