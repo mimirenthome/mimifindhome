@@ -2555,6 +2555,20 @@ input[type="date"].form-input {
 /* Mobile expand btn hidden on desktop（僅桌機隱藏，避免覆蓋手機版的 display:block） */
 @media (min-width: 769px) {
   #mobile-expand-btn { display: none; }
+
+  /* 電腦版物件詳情按鈕放在右下角 */
+  #detail-modal .modal-footer {
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 16px;
+  }
+
+  #detail-modal .modal-footer .btn {
+    flex: 0 0 auto;
+    font-size: 13px;
+    padding: 8px 16px !important;
+    min-width: auto;
+  }
 }
 
 /* Login overlay (merged into hub page) */
