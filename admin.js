@@ -2327,22 +2327,12 @@ async function renderApptCalendar() {
   const firstDay = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-  // 按日期分組預約（按時間排序）- 行事曆上只顯示非已取消的預約
+  // 按日期分組預約（按時間排序）- 行事曆上只顯示非已取消、非已鎖定的預約
   const apptsByDate = {};
-  const lockedTimesByDate = {}; // 追蹤每日已鎖定時間（只取第一個）
   appts.forEach(a => {
-    if (a.status === '已取消') return; // 行事曆上不顯示已取消
+    if (a.status === '已取消' || a.status === '已鎖定') return; // 行事曆上不顯示已取消和已鎖定
     if (!apptsByDate[a.date]) apptsByDate[a.date] = [];
-
-    // 已鎖定時間只取第一個開始時間
-    if (a.status === '已鎖定') {
-      if (!lockedTimesByDate[a.date]) {
-        lockedTimesByDate[a.date] = true;
-        apptsByDate[a.date].push(a.time);
-      }
-    } else {
-      apptsByDate[a.date].push(a.time);
-    }
+    apptsByDate[a.date].push(a.time);
   });
 
   // 對每個日期的時間進行排序
@@ -2392,7 +2382,7 @@ async function renderApptCalendar() {
       `;
     }
 
-    desktopHtml += `<div class="appt-day-cell ${hasAppt ? 'has-appt' : ''}" ${hasAppt ? `onclick="showApptsByDate('${dateStr}')"` : ''}>
+    desktopHtml += `<div class="appt-day-cell ${hasAppt ? 'has-appt' : ''}" onclick="showApptsByDate('${dateStr}')">
       <div class="appt-day-number">${day}</div>
       <div class="appt-day-content">
         ${hasAppt ? timesHtml : `<div class="appt-no-appt">無預約</div>`}
@@ -2427,7 +2417,7 @@ async function renderApptCalendar() {
     const dayAppts = apptsByDate[dateStr] || [];
     const hasAppt = dayAppts.length > 0;
 
-    mobileHtml += `<div class="appt-day-cell ${hasAppt ? 'has-appt' : ''}" ${hasAppt ? `onclick="showApptsByDate('${dateStr}')"` : ''}>
+    mobileHtml += `<div class="appt-day-cell ${hasAppt ? 'has-appt' : ''}" onclick="showApptsByDate('${dateStr}')">
       <div class="appt-day-number">${day}</div>
       ${hasAppt ? `<div class="appt-day-appt-count">${dayAppts.length}</div>` : ''}
     </div>`;
