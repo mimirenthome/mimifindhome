@@ -1412,7 +1412,7 @@ async function validateApptForm() {
 
   // 檢查職業是否太籠統
   const occupation = document.getElementById('appt-occupation').value.trim();
-  const vagueOccupations = ['上班族', '學生', '自由業者', '待業', '無業', '其他', '餐飲業', '服務業', '製造業', '零售業', '金融業', '教育業', '醫療業', '自營', '自由業', '公司職員'];
+  const vagueOccupations = ['上班族', '自由業者', '待業', '無業', '其他', '餐飲業', '服務業', '製造業', '零售業', '金融業', '教育業', '醫療業', '自營', '自由業', '公司職員'];
   if (!occupation || vagueOccupations.includes(occupation)) {
     const errOccupation = document.getElementById('err-occupation');
     if (errOccupation) {
