@@ -2327,12 +2327,11 @@ async function renderApptCalendar() {
   const firstDay = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-  // 按日期分組預約（按時間排序）- 過濾掉已取消的，已鎖定的若有填寫物件才顯示
+  // 按日期分組預約（按時間排序）- 過濾掉已取消的，已鎖定的都顯示（無論是否有物件）
   const apptsByDate = {};
   const lockedTimesByDate = {}; // 追蹤每日已鎖定時間（只取第一個）
   appts.forEach(a => {
     if (a.status === '已取消') return;
-    if (a.status === '已鎖定' && !a.propertyTitle) return;
     if (!apptsByDate[a.date]) apptsByDate[a.date] = [];
 
     // 已鎖定時間只取第一個開始時間
