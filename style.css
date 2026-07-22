@@ -3152,10 +3152,10 @@ input[type="date"].form-input {
 }
 
 .appt-day-cell {
-  border: 2px solid #4caf50;
+  border: 1px solid #ddd;
   border-radius: 6px;
   padding: 8px;
-  background: #e8f5e9;
+  background: #fff;
   aspect-ratio: 1;
   cursor: pointer;
   font-size: 14px;
@@ -3169,7 +3169,12 @@ input[type="date"].form-input {
   position: relative;
 }
 
-.appt-day-cell:hover {
+.appt-day-cell.has-appt {
+  border: 2px solid #4caf50;
+  background: #e8f5e9;
+}
+
+.appt-day-cell.has-appt:hover {
   box-shadow: 0 2px 6px rgba(76, 175, 80, 0.15);
   border-color: #45a049;
 }
