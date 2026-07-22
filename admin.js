@@ -2503,6 +2503,7 @@ function showApptsByDate(dateStr) {
         <div style="color: var(--color-primary-dark); font-weight: 600; margin-bottom: 4px;">🏢 ${displayAddress}</div>
         <div style="color: var(--color-text-muted); margin-top: 4px;">📝 ${a.notes || '無原因'}</div>
         <div style="display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap;">
+          <button class="btn btn-sm btn-primary" onclick="editBlockedTime('${a.date}', '${(a.notes || '').replace(/'/g, "\\'")}')">✏️ 編輯</button>
           <button class="btn btn-sm btn-danger" onclick="deleteAppt('${a.id}')">🗑️ 刪除</button>
         </div>
       </div>
@@ -2516,6 +2517,7 @@ function showApptsByDate(dateStr) {
         <div style="font-weight: 600; margin-bottom: 4px;">🔒 ${a.time} - 未開放</div>
         <div style="color: var(--color-text-muted); margin-top: 4px;">📝 ${a.notes || '無原因'}</div>
         <div style="display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap;">
+          <button class="btn btn-sm btn-primary" onclick="editBlockedTime('${a.date}', '${(a.notes || '').replace(/'/g, "\\'")}')">✏️ 編輯</button>
           <button class="btn btn-sm btn-danger" onclick="deleteAppt('${a.id}')">🗑️ 刪除</button>
         </div>
       </div>
