@@ -386,28 +386,25 @@
     </div>
 
     <!-- 預約日曆 -->
-    <div class="appt-calendar-section">
-      <!-- 第一排：標題和按鈕 -->
-      <div class="appt-calendar-header">
-        <h3 style="margin: 0; font-size: 16px; font-weight: 600;">📅 預約日期</h3>
+    <div class="calendar-section">
+      <div class="calendar-header">
+        <h2 style="margin: 0; font-size: 16px; font-weight: 600;">📅 預約日期</h2>
         <button class="btn btn-primary" onclick="openAddBlockedTimeModal()" style="white-space: nowrap; font-size: 13px; padding: 6px 12px;">+ 新增不可預約</button>
       </div>
 
-      <!-- 第二排：月份導航 -->
-      <div class="appt-calendar-controls">
+      <div class="calendar-toolbar">
         <button class="btn btn-ghost btn-sm" onclick="prevApptMonth()">← 上月</button>
-        <span id="appt-calendar-month">2026 年 7 月</span>
+        <div class="month-title" id="appt-calendar-month">2026 年 7 月</div>
         <button class="btn btn-ghost btn-sm" onclick="nextApptMonth()">下月 →</button>
       </div>
 
-      <!-- 桌機版月曆 -->
-      <div id="appt-calendar-desktop" class="appt-calendar-desktop">
-        <div style="text-align:center;padding:40px;color:var(--color-text-muted);">載入中...</div>
-      </div>
-
-      <!-- 手機版日期列表 -->
-      <div id="appt-calendar-mobile" class="appt-calendar-mobile">
-        <div style="text-align:center;padding:40px;color:var(--color-text-muted);">載入中...</div>
+      <div class="calendar-body">
+        <div id="appt-calendar-desktop" class="appt-calendar-desktop">
+          <div style="text-align:center;padding:40px;color:var(--color-text-muted);">載入中...</div>
+        </div>
+        <div id="appt-calendar-mobile" class="appt-calendar-mobile">
+          <div style="text-align:center;padding:40px;color:var(--color-text-muted);">載入中...</div>
+        </div>
       </div>
     </div>
 

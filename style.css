@@ -3087,57 +3087,63 @@ input[type="date"].form-input {
   display: none !important;
 }
 
-/* ===== 預約日曆 – 獨立手機/桌機版 ===== */
-.appt-calendar-section {
-  margin-top: 24px;
-  padding: 0 16px;
-}
-
-.appt-calendar-header {
-  margin-bottom: 16px;
+/* ===== 預約日曆 – 完全重寫 ===== */
+.calendar-section {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.appt-calendar-controls {
-  display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 16px;
-  margin-bottom: 16px;
-  flex-wrap: wrap;
+  margin-top: 24px;
 }
 
-.appt-month-display {
-  font-weight: 600;
-  font-size: 16px;
-  white-space: nowrap;
-  padding: 0;
-  background: none;
-}
-
-.appt-month-buttons {
+.calendar-header {
   display: flex;
-  gap: 6px;
+  justify-content: space-between;
   align-items: center;
+  gap: 12px;
 }
 
-.appt-month-buttons .btn {
-  padding: 6px 12px;
-  font-size: 13px;
-  min-width: auto;
-  flex: initial;
+.calendar-header h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
 }
 
-/* ===== 桌機版月曆 ===== */
+.calendar-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.month-title {
+  text-align: center;
+  flex: 1;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.calendar-body {
+  width: 100%;
+}
+
+/* ===== 日曆佈局 ===== */
 .appt-calendar-desktop {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   padding: 16px;
   background: #fff;
   display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  width: 100%;
+}
+
+.appt-calendar-mobile {
+  display: none;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  background: #fff;
   grid-template-columns: repeat(7, 1fr);
   gap: 8px;
   width: 100%;
@@ -3166,7 +3172,6 @@ input[type="date"].form-input {
   justify-content: center;
   overflow: hidden;
   min-height: 0;
-  position: relative;
 }
 
 .appt-day-cell.has-appt {
@@ -3230,19 +3235,6 @@ input[type="date"].form-input {
   text-overflow: ellipsis;
 }
 
-.appt-time-summary {
-  display: none;
-  color: #2e7d32;
-  font-weight: 600;
-}
-
-.appt-time-count {
-  display: none;
-  color: var(--color-text-muted);
-  font-size: 10px;
-  margin-top: 2px;
-}
-
 .appt-no-appt {
   color: var(--color-text-muted);
   font-size: 11px;
@@ -3254,175 +3246,47 @@ input[type="date"].form-input {
   font-size: 12px;
 }
 
-/* ===== 手機版月曆（簡化） ===== */
-.appt-calendar-mobile {
-  display: none;
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-  padding: 12px;
-  background: #fafaf8;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 8px;
-}
-
-.appt-day-appt-count {
-  font-size: 11px;
-  color: #2e7d32;
-  font-weight: 600;
-  margin-top: 4px;
-}
-
 /* ===== Desktop 版本（≥768px） ===== */
 @media (min-width: 768px) {
-  .appt-calendar-section {
-    padding: 0 20px;
-  }
-
-  .appt-calendar-controls {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 16px;
-    position: relative;
-  }
-
-  .appt-month-display {
-    font-size: 16px;
-    font-weight: 600;
-    flex: 1;
-    text-align: center;
-  }
-
-  .appt-month-buttons {
-    gap: 6px;
-    order: -1;
-    flex-shrink: 0;
-  }
-
-  .appt-month-buttons .btn {
-    padding: 6px 12px;
-    font-size: 13px;
-  }
-
-  .appt-calendar-controls > .btn-primary {
-    margin-left: auto;
-    order: 1;
-  }
-
-  /* 只顯示桌機版月曆 */
   .appt-calendar-desktop {
     display: grid;
-    padding: 16px;
   }
 
   .appt-calendar-mobile {
-    display: none;
-  }
-
-  .appt-time-summary {
-    display: none;
-  }
-
-  .appt-time-count {
     display: none;
   }
 }
 
 /* ===== 手機版（<768px） ===== */
 @media (max-width: 767px) {
-  /* 只顯示手機版月曆 */
   .appt-calendar-desktop {
     display: none;
   }
 
   .appt-calendar-mobile {
     display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 8px;
-    padding: 16px;
-    border-radius: var(--radius-md);
-    background: #fff;
-    border: 1px solid var(--color-border);
-    width: 100%;
-    box-sizing: border-box;
   }
 
-  .appt-calendar-header {
-    display: flex !important;
-    flex-direction: row !important;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    margin-bottom: 12px;
-  }
-
-  .appt-calendar-header h3 {
-    margin: 0;
+  .calendar-header h2 {
     font-size: 15px;
-    flex-shrink: 0;
   }
 
-  .appt-calendar-header .btn {
-    flex-shrink: 0;
+  .calendar-header .btn {
     font-size: 12px;
     padding: 6px 10px;
   }
 
-  .appt-calendar-controls {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 12px;
-    width: 100%;
+  .calendar-toolbar {
+    font-size: 13px;
   }
 
-  .appt-month-buttons {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0;
-    width: 100%;
-  }
-
-  .appt-month-buttons .btn {
-    flex: 0 0 auto;
-    padding: 6px 10px;
+  .calendar-toolbar .btn {
     font-size: 12px;
+    padding: 6px 10px;
   }
 
-  #appt-calendar-month {
-    text-align: center;
-    flex: 1;
+  .month-title {
     font-size: 15px;
-    font-weight: 600;
-    white-space: nowrap;
-  }
-
-  .appt-day-number {
-    font-size: 14px;
-  }
-
-  .appt-calendar-section {
-    padding: 0;
-  }
-
-  /* 手機版隱藏左右按鈕 */
-  .gprev,
-  .gnext {
-    display: none !important;
-  }
-
-  /* 手機版調整關閉按鈕位置 */
-  .gclose {
-    top: 16px !important;
-    right: 16px !important;
-  }
-
-  /* 手機版調整圖片大小 */
-  .gslide-image {
-    max-width: 95%;
-    max-height: 90vh;
   }
 }
 
