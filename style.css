@@ -3349,24 +3349,30 @@ input[type="date"].form-input {
 
   .appt-calendar-header {
     display: flex !important;
-    flex-direction: column !important;
-    gap: 12px;
+    flex-direction: row !important;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
     margin-bottom: 12px;
   }
 
   .appt-calendar-header h3 {
     margin: 0;
+    font-size: 15px;
+    flex-shrink: 0;
   }
 
   .appt-calendar-header .btn {
-    align-self: flex-end;
+    flex-shrink: 0;
+    font-size: 12px;
+    padding: 6px 10px;
   }
 
   .appt-calendar-controls {
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
-    gap: 12px;
+    gap: 8px;
     margin-bottom: 12px;
     width: 100%;
   }
@@ -3374,26 +3380,31 @@ input[type="date"].form-input {
   .appt-month-buttons {
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 12px;
+    justify-content: space-between;
+    gap: 0;
     width: 100%;
   }
 
   .appt-month-buttons .btn {
     flex: 0 0 auto;
-    padding: 6px 12px;
-    font-size: 13px;
+    padding: 6px 10px;
+    font-size: 12px;
   }
 
   #appt-calendar-month {
     text-align: center;
     flex: 1;
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 600;
+    white-space: nowrap;
   }
 
   .appt-day-number {
     font-size: 14px;
+  }
+
+  .appt-calendar-section {
+    padding: 0;
   }
 
   /* 手機版隱藏左右按鈕 */
