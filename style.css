@@ -3337,15 +3337,18 @@ input[type="date"].form-input {
 
   .appt-calendar-mobile {
     display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+    padding: 12px;
+    border-radius: 8px;
+    background: #fafaf8;
+    border: 1px solid var(--color-border);
   }
 
   .appt-calendar-header {
     flex-direction: column;
     align-items: flex-start;
-  }
-
-  .appt-calendar-header .btn-primary {
-    width: 100%;
+    margin-bottom: 12px;
   }
 
   .appt-calendar-controls {
@@ -3353,12 +3356,14 @@ input[type="date"].form-input {
     justify-content: center;
     align-items: center;
     gap: 12px;
-    margin-bottom: 16px;
+    margin-bottom: 12px;
+    width: 100%;
   }
 
   .appt-month-buttons {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 12px;
     width: 100%;
   }
@@ -3374,6 +3379,10 @@ input[type="date"].form-input {
     flex: 1;
     font-size: 16px;
     font-weight: 600;
+  }
+
+  .appt-day-number {
+    font-size: 14px;
   }
 
   /* 手機版隱藏左右按鈕 */
