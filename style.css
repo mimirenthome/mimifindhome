@@ -3339,15 +3339,15 @@ input[type="date"].form-input {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 8px;
-    padding: 12px;
-    border-radius: 8px;
-    background: #fafaf8;
+    padding: 16px;
+    border-radius: var(--radius-md);
+    background: #fff;
     border: 1px solid var(--color-border);
+    width: 100%;
+    box-sizing: border-box;
   }
 
   .appt-calendar-header {
-    flex-direction: column;
-    align-items: flex-start;
     margin-bottom: 12px;
   }
 
