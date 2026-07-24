@@ -2327,12 +2327,23 @@ async function renderApptCalendar() {
   const firstDay = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-  // 按日期分組預約（按時間排序）- 行事曆上只顯示非已取消、非已鎖定的預約
+  // 按日期分組預約（按時間排序）- 行事曆上只顯示非已取消的預約，已鎖定的只有有物件才顯示
   const apptsByDate = {};
+  const lockedTimesByDate = {}; // 追蹤每日已鎖定時間（只取第一個）
   appts.forEach(a => {
-    if (a.status === '已取消' || a.status === '已鎖定') return; // 行事曆上不顯示已取消和已鎖定
+    if (a.status === '已取消') return; // 行事曆上不顯示已取消
+    if (a.status === '已鎖定' && !a.propertyTitle) return; // 已鎖定無物件不顯示
     if (!apptsByDate[a.date]) apptsByDate[a.date] = [];
-    apptsByDate[a.date].push(a.time);
+
+    // 已鎖定時間只取第一個開始時間
+    if (a.status === '已鎖定') {
+      if (!lockedTimesByDate[a.date]) {
+        lockedTimesByDate[a.date] = true;
+        apptsByDate[a.date].push(a.time);
+      }
+    } else {
+      apptsByDate[a.date].push(a.time);
+    }
   });
 
   // 對每個日期的時間進行排序
