@@ -2893,6 +2893,10 @@ async function saveApptDetail(apptId) {
   // 驗證所有時段
   for (let i = 0; i < slots.length; i++) {
     const slot = slots[i];
+    if (!slot.propId) {
+      showToast(`時段 ${i + 1} 請選擇物件`, 'error');
+      return;
+    }
     if (!slot.date || !slot.time) {
       showToast(`時段 ${i + 1} 請填寫日期和時間`, 'error');
       return;
