@@ -2731,17 +2731,11 @@ function editApptDetail(id) {
       </div>
       <div class="modal-footer">
         <button class="btn btn-ghost" onclick="this.closest('.modal-overlay').remove()">取消</button>
-        <button class="btn btn-primary" data-appt-id="${id}">確定修改</button>
+        <button class="btn btn-primary" onclick="handleSaveAppt('${id}')">確定修改</button>
       </div>
     </div>
   `;
   document.body.appendChild(modal);
-
-  // 綁定確定修改按鈕
-  modal.querySelector('button[data-appt-id]').addEventListener('click', async (e) => {
-    const apptId = e.target.getAttribute('data-appt-id');
-    await saveApptDetail(apptId);
-  });
 
   // 設定時間選項的初始值
   const timeSelect = modal.querySelector('#edit-appt-time');
@@ -2838,6 +2832,10 @@ function removeEditPropDirect(propId, modal) {
   if (selectedIds.length === 0) {
     modal.querySelector('#edit-prop-selected').style.display = 'none';
   }
+}
+
+function handleSaveAppt(id) {
+  saveApptDetail(id);
 }
 
 async function saveApptDetail(id) {
