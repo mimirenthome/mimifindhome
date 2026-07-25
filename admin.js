@@ -3974,7 +3974,7 @@ function openAddApptModal() {
   const nameInput = modal.querySelector('#add-appt-name');
   const phoneResults = modal.querySelector('#add-appt-phone-results');
 
-  phoneInput.addEventListener('input', async () => {
+  phoneInput.addEventListener('input', () => {
     const keyword = phoneInput.value.trim();
     if (!keyword || keyword.length < 1) {
       phoneResults.innerHTML = '';
@@ -3982,12 +3982,11 @@ function openAddApptModal() {
     }
 
     try {
-      const { data: appts, error } = await db.from('appointments')
-        .select('name, phone, date, time, property_title, submitted_at')
-        .order('submitted_at', { ascending: false });
+      // 使用已加載的預約數據
+      const appts = window._apptCache || allAppointments || [];
 
-      if (error || !appts) {
-        console.error('查詢失敗:', error);
+      if (appts.length === 0) {
+        phoneResults.innerHTML = '<div style="padding: 8px; color: #999;">暫無預約記錄</div>';
         return;
       }
 
