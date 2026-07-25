@@ -1297,8 +1297,7 @@ function goToAppt(propertyId) {
   window._selectedPropertyId = propertyId || '';
   const prop = allProperties.find(p => p.id === propertyId);
   if (prop) {
-    const propDisplay = prop.propertyCode ? `${prop.title} (${prop.propertyCode})` : prop.title;
-    document.getElementById('appt-property').value = propDisplay;
+    document.getElementById('appt-property').value = prop.propertyCode || prop.title;
   }
   const apptSection = document.getElementById('appointment');
   apptSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
