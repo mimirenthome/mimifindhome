@@ -2493,8 +2493,7 @@ function showApptsByDate(dateStr) {
         <div style="color: var(--color-text-muted); margin-top: 4px;">📍 ${displayAddress}</div>
         <div style="color: var(--color-text-muted); font-size: 12px; margin-top: 4px;">狀態: <span style="background: #e8f5e9; padding: 2px 6px; border-radius: 3px;">${a.status}</span></div>
         <div style="display: flex; gap: 8px; margin-top: 8px;">
-          <button class="btn btn-sm btn-primary" onclick="editApptProperty('${a.id}', '${a.propertyId || ''}')">🏠 修改物件</button>
-          <button class="btn btn-sm btn-ghost" onclick="editApptDateTime('${a.id}')">📅 改日期</button>
+          <button class="btn btn-sm btn-primary" onclick="editApptDetail('${a.id}')">✏️ 修改</button>
           <button class="btn btn-sm btn-danger" onclick="deleteAppt('${a.id}')">🗑️ 刪除</button>
         </div>
       </div>
