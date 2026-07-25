@@ -2846,7 +2846,6 @@ async function saveApptDetail(id) {
   }
 
   try {
-    // 取第一個物件作為主物件
     const mainPropId = newPropertyIds[0];
     const mainProp = (allProps || []).find(p => p.id === mainPropId);
 
@@ -2859,7 +2858,10 @@ async function saveApptDetail(id) {
 
     const { error } = await db.from('appointments').update(updateData).eq('id', id);
 
-    if (error) throw error;
+    if (error) {
+      console.error('Supabase 錯誤詳情:', error);
+      throw error;
+    }
 
     const modal = document.querySelector('.modal-overlay');
     if (modal) modal.remove();
@@ -2868,7 +2870,7 @@ async function saveApptDetail(id) {
     showToast('✅ 預約已修改', 'success');
   } catch(e) {
     console.error('修改失敗:', e);
-    showToast('❌ 修改失敗，請檢查日期或時間是否有衝突', 'error');
+    showToast('❌ 修改失敗：' + (e.message || '請稍後重試'), 'error');
   }
 }
 
