@@ -3937,14 +3937,16 @@ function openAddApptModal() {
           <label class="form-label">客人姓名 <span class="required">*</span></label>
           <input type="text" id="add-appt-name" class="form-input" placeholder="姓名" />
         </div>
-        <div class="form-row form-row-2">
-          <div class="form-group">
-            <label class="form-label">預約日期 <span class="required">*</span></label>
-            <input type="date" id="add-appt-date" class="form-input" />
-          </div>
-          <div class="form-group">
-            <label class="form-label">預約時間 <span class="required">*</span></label>
-            <select id="add-appt-time" class="form-select">
+        <div class="form-group">
+          <label class="form-label">預約日期 <span class="required">*</span></label>
+          <input type="date" id="add-appt-date" class="form-input" />
+        </div>
+
+        <div style="border: 1px solid #ddd; border-radius: 6px; padding: 12px; margin-bottom: 12px;">
+          <label class="form-label" style="margin-bottom: 8px; display: block;">預約時段 <span class="required">*</span></label>
+          <div id="add-appt-time-slots" style="margin-bottom: 8px;"></div>
+          <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+            <select id="add-appt-time" class="form-select" style="flex: 1;">
               <option value="">選擇時間</option>
               <option value="10:00">10:00</option><option value="10:30">10:30</option>
               <option value="11:00">11:00</option><option value="11:30">11:30</option><option value="12:00">12:00</option><option value="12:30">12:30</option>
@@ -3953,14 +3955,10 @@ function openAddApptModal() {
               <option value="17:00">17:00</option><option value="17:30">17:30</option><option value="18:00">18:00</option><option value="18:30">18:30</option>
               <option value="19:00">19:00</option><option value="19:30">19:30</option><option value="20:00">20:00</option>
             </select>
+            <input type="text" id="add-appt-time-property" class="form-input" placeholder="物件（可選）" autocomplete="off" style="flex: 1;" />
+            <button type="button" class="btn btn-primary" onclick="addTimeSlot()" style="white-space: nowrap;">➕ 添加</button>
           </div>
-        </div>
-        <div class="form-group">
-          <label class="form-label">物件（可選）</label>
-          <input type="text" id="add-appt-property" class="form-input" placeholder="輸入物件地址或編號..." autocomplete="off" />
-          <div id="add-appt-prop-results" style="margin-top: 8px; max-height: 150px; overflow-y: auto;"></div>
-          <input type="hidden" id="add-appt-prop-id" value="" />
-          <div id="add-appt-prop-selected" style="margin-top: 8px; padding: 8px; background: #e8f5e9; border-radius: 4px; display: none;"></div>
+          <div id="add-appt-time-prop-results" style="display: none; max-height: 100px; overflow-y: auto; margin-bottom: 8px;"></div>
         </div>
       </div>
       <div class="modal-footer">
@@ -4017,16 +4015,18 @@ function openAddApptModal() {
     }
   });
 
-  // 物件搜尋
-  const propInput = modal.querySelector('#add-appt-property');
-  const propResults = modal.querySelector('#add-appt-prop-results');
-  const propIdInput = modal.querySelector('#add-appt-prop-id');
-  const propSelected = modal.querySelector('#add-appt-prop-selected');
+  // 時段物件搜尋
+  const timePropInput = modal.querySelector('#add-appt-time-property');
+  const timePropResults = modal.querySelector('#add-appt-time-prop-results');
+  const timePropIdInput = document.createElement('input');
+  timePropIdInput.id = 'add-appt-time-prop-id';
+  timePropIdInput.type = 'hidden';
+  modal.appendChild(timePropIdInput);
 
-  propInput.addEventListener('input', () => {
-    const keyword = propInput.value.toLowerCase().trim();
+  timePropInput.addEventListener('input', () => {
+    const keyword = timePropInput.value.toLowerCase().trim();
     if (!keyword) {
-      propResults.innerHTML = '';
+      timePropResults.style.display = 'none';
       return;
     }
 
@@ -4035,14 +4035,18 @@ function openAddApptModal() {
       return searchStr.includes(keyword);
     });
 
-    propResults.innerHTML = filtered.length === 0
-      ? '<div style="padding: 8px; color: #999; text-align: center;">找不到物件</div>'
-      : filtered.map(p => `
-        <div style="padding: 8px; background: #f5f5f5; border-radius: 4px; margin-bottom: 4px; cursor: pointer; border-left: 3px solid #2d6e45;" onclick="selectAddApptProp('${p.id}', '${escHtml(p.propertyCode || p.title)}')">
-          <div style="font-weight: 500; font-size: 12px;">${escHtml(p.propertyCode || p.title)}</div>
-          <div style="font-size: 11px; color: #999;">${escHtml(p.address || '')}</div>
-        </div>
-      `).join('');
+    if (filtered.length === 0) {
+      timePropResults.style.display = 'none';
+      return;
+    }
+
+    timePropResults.innerHTML = filtered.map(p => `
+      <div style="padding: 8px; background: #f5f5f5; border-radius: 4px; margin-bottom: 4px; cursor: pointer; border-left: 3px solid #2d6e45;" onclick="selectTimeProp('${p.id}', '${escHtml(p.propertyCode || p.title)}')">
+        <div style="font-weight: 500; font-size: 12px;">${escHtml(p.propertyCode || p.title)}</div>
+        <div style="font-size: 11px; color: #999;">${escHtml(p.address || '')}</div>
+      </div>
+    `).join('');
+    timePropResults.style.display = 'block';
   });
 }
 
@@ -4050,6 +4054,55 @@ function selectHistoryCustomer(name, phone) {
   document.getElementById('add-appt-name').value = name;
   document.getElementById('add-appt-phone').value = phone;
   document.getElementById('add-appt-name-results').innerHTML = '';
+}
+
+// 用於存儲多個時段-物件配對
+window._timeSlots = [];
+
+function addTimeSlot() {
+  const time = document.getElementById('add-appt-time').value;
+  const propInput = document.getElementById('add-appt-time-property').value.trim();
+  const propId = document.getElementById('add-appt-time-prop-id')?.value || '';
+
+  if (!time) {
+    showToast('請選擇時間', 'error');
+    return;
+  }
+
+  const slot = { time, propId, propName: propInput };
+  window._timeSlots.push(slot);
+
+  renderTimeSlots();
+  document.getElementById('add-appt-time').value = '';
+  document.getElementById('add-appt-time-property').value = '';
+  document.getElementById('add-appt-time-prop-id').value = '';
+  document.getElementById('add-appt-time-prop-results').style.display = 'none';
+}
+
+function removeTimeSlot(index) {
+  window._timeSlots.splice(index, 1);
+  renderTimeSlots();
+}
+
+function renderTimeSlots() {
+  const container = document.getElementById('add-appt-time-slots');
+  if (window._timeSlots.length === 0) {
+    container.innerHTML = '';
+    return;
+  }
+
+  container.innerHTML = window._timeSlots.map((slot, idx) => `
+    <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px; background: #f5f5f5; border-radius: 4px; margin-bottom: 4px;">
+      <span style="font-size: 13px;">⏰ ${slot.time} ${slot.propName ? `📍 ${escHtml(slot.propName)}` : ''}</span>
+      <button type="button" style="background: none; border: none; color: #d32f2f; cursor: pointer; font-size: 14px; padding: 0;" onclick="removeTimeSlot(${idx})">✕</button>
+    </div>
+  `).join('');
+}
+
+function selectTimeProp(propId, propName) {
+  document.getElementById('add-appt-time-prop-id').value = propId;
+  document.getElementById('add-appt-time-property').value = propName;
+  document.getElementById('add-appt-time-prop-results').style.display = 'none';
 }
 
 function selectAddApptProp(propId, propName) {
@@ -4064,10 +4117,8 @@ async function handleSaveNewAppt() {
   const name = document.getElementById('add-appt-name').value.trim();
   const phone = document.getElementById('add-appt-phone').value.trim();
   const date = document.getElementById('add-appt-date').value;
-  const time = document.getElementById('add-appt-time').value;
-  const propId = document.getElementById('add-appt-prop-id').value;
 
-  if (!name || !phone || !date || !time) {
+  if (!name || !phone || !date) {
     showToast('請填寫必填欄位', 'error');
     return;
   }
@@ -4077,14 +4128,20 @@ async function handleSaveNewAppt() {
     return;
   }
 
+  if (!window._timeSlots || window._timeSlots.length === 0) {
+    showToast('請至少添加一個時段', 'error');
+    return;
+  }
+
   try {
-    const newAppt = {
-      id: 'appt_' + Date.now(),
+    // 為每個時段創建一筆預約記錄
+    const appts = window._timeSlots.map(slot => ({
+      id: 'appt_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
       name,
       phone,
       date,
-      time,
-      property_id: propId || '',
+      time: slot.time,
+      property_id: slot.propId || '',
       status: '已預約',
       submitted_at: new Date().toISOString(),
       occupants: '1',
@@ -4100,15 +4157,18 @@ async function handleSaveNewAppt() {
       needs_registration: '否',
       can_provide_proof: '是',
       notes: '後台新增'
-    };
+    }));
 
-    const { error } = await db.from('appointments').insert(newAppt);
+    const { error } = await db.from('appointments').insert(appts);
     if (error) throw error;
+
+    // 清空時段列表
+    window._timeSlots = [];
 
     document.querySelector('.modal-overlay').remove();
     await renderApptCalendar();
     await renderAppts();
-    showToast('✅ 預約已新增', 'success');
+    showToast(`✅ 已新增 ${appts.length} 個預約時段`, 'success');
   } catch (err) {
     console.error('新增預約失敗:', err);
     showToast('❌ 新增失敗：' + (err.message || '請重試'), 'error');
