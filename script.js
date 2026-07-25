@@ -1717,13 +1717,11 @@ async function queryApptByPhone() {
 
     const html = apts.map(a => {
       const appt = apptFromDb(a);
-      const statusMap = { '未處理': '⏳ 待確認', '已確認': '✅ 已確認', '已取消': '❌ 已取消' };
-      const statusText = statusMap[appt.status] || appt.status;
       return `
         <div style="margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #ddd;">
-          <div style="font-weight: 500; margin-bottom: 6px;">${escHtml(appt.propertyTitle || '（未指定物件）')}</div>
+          <div style="font-weight: 500; margin-bottom: 6px; color: #2d6e45;">🔑 ${escHtml(appt.id)}</div>
           <div style="font-size: 14px; color: #666;">
-            📅 ${appt.date} ${appt.time} | 姓名：${escHtml(appt.name)} | ${statusText}
+            📅 ${appt.date} ${appt.time} | 姓名：${escHtml(appt.name)}
           </div>
         </div>
       `;
