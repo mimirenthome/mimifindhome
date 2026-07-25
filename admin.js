@@ -2771,24 +2771,16 @@ function editApptDetail(id) {
     resultsDiv.innerHTML = filtered.length === 0
       ? '<div style="padding: 8px; color: #999; text-align: center;">找不到物件</div>'
       : filtered.map(p => `
-        <div data-prop-id="${p.id}" class="edit-prop-result" style="padding: 10px; background: #f5f5f5; border-radius: 6px; margin-bottom: 6px; cursor: pointer; border-left: 4px solid #2d6e45; transition: all 0.2s; user-select: none;">
+        <div style="padding: 10px; background: #f5f5f5; border-radius: 6px; margin-bottom: 6px; cursor: pointer; border-left: 4px solid #2d6e45; transition: all 0.2s; user-select: none;" onclick="selectEditPropDirect('${p.id}'); return false;">
           <div style="font-weight: 600; font-size: 13px;">${escHtml(p.address || p.title)}</div>
           <div style="font-size: 11px; color: #999; margin-top: 2px;">${escHtml(p.district || '')} ${escHtml(p.layout || '')} ${p.propertyCode ? `(${p.propertyCode})` : ''}</div>
         </div>
       `).join('');
   });
-
-  // 事件委託：點擊搜尋結果
-  resultsDiv.addEventListener('click', (e) => {
-    const result = e.target.closest('.edit-prop-result');
-    if (!result) return;
-    e.stopPropagation();
-    const propId = result.getAttribute('data-prop-id');
-    selectEditPropDirect(propId, modal);
-  });
 }
 
-function selectEditPropDirect(propId, modal) {
+function selectEditPropDirect(propId) {
+  const modal = document.querySelector('.modal-overlay');
   const selectedIdsInput = modal.querySelector('#edit-selected-prop-ids');
   const selectedIds = JSON.parse(selectedIdsInput.value || '[]');
 
@@ -2819,7 +2811,7 @@ function selectEditPropDirect(propId, modal) {
   const removeBtn = itemDiv.querySelector('.remove-edit-prop-btn');
   removeBtn.addEventListener('click', (e) => {
     e.stopPropagation();
-    removeEditPropDirect(propId, modal);
+    removeEditPropDirect(propId);
   });
 
   selectedList.appendChild(itemDiv);
