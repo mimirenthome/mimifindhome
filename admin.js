@@ -293,8 +293,8 @@ function renderAdminProps() {
     const prioA = recPriorityAdmin(a);
     const prioB = recPriorityAdmin(b);
     if (prioA !== prioB) return prioB - prioA;
-    const dateA = new Date(a.updatedAt);
-    const dateB = new Date(b.updatedAt);
+    const dateA = new Date(a.createdAt);
+    const dateB = new Date(b.createdAt);
     return dateB - dateA;
   });
 
@@ -823,7 +823,16 @@ async function saveProp(e) {
     const { error } = await db.from('properties').upsert(row);
     if (error) throw error;
 
-    showToast(editingId ? '物件已更新' : '物件已新增', 'success');
+    // 新增物件時自動生成編號
+    if (!editingId) {
+      try {
+        await generatePropertyCodeForNew(propId);
+      } catch (codeErr) {
+        console.error('生成編號失敗:', codeErr);
+      }
+    }
+
+    showToast(editingId ? '物件已更新' : '物件已新增並自動編號', 'success');
     resetPropForm();
     await loadProps();
     setTimeout(() => showSection('props'), 600);
@@ -3824,6 +3833,42 @@ async function setupRecurringLockTime() {
 }
 
 // 生成所有物件的編號（格式：0YMMDD + 001序號）
+async function generatePropertyCodeForNew(propId) {
+  try {
+    const { data: prop, error: fetchErr } = await db.from('properties')
+      .select('created_at')
+      .eq('id', propId)
+      .single();
+
+    if (fetchErr || !prop) throw fetchErr || new Error('找不到物件');
+
+    // 生成編號格式：0260725001
+    const d = new Date(prop.created_at);
+    const year = String(d.getFullYear()).slice(1);
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    const dateKey = `0${year}${month}${day}`;
+
+    // 查詢同日期的物件數量
+    const { data: sameDay, error: countErr } = await db.from('properties')
+      .select('id')
+      .like('property_code', `${dateKey}%`);
+
+    if (countErr) throw countErr;
+
+    const seq = String((sameDay?.length || 0) + 1).padStart(3, '0');
+    const code = `${dateKey}${seq}`;
+
+    const { error: updateError } = await db.from('properties')
+      .update({ property_code: code })
+      .eq('id', propId);
+
+    if (updateError) throw updateError;
+  } catch(err) {
+    console.error('自動編號失敗:', err);
+  }
+}
+
 async function generatePropertyCodes() {
   if (!confirm('確認要為所有物件生成編號？\n格式：0260725001（年月日+序號）')) return;
 
