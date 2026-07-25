@@ -2776,15 +2776,15 @@ function editApptDetail(id) {
           <div style="font-size: 11px; color: #999; margin-top: 2px;">${escHtml(p.district || '')} ${escHtml(p.layout || '')} ${p.propertyCode ? `(${p.propertyCode})` : ''}</div>
         </div>
       `).join('');
+  });
 
-    // 每次搜尋結果改變後，重新附加事件監聽器
-    resultsDiv.querySelectorAll('.edit-prop-result').forEach(el => {
-      el.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const propId = el.getAttribute('data-prop-id');
-        selectEditPropDirect(propId, modal);
-      });
-    });
+  // 事件委託：點擊搜尋結果
+  resultsDiv.addEventListener('click', (e) => {
+    const result = e.target.closest('.edit-prop-result');
+    if (!result) return;
+    e.stopPropagation();
+    const propId = result.getAttribute('data-prop-id');
+    selectEditPropDirect(propId, modal);
   });
 }
 
