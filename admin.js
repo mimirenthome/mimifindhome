@@ -2260,11 +2260,12 @@ async function renderAppts() {
     const statusClass = { '未處理': 'status-pending', '已聯繫': 'status-contacted', '已預約': 'status-booked', '已取消': 'status-cancelled' }[a.status] || 'status-pending';
     const matchedProp = (allProps || []).find(p => p.id === a.propertyId) || (allProps || []).find(p => p.title === a.propertyTitle);
     const propAddress = matchedProp && matchedProp.address ? matchedProp.address : '';
+    const propCode = matchedProp && matchedProp.propertyCode ? matchedProp.propertyCode : '';
     return `
       <div class="appt-card">
         <div class="appt-card-top">
           <div class="appt-property">
-            <div>${escHtml(a.propertyTitle || '（未指定物件）')}</div>
+            <div>${propCode ? `<span style="color:#2d6e45;font-weight:600;">🔑 ${escHtml(propCode)}</span>` : ''} ${escHtml(a.propertyTitle || '（未指定物件）')}</div>
             ${propAddress ? `<div style="font-size:11px;color:var(--color-text-muted);margin-top:2px;">📍 ${escHtml(propAddress)}</div>` : ''}
           </div>
           <span class="status-badge ${statusClass}" style="flex-shrink:0;">${escHtml(a.status)}</span>
