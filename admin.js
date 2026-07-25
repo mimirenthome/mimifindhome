@@ -2771,12 +2771,24 @@ function editApptDetail(id) {
     resultsDiv.innerHTML = filtered.length === 0
       ? '<div style="padding: 8px; color: #999; text-align: center;">找不到物件</div>'
       : filtered.map(p => `
-        <div style="padding: 10px; background: #f5f5f5; border-radius: 6px; margin-bottom: 6px; cursor: pointer; border-left: 4px solid #2d6e45; transition: all 0.2s; user-select: none;" onclick="selectEditPropDirectById('${p.id}')">
+        <div class="edit-search-result" data-id="${p.id}" style="padding: 10px; background: #f5f5f5; border-radius: 6px; margin-bottom: 6px; cursor: pointer; border-left: 4px solid #2d6e45; transition: all 0.2s; user-select: none;">
           <div style="font-weight: 600; font-size: 13px;">${escHtml(p.address || p.title)}</div>
           <div style="font-size: 11px; color: #999; margin-top: 2px;">${escHtml(p.district || '')} ${escHtml(p.layout || '')} ${p.propertyCode ? `(${p.propertyCode})` : ''}</div>
         </div>
       `).join('');
   });
+
+  // 事件委託：為搜尋結果綁定點擊事件（只需綁定一次）
+  if (!resultsDiv._clickListenerAttached) {
+    resultsDiv.addEventListener('click', (e) => {
+      const result = e.target.closest('.edit-search-result');
+      if (result) {
+        const propId = result.getAttribute('data-id');
+        selectEditPropDirect(propId);
+      }
+    });
+    resultsDiv._clickListenerAttached = true;
+  }
 }
 
 function selectEditPropDirectById(propId) {
