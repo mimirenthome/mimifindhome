@@ -3975,32 +3975,38 @@ function openAddApptModal() {
   const phoneInput = modal.querySelector('#add-appt-phone');
 
   nameInput.addEventListener('input', async () => {
-    const keyword = nameInput.value.toLowerCase().trim();
+    const keyword = nameInput.value.trim();
     if (!keyword || keyword.length < 1) {
       nameResults.innerHTML = '';
       return;
     }
 
     try {
-      const { data: appts } = await db.from('appointments')
-        .select('name, phone, date, time, property_title')
-        .like('name', `%${keyword}%`)
-        .order('submitted_at', { ascending: false })
-        .limit(5);
+      const { data: appts, error } = await db.from('appointments')
+        .select('name, phone, date, time, property_title, submitted_at')
+        .order('submitted_at', { ascending: false });
 
-      if (!appts || appts.length === 0) {
+      if (error || !appts) {
+        console.error('查詢失敗:', error);
+        return;
+      }
+
+      // 本地過濾，支持中文和英文（不區分大小寫）
+      const filtered = appts.filter(a => a.name && a.name.toLowerCase().includes(keyword.toLowerCase()));
+
+      if (filtered.length === 0) {
         nameResults.innerHTML = '';
         return;
       }
 
       const uniqueCustomers = {};
-      appts.forEach(a => {
+      filtered.forEach(a => {
         if (!uniqueCustomers[a.phone]) {
           uniqueCustomers[a.phone] = a;
         }
       });
 
-      nameResults.innerHTML = Object.values(uniqueCustomers).map(customer => `
+      nameResults.innerHTML = Object.values(uniqueCustomers).slice(0, 5).map(customer => `
         <div style="padding: 10px; background: #f5f5f5; border-radius: 4px; margin-bottom: 6px; cursor: pointer; border-left: 3px solid #2d6e45;" onclick="selectHistoryCustomer('${escHtml(customer.name)}', '${customer.phone}')">
           <div style="font-weight: 500; font-size: 12px;">👤 ${escHtml(customer.name)}</div>
           <div style="font-size: 11px; color: #666;">📱 ${customer.phone}</div>
@@ -4009,6 +4015,7 @@ function openAddApptModal() {
       `).join('');
     } catch (err) {
       console.error('搜尋客人失敗:', err);
+      nameResults.innerHTML = '<div style="padding: 8px; color: #d32f2f;">搜尋失敗</div>';
     }
   });
 
