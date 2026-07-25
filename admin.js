@@ -2673,7 +2673,7 @@ function editApptDetail(id) {
   const appt = (window._apptCache || []).find(x => x.id === id);
   if (!appt) { showToast('找不到資料', 'error'); return; }
 
-  const currentProp = (allProps || []).find(p => p.id === appt.propertyId);
+  const selectedIds = appt.propertyIds || (appt.propertyId ? [appt.propertyId] : []);
   const modal = document.createElement('div');
   modal.className = 'modal-overlay';
   modal.innerHTML = `
@@ -2684,13 +2684,14 @@ function editApptDetail(id) {
       </div>
       <div class="modal-body" style="padding: 24px;">
         <div class="form-group">
-          <label class="form-label">搜尋物件 <span class="required">*</span></label>
+          <label class="form-label">搜尋物件 <span class="required">*</span>（可多選）</label>
           <input type="text" class="form-input" id="edit-prop-search" placeholder="輸入物件地址或房型..." autocomplete="off" />
         </div>
         <div id="edit-prop-results" style="margin-bottom: 12px; max-height: 200px; overflow-y: auto;"></div>
-        <div id="edit-prop-selected" style="margin-bottom: 12px; padding: 12px; background: #e8f5e9; border-radius: 6px; display: ${currentProp ? 'block' : 'none'};">
-          <strong>已選擇：</strong> <span id="edit-selected-prop-display">${currentProp ? currentProp.address : ''}</span>
-          <input type="hidden" id="edit-selected-prop-id" value="${appt.propertyId || ''}">
+        <div id="edit-prop-selected" style="margin-bottom: 12px; padding: 12px; background: #e8f5e9; border-radius: 6px; display: ${selectedIds.length > 0 ? 'block' : 'none'};">
+          <strong>已選擇物件：</strong>
+          <div id="edit-selected-props-list" style="margin-top: 8px;"></div>
+          <input type="hidden" id="edit-selected-prop-ids" value="${JSON.stringify(selectedIds)}">
         </div>
 
         <div class="form-group">
@@ -2756,8 +2757,8 @@ function editApptDetail(id) {
     resultsDiv.innerHTML = filtered.length === 0
       ? '<div style="padding: 8px; color: #999; text-align: center;">找不到物件</div>'
       : filtered.map(p => `
-        <div onclick="selectEditProp('${p.id}', '${escHtml(p.address || p.title)}')"
-             style="padding: 10px; background: #f5f5f5; border-radius: 6px; margin-bottom: 6px; cursor: pointer; border-left: 4px solid #2d6e45;">
+        <div onclick="addSelectedProp('${p.id}', '${escHtml(p.address || p.title)}')"
+             style="padding: 10px; background: #f5f5f5; border-radius: 6px; margin-bottom: 6px; cursor: pointer; border-left: 4px solid #2d6e45; transition: all 0.2s;">
           <div style="font-weight: 600; font-size: 13px;">${escHtml(p.address || p.title)}</div>
           <div style="font-size: 11px; color: #999; margin-top: 2px;">${escHtml(p.district || '')} ${escHtml(p.layout || '')}</div>
         </div>
@@ -2765,38 +2766,89 @@ function editApptDetail(id) {
   });
 }
 
-function selectEditProp(propId, propAddress) {
-  document.getElementById('edit-selected-prop-id').value = propId;
-  document.getElementById('edit-selected-prop-display').textContent = propAddress;
-  document.getElementById('edit-prop-selected').style.display = 'block';
+function addSelectedProp(propId, propAddress) {
+  const selectedIdsInput = document.getElementById('edit-selected-prop-ids');
+  const selectedIds = JSON.parse(selectedIdsInput.value || '[]');
+
+  // 避免重複
+  if (selectedIds.includes(propId)) {
+    showToast('該物件已選擇', 'info');
+    return;
+  }
+
+  selectedIds.push(propId);
+  selectedIdsInput.value = JSON.stringify(selectedIds);
+
+  // 更新顯示
+  updateSelectedPropsDisplay();
   document.getElementById('edit-prop-search').value = '';
   document.getElementById('edit-prop-results').innerHTML = '';
+}
+
+function removeSelectedProp(propId) {
+  const selectedIdsInput = document.getElementById('edit-selected-prop-ids');
+  let selectedIds = JSON.parse(selectedIdsInput.value || '[]');
+  selectedIds = selectedIds.filter(id => id !== propId);
+  selectedIdsInput.value = JSON.stringify(selectedIds);
+  updateSelectedPropsDisplay();
+}
+
+function updateSelectedPropsDisplay() {
+  const selectedIdsInput = document.getElementById('edit-selected-prop-ids');
+  const selectedIds = JSON.parse(selectedIdsInput.value || '[]');
+  const list = document.getElementById('edit-selected-props-list');
+  const selectedDiv = document.getElementById('edit-prop-selected');
+
+  if (selectedIds.length === 0) {
+    selectedDiv.style.display = 'none';
+    return;
+  }
+
+  selectedDiv.style.display = 'block';
+  list.innerHTML = selectedIds.map(propId => {
+    const prop = (allProps || []).find(p => p.id === propId);
+    const propName = prop ? (prop.address || prop.title) : '未知物件';
+    return `
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 8px; background: white; border-radius: 4px; margin-bottom: 4px; border: 1px solid #ddd;">
+        <span>${escHtml(propName)}</span>
+        <button type="button" style="background: none; border: none; color: #d32f2f; cursor: pointer; font-size: 16px; padding: 0;" onclick="removeSelectedProp('${propId}')">✕</button>
+      </div>
+    `;
+  }).join('');
 }
 
 async function saveApptDetail(id) {
   const newDate = document.getElementById('edit-appt-date').value;
   const newTime = document.getElementById('edit-appt-time').value;
-  const newPropertyId = document.getElementById('edit-selected-prop-id').value;
+  const newPropertyIds = JSON.parse(document.getElementById('edit-selected-prop-ids').value || '[]');
 
   if (!newDate || !newTime) {
     showToast('請選擇日期和時間', 'error');
     return;
   }
 
-  const prop = (allProps || []).find(p => p.id === newPropertyId);
-  const newPropertyTitle = prop ? prop.title : '';
+  if (newPropertyIds.length === 0) {
+    showToast('請至少選擇一個物件', 'error');
+    return;
+  }
 
   try {
+    // 取第一個物件作為主物件（向後相容）
+    const mainPropId = newPropertyIds[0];
+    const mainProp = (allProps || []).find(p => p.id === mainPropId);
+
     const { error } = await db.from('appointments').update({
       date: newDate,
       time: newTime,
-      property_id: newPropertyId,
-      property_title: newPropertyTitle
+      property_id: mainPropId,
+      property_ids: newPropertyIds,
+      property_title: mainProp ? mainProp.title : ''
     }).eq('id', id);
 
     if (error) throw error;
 
     document.querySelector('.modal-overlay').remove();
+    await renderApptCalendar();
     await renderAppts();
     showToast('✅ 預約已修改', 'success');
   } catch(e) {
@@ -3690,6 +3742,62 @@ function editBlockedTimeFromData(btn) {
   const date = btn.dataset.date;
   const notes = decodeURIComponent(btn.dataset.notes);
   editBlockedTime(date, notes);
+}
+
+// 設置定期鎖定時間（例如每週四 11:00-12:00）
+async function setupRecurringLockTime() {
+  const dayOfWeek = prompt('請輸入星期幾（0=日、1=一、2=二、3=三、4=四、5=五、6=六）：');
+  if (dayOfWeek === null) return;
+
+  const dow = parseInt(dayOfWeek);
+  if (isNaN(dow) || dow < 0 || dow > 6) {
+    alert('❌ 請輸入 0-6');
+    return;
+  }
+
+  const startTime = prompt('開始時間（格式 HH:MM，例如 11:00）：');
+  if (!startTime) return;
+
+  const endTime = prompt('結束時間（格式 HH:MM，例如 12:00）：');
+  if (!endTime) return;
+
+  const months = prompt('要設定幾個月？（預設 6 個月）：') || '6';
+  const monthCount = parseInt(months);
+
+  if (!confirm(`確認要為每週${['日', '一', '二', '三', '四', '五', '六'][dow]} ${startTime}-${endTime} 鎖定 ${monthCount} 個月？`)) return;
+
+  try {
+    const today = new Date();
+    const endDate = new Date(today.getFullYear(), today.getMonth() + monthCount, 0);
+    const lockedDates = [];
+
+    // 找出所有符合的日期
+    for (let d = new Date(today); d <= endDate; d.setDate(d.getDate() + 1)) {
+      if (d.getDay() === dow) {
+        const dateStr = d.toISOString().split('T')[0];
+        lockedDates.push({ date: dateStr, time: startTime });
+      }
+    }
+
+    // 批量創建
+    for (const locked of lockedDates) {
+      await db.from('appointments').insert({
+        id: 'locked_' + locked.date + '_' + locked.time.replace(':', ''),
+        date: locked.date,
+        time: locked.time,
+        name: `（${['日', '一', '二', '三', '四', '五', '六'][dow]}定期鎖定）`,
+        phone: '',
+        status: '已鎖定',
+        notes: `${startTime}-${endTime} 不開放`
+      });
+    }
+
+    alert(`✅ 已為 ${lockedDates.length} 個時段鎖定！`);
+    location.reload();
+  } catch(e) {
+    console.error('設定失敗:', e);
+    alert('❌ 設定失敗：' + (e.message || JSON.stringify(e)));
+  }
 }
 
 // 生成所有物件的編號（格式：YYMMMDD + 001序號）

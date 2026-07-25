@@ -393,7 +393,10 @@
     <div class="calendar-section">
       <div class="calendar-header">
         <h2 style="margin: 0; font-size: 16px; font-weight: 600;">📅 預約日期</h2>
-        <button class="btn btn-primary" onclick="openAddBlockedTimeModal()" style="white-space: nowrap; font-size: 13px; padding: 6px 12px;">+ 新增不可預約</button>
+        <div style="display: flex; gap: 8px;">
+          <button class="btn btn-primary" onclick="openAddBlockedTimeModal()" style="white-space: nowrap; font-size: 13px; padding: 6px 12px;">+ 新增不可預約</button>
+          <button class="btn btn-primary" onclick="setupRecurringLockTime()" style="white-space: nowrap; font-size: 13px; padding: 6px 12px;">⏰ 定期鎖定</button>
+        </div>
       </div>
 
       <div class="calendar-toolbar">
