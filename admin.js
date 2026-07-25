@@ -277,7 +277,7 @@ function renderAdminProps() {
       if (layout === '5房以上') { if (!/^[5-9]\d*房以上$|^[5-9]房/.test(cat) && cat !== '5房以上') return false; }
       else if (cat !== layout) return false;
     }
-    if (search && !p.title.toLowerCase().includes(search) && !(p.address || '').toLowerCase().includes(search)) return false;
+    if (search && !p.title.toLowerCase().includes(search) && !(p.address || '').toLowerCase().includes(search) && !(p.propertyCode || '').toLowerCase().includes(search)) return false;
     return true;
   });
   // 按推薦分類排序：設定了標籤的在上面，沒設定的在下面
