@@ -4085,19 +4085,19 @@ async function handleSaveNewAppt() {
       property_id: propId || '',
       status: '已預約',
       submitted_at: new Date().toISOString(),
-      occupants: '',
-      relationship: '',
-      occupation: '',
+      occupants: '1',
+      relationship: '本人',
+      occupation: '已填寫',
       age: '',
-      move_in_date: '',
-      has_pet: '',
+      move_in_date: '隨時',
+      has_pet: '否',
       pet_detail: '',
-      smokes: '',
-      knows_fee: '',
-      needs_subsidy: '',
-      needs_registration: '',
-      can_provide_proof: '',
-      notes: ''
+      smokes: '否',
+      knows_fee: '是',
+      needs_subsidy: '否',
+      needs_registration: '否',
+      can_provide_proof: '是',
+      notes: '後台新增'
     };
 
     const { error } = await db.from('appointments').insert(newAppt);
