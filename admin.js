@@ -1623,9 +1623,6 @@ function parsePropertyText(text) {
       if (fullLayout) {
         let layout = fullLayout[1] + '房';
         if (fullLayout[2]) layout += fullLayout[2];
-        if (fullLayout[3]) layout += fullLayout[3];
-        if (fullLayout[4]) layout += fullLayout[4];
-        // 只有「X房」時不加廳衛（太少資訊），否則才保留完整
         result.layout = layout;
       }
     }
