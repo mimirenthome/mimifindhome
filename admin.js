@@ -3927,13 +3927,13 @@ function openAddApptModal() {
       </div>
       <div class="modal-body" style="padding: 24px;">
         <div class="form-group">
-          <label class="form-label">客人姓名 <span class="required">*</span></label>
-          <input type="text" id="add-appt-name" class="form-input" placeholder="輸入姓名搜索歷史客人..." autocomplete="off" />
-          <div id="add-appt-name-results" style="margin-top: 8px; max-height: 150px; overflow-y: auto;"></div>
+          <label class="form-label">電話號碼 <span class="required">*</span></label>
+          <input type="tel" id="add-appt-phone" class="form-input" placeholder="輸入電話號碼帶入客人資料..." autocomplete="off" />
+          <div id="add-appt-phone-results" style="margin-top: 8px; max-height: 150px; overflow-y: auto;"></div>
         </div>
         <div class="form-group">
-          <label class="form-label">電話號碼 <span class="required">*</span></label>
-          <input type="tel" id="add-appt-phone" class="form-input" placeholder="09xxxxxxxx" />
+          <label class="form-label">客人姓名 <span class="required">*</span></label>
+          <input type="text" id="add-appt-name" class="form-input" placeholder="姓名" />
         </div>
         <div class="form-row form-row-2">
           <div class="form-group">
@@ -3969,15 +3969,15 @@ function openAddApptModal() {
   `;
   document.body.appendChild(modal);
 
-  // 客人姓名搜尋
-  const nameInput = modal.querySelector('#add-appt-name');
-  const nameResults = modal.querySelector('#add-appt-name-results');
+  // 電話號碼搜尋
   const phoneInput = modal.querySelector('#add-appt-phone');
+  const nameInput = modal.querySelector('#add-appt-name');
+  const phoneResults = modal.querySelector('#add-appt-phone-results');
 
-  nameInput.addEventListener('input', async () => {
-    const keyword = nameInput.value.trim();
+  phoneInput.addEventListener('input', async () => {
+    const keyword = phoneInput.value.trim();
     if (!keyword || keyword.length < 1) {
-      nameResults.innerHTML = '';
+      phoneResults.innerHTML = '';
       return;
     }
 
@@ -3991,31 +3991,28 @@ function openAddApptModal() {
         return;
       }
 
-      // 本地過濾，支持中文和英文（不區分大小寫）
-      const filtered = appts.filter(a => a.name && a.name.toLowerCase().includes(keyword.toLowerCase()));
+      // 按電話號碼搜尋
+      const filtered = appts.filter(a => a.phone && a.phone.includes(keyword));
 
       if (filtered.length === 0) {
-        nameResults.innerHTML = '';
+        phoneResults.innerHTML = '';
         return;
       }
 
-      const uniqueCustomers = {};
-      filtered.forEach(a => {
-        if (!uniqueCustomers[a.phone]) {
-          uniqueCustomers[a.phone] = a;
-        }
-      });
+      // 取最新的預約記錄
+      const latestAppt = filtered[0];
 
-      nameResults.innerHTML = Object.values(uniqueCustomers).slice(0, 5).map(customer => `
-        <div style="padding: 10px; background: #f5f5f5; border-radius: 4px; margin-bottom: 6px; cursor: pointer; border-left: 3px solid #2d6e45;" onclick="selectHistoryCustomer('${escHtml(customer.name)}', '${customer.phone}')">
-          <div style="font-weight: 500; font-size: 12px;">👤 ${escHtml(customer.name)}</div>
-          <div style="font-size: 11px; color: #666;">📱 ${customer.phone}</div>
-          <div style="font-size: 11px; color: #999;">最後預約: ${customer.date} ${customer.time}</div>
+      phoneResults.innerHTML = `
+        <div style="padding: 10px; background: #f5f5f5; border-radius: 4px; cursor: pointer; border-left: 3px solid #2d6e45;" onclick="selectHistoryCustomer('${escHtml(latestAppt.name)}', '${latestAppt.phone}')">
+          <div style="font-weight: 500; font-size: 12px;">👤 ${escHtml(latestAppt.name)}</div>
+          <div style="font-size: 11px; color: #666;">📱 ${latestAppt.phone}</div>
+          <div style="font-size: 11px; color: #999;">最後預約: ${latestAppt.date} ${latestAppt.time}</div>
+          <div style="font-size: 10px; color: #999; margin-top: 4px;">共 ${filtered.length} 筆預約記錄</div>
         </div>
-      `).join('');
+      `;
     } catch (err) {
       console.error('搜尋客人失敗:', err);
-      nameResults.innerHTML = '<div style="padding: 8px; color: #d32f2f;">搜尋失敗</div>';
+      phoneResults.innerHTML = '<div style="padding: 8px; color: #d32f2f;">搜尋失敗</div>';
     }
   });
 
