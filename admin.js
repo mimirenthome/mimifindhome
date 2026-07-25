@@ -2689,53 +2689,9 @@ function editApptDetail(id) {
         <div class="modal-title">修改預約</div>
         <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">✕</button>
       </div>
-      <div class="modal-body" style="padding: 24px;">
-        <div class="form-group">
-          <label class="form-label">搜尋物件 <span class="required">*</span>（可多選）</label>
-          <input type="text" class="form-input" id="edit-prop-search" placeholder="輸入物件地址或房型..." autocomplete="off" />
-        </div>
-        <div id="edit-prop-results" style="margin-bottom: 12px; max-height: 200px; overflow-y: auto;"></div>
-        <div id="edit-prop-selected" style="margin-bottom: 12px; padding: 12px; background: #e8f5e9; border-radius: 6px; display: ${selectedIds.length > 0 ? 'block' : 'none'};">
-          <strong>已選擇物件：</strong>
-          <div id="edit-selected-props-list" style="margin-top: 8px;"></div>
-          <input type="hidden" id="edit-selected-prop-ids" value="${JSON.stringify(selectedIds)}">
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">預約日期</label>
-          <input type="date" id="edit-appt-date" class="form-input" value="${appt.date}" />
-        </div>
-        <div class="form-group">
-          <label class="form-label">預約時間</label>
-          <select id="edit-appt-time" class="form-select">
-            <option value="">選擇時間</option>
-            <option value="09:00">09:00</option>
-            <option value="09:30">09:30</option>
-            <option value="10:00">10:00</option>
-            <option value="10:30">10:30</option>
-            <option value="11:00">11:00</option>
-            <option value="11:30">11:30</option>
-            <option value="12:00">12:00</option>
-            <option value="12:30">12:30</option>
-            <option value="13:00">13:00</option>
-            <option value="13:30">13:30</option>
-            <option value="14:00">14:00</option>
-            <option value="14:30">14:30</option>
-            <option value="15:00">15:00</option>
-            <option value="15:30">15:30</option>
-            <option value="16:00">16:00</option>
-            <option value="16:30">16:30</option>
-            <option value="17:00">17:00</option>
-            <option value="17:30">17:30</option>
-            <option value="18:00">18:00</option>
-            <option value="18:30">18:30</option>
-            <option value="19:00">19:00</option>
-            <option value="19:30">19:30</option>
-            <option value="20:00">20:00</option>
-            <option value="20:30">20:30</option>
-            <option value="21:00">21:00</option>
-          </select>
-        </div>
+      <div class="modal-body" style="padding: 24px; max-height: 500px; overflow-y: auto;">
+        <div id="edit-appt-slots" style="margin-bottom: 16px;"></div>
+        <button type="button" class="btn btn-ghost" onclick="addEditApptSlot()" style="width: 100%; margin-top: 8px;">➕ 新增物件與時間</button>
       </div>
       <div class="modal-footer">
         <button class="btn btn-ghost" onclick="this.closest('.modal-overlay').remove()">取消</button>
@@ -2745,12 +2701,19 @@ function editApptDetail(id) {
   `;
   document.body.appendChild(modal);
 
-  // 設定時間選項的初始值
-  const timeSelect = modal.querySelector('#edit-appt-time');
-  timeSelect.value = appt.time;
+  // 初始化預約時段組合
+  window._editApptSlots = window._editApptSlots || [];
+  window._editApptSlots = [{
+    propId: appt.propertyId || '',
+    propName: appt.propertyTitle || '',
+    date: appt.date,
+    time: appt.time
+  }];
+  window._editApptModal = modal;
+  window._editApptId = id;
 
-  // 物件搜尋功能
-  const searchInput = modal.querySelector('#edit-prop-search');
+  renderEditApptSlots();
+}
   const resultsDiv = modal.querySelector('#edit-prop-results');
   const selectedIdsInput = modal.querySelector('#edit-selected-prop-ids');
   const selectedDiv = modal.querySelector('#edit-prop-selected');
@@ -2768,27 +2731,135 @@ function editApptDetail(id) {
       return searchStr.includes(keyword);
     });
 
-    resultsDiv.innerHTML = filtered.length === 0
-      ? '<div style="padding: 8px; color: #999; text-align: center;">找不到物件</div>'
-      : filtered.map(p => `
-        <div class="edit-search-result" data-id="${p.id}" style="padding: 10px; background: #f5f5f5; border-radius: 6px; margin-bottom: 6px; cursor: pointer; border-left: 4px solid #2d6e45; transition: all 0.2s; user-select: none;">
-          <div style="font-weight: 600; font-size: 13px;">${escHtml(p.address || p.title)}</div>
-          <div style="font-size: 11px; color: #999; margin-top: 2px;">${escHtml(p.district || '')} ${escHtml(p.layout || '')} ${p.propertyCode ? `(${p.propertyCode})` : ''}</div>
-        </div>
-      `).join('');
-  });
+    if (filtered.length === 0) {
+      resultsDiv.innerHTML = '<div style="padding: 8px; color: #999; text-align: center;">找不到物件</div>';
+      return;
+    }
 
-  // 事件委託：為搜尋結果綁定點擊事件（只需綁定一次）
-  if (!resultsDiv._clickListenerAttached) {
-    resultsDiv.addEventListener('click', (e) => {
-      const result = e.target.closest('.edit-search-result');
-      if (result) {
-        const propId = result.getAttribute('data-id');
+    resultsDiv.innerHTML = filtered.map(p => `
+      <button type="button" class="edit-search-result" data-id="${p.id}" style="display: block; width: 100%; padding: 10px; background: #f5f5f5; border: none; border-left: 4px solid #2d6e45; border-radius: 6px; margin-bottom: 6px; cursor: pointer; transition: all 0.2s; text-align: left;">
+        <div style="font-weight: 600; font-size: 13px;">${escHtml(p.address || p.title)}</div>
+        <div style="font-size: 11px; color: #999; margin-top: 2px;">${escHtml(p.district || '')} ${escHtml(p.layout || '')} ${p.propertyCode ? `(${p.propertyCode})` : ''}</div>
+      </button>
+    `).join('');
+
+    // 立即為每個結果按鈕綁定事件
+    resultsDiv.querySelectorAll('.edit-search-result').forEach(btn => {
+      btn.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const propId = btn.getAttribute('data-id');
         selectEditPropDirect(propId);
-      }
+      });
     });
-    resultsDiv._clickListenerAttached = true;
-  }
+  });
+}
+
+function renderEditApptSlots() {
+  const modal = window._editApptModal;
+  const slotsDiv = modal.querySelector('#edit-appt-slots');
+
+  slotsDiv.innerHTML = (window._editApptSlots || []).map((slot, idx) => `
+    <div style="border: 1px solid #ddd; border-radius: 6px; padding: 12px; margin-bottom: 12px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+        <span style="font-weight: 600; font-size: 13px;">時段 ${idx + 1}</span>
+        ${idx > 0 ? `<button type="button" class="btn btn-danger btn-sm" onclick="deleteEditApptSlot(${idx})">刪除</button>` : ''}
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">搜尋物件</label>
+        <input type="text" class="form-input" id="edit-search-${idx}" placeholder="輸入物件地址或編號..." autocomplete="off" />
+        <div id="edit-results-${idx}" style="margin-top: 8px; max-height: 150px; overflow-y: auto;"></div>
+        <div id="edit-selected-${idx}" style="margin-top: 8px; padding: 8px; background: #e8f5e9; border-radius: 4px; ${slot.propId ? 'display: block' : 'display: none'};">
+          ✓ ${escHtml(slot.propName)}
+        </div>
+        <input type="hidden" id="edit-prop-id-${idx}" value="${slot.propId}" />
+      </div>
+
+      <div class="form-row form-row-2">
+        <div class="form-group">
+          <label class="form-label">預約日期</label>
+          <input type="date" class="form-input" id="edit-date-${idx}" value="${slot.date}" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">預約時間</label>
+          <select class="form-select" id="edit-time-${idx}">
+            <option value="">選擇時間</option>
+            <option value="10:00" ${slot.time === '10:00' ? 'selected' : ''}>10:00</option><option value="10:30" ${slot.time === '10:30' ? 'selected' : ''}>10:30</option>
+            <option value="11:00" ${slot.time === '11:00' ? 'selected' : ''}>11:00</option><option value="11:30" ${slot.time === '11:30' ? 'selected' : ''}>11:30</option><option value="12:00" ${slot.time === '12:00' ? 'selected' : ''}>12:00</option><option value="12:30" ${slot.time === '12:30' ? 'selected' : ''}>12:30</option>
+            <option value="13:00" ${slot.time === '13:00' ? 'selected' : ''}>13:00</option><option value="13:30" ${slot.time === '13:30' ? 'selected' : ''}>13:30</option><option value="14:00" ${slot.time === '14:00' ? 'selected' : ''}>14:00</option><option value="14:30" ${slot.time === '14:30' ? 'selected' : ''}>14:30</option>
+            <option value="15:00" ${slot.time === '15:00' ? 'selected' : ''}>15:00</option><option value="15:30" ${slot.time === '15:30' ? 'selected' : ''}>15:30</option><option value="16:00" ${slot.time === '16:00' ? 'selected' : ''}>16:00</option><option value="16:30" ${slot.time === '16:30' ? 'selected' : ''}>16:30</option>
+            <option value="17:00" ${slot.time === '17:00' ? 'selected' : ''}>17:00</option><option value="17:30" ${slot.time === '17:30' ? 'selected' : ''}>17:30</option><option value="18:00" ${slot.time === '18:00' ? 'selected' : ''}>18:00</option><option value="18:30" ${slot.time === '18:30' ? 'selected' : ''}>18:30</option>
+            <option value="19:00" ${slot.time === '19:00' ? 'selected' : ''}>19:00</option><option value="19:30" ${slot.time === '19:30' ? 'selected' : ''}>19:30</option><option value="20:00" ${slot.time === '20:00' ? 'selected' : ''}>20:00</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  `).join('');
+
+  // 為每個搜尋框綁定事件
+  (window._editApptSlots || []).forEach((slot, idx) => {
+    const searchInput = modal.querySelector(`#edit-search-${idx}`);
+    const resultsDiv = modal.querySelector(`#edit-results-${idx}`);
+
+    if (!searchInput) return;
+
+    searchInput.addEventListener('input', () => {
+      const keyword = searchInput.value.toLowerCase().trim();
+      if (!keyword) {
+        resultsDiv.innerHTML = '';
+        return;
+      }
+
+      const filtered = (allProps || []).filter(p => {
+        const searchStr = `${p.address || ''} ${p.title || ''} ${p.district || ''} ${p.propertyCode || ''}`.toLowerCase();
+        return searchStr.includes(keyword);
+      });
+
+      if (filtered.length === 0) {
+        resultsDiv.innerHTML = '<div style="padding: 8px; color: #999; text-align: center;">找不到物件</div>';
+        return;
+      }
+
+      resultsDiv.innerHTML = filtered.map(p => `
+        <button type="button" class="edit-search-result" data-idx="${idx}" data-id="${p.id}" style="display: block; width: 100%; padding: 8px; background: #f5f5f5; border: none; border-left: 3px solid #2d6e45; border-radius: 4px; margin-bottom: 4px; cursor: pointer; text-align: left;">
+          <div style="font-weight: 500; font-size: 12px;">${escHtml(p.propertyCode || p.title)}</div>
+          <div style="font-size: 11px; color: #999;">${escHtml(p.address || '')}</div>
+        </button>
+      `).join('');
+
+      // 為每個結果按鈕綁定事件
+      resultsDiv.querySelectorAll('.edit-search-result').forEach(btn => {
+        btn.addEventListener('mousedown', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          const slotIdx = btn.getAttribute('data-idx');
+          const propId = btn.getAttribute('data-id');
+          const prop = (allProps || []).find(p => p.id === propId);
+
+          window._editApptSlots[slotIdx].propId = propId;
+          window._editApptSlots[slotIdx].propName = prop ? (prop.address || prop.title) : '';
+
+          renderEditApptSlots();
+        });
+      });
+    });
+  });
+}
+
+function addEditApptSlot() {
+  window._editApptSlots.push({
+    propId: '',
+    propName: '',
+    date: new Date().toISOString().split('T')[0],
+    time: ''
+  });
+  renderEditApptSlots();
+}
+
+function deleteEditApptSlot(idx) {
+  window._editApptSlots.splice(idx, 1);
+  renderEditApptSlots();
 }
 
 function selectEditPropDirectById(propId) {
@@ -2855,45 +2926,61 @@ function handleSaveAppt(id) {
   saveApptDetail(id);
 }
 
-async function saveApptDetail(id) {
-  const newDate = document.getElementById('edit-appt-date').value;
-  const newTime = document.getElementById('edit-appt-time').value;
-  const newPropertyIds = JSON.parse(document.getElementById('edit-selected-prop-ids').value || '[]');
+async function saveApptDetail(apptId) {
+  const slots = window._editApptSlots || [];
+  const originalAppt = window._apptCache.find(a => a.id === apptId);
 
-  if (!newDate || !newTime) {
-    showToast('請選擇日期和時間', 'error');
-    return;
-  }
-
-  if (newPropertyIds.length === 0) {
-    showToast('請至少選擇一個物件', 'error');
-    return;
+  // 驗證所有時段
+  for (let i = 0; i < slots.length; i++) {
+    const slot = slots[i];
+    if (!slot.date || !slot.time) {
+      showToast(`時段 ${i + 1} 請填寫日期和時間`, 'error');
+      return;
+    }
   }
 
   try {
-    const mainPropId = newPropertyIds[0];
+    // 刪除原預約
+    await db.from('appointments').delete().eq('id', apptId);
 
-    const updateData = {
-      date: newDate,
-      time: newTime,
-      property_id: mainPropId
-    };
+    // 為每個時段創建新預約
+    const appts = slots.map((slot, idx) => ({
+      id: 'appt_' + Date.now() + '_' + idx,
+      name: originalAppt?.name || '',
+      phone: originalAppt?.phone || '',
+      date: slot.date,
+      time: slot.time,
+      property_id: slot.propId || '',
+      status: '已預約',
+      submitted_at: new Date().toISOString(),
+      occupants: originalAppt?.occupants || '',
+      relationship: originalAppt?.relationship || '',
+      occupation: originalAppt?.occupation || '',
+      age: originalAppt?.age || '',
+      move_in_date: originalAppt?.moveInDate || '',
+      has_pet: originalAppt?.hasPet || '',
+      pet_detail: originalAppt?.petDetail || '',
+      smokes: originalAppt?.smokes || '',
+      knows_fee: originalAppt?.knowsFee || '',
+      needs_subsidy: originalAppt?.needsSubsidy || '',
+      needs_registration: originalAppt?.needsRegistration || '',
+      can_provide_proof: originalAppt?.canProvideProof || '',
+      notes: originalAppt?.notes || ''
+    }));
 
-    const { error } = await db.from('appointments').update(updateData).eq('id', id);
-
-    if (error) {
-      console.error('Supabase 錯誤詳情:', error);
-      throw error;
-    }
+    const { error } = await db.from('appointments').insert(appts);
+    if (error) throw error;
 
     const modal = document.querySelector('.modal-overlay');
     if (modal) modal.remove();
+    window._editApptSlots = [];
+
     await renderApptCalendar();
     await renderAppts();
-    showToast('✅ 預約已修改', 'success');
-  } catch(e) {
-    console.error('修改失敗:', e);
-    showToast('❌ 修改失敗：' + (e.message || '請稍後重試'), 'error');
+    showToast(`✅ 已修改 ${appts.length} 個預約時段`, 'success');
+  } catch (err) {
+    console.error('修改失敗:', err);
+    showToast('❌ 修改失敗：' + (err.message || '請重試'), 'error');
   }
 }
 
