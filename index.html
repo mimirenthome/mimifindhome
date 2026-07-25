@@ -354,8 +354,18 @@
       </div>
     </div>
 
-    <!-- 右欄：表單 -->
+    <!-- 右欄：查詢 & 表單 -->
     <div class="appt-right">
+      <div class="appt-form-card">
+        <h3 class="appt-form-title">🔍 查詢預約</h3>
+        <p class="appt-form-sub">輸入電話號碼查看您的預約記錄。</p>
+        <div class="form-group">
+          <input type="tel" class="form-input" id="query-phone" placeholder="輸入電話號碼（例：0912345678）" />
+        </div>
+        <button class="btn btn-primary btn-full" onclick="queryApptByPhone()" style="margin-bottom: 16px;">查詢</button>
+        <div id="appt-query-results" style="display: none; margin-bottom: 20px; padding: 16px; background: #f5f5f5; border-radius: 8px;"></div>
+      </div>
+
       <div class="appt-form-card">
         <h3 class="appt-form-title">填寫預約資料</h3>
         <p class="appt-form-sub">請留下您的基本資料，米米會協助確認物件與看屋時間。</p>

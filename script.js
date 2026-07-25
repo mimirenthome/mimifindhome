@@ -1690,3 +1690,50 @@ function togglePetOther() {
   petOtherFieldEl.style.display = isOther ? 'block' : 'none';
   if (!isOther && petOtherEl) petOtherEl.value = '';
 }
+
+async function queryApptByPhone() {
+  const phone = document.getElementById('query-phone').value.trim();
+  const resultsDiv = document.getElementById('appt-query-results');
+
+  if (!phone) {
+    resultsDiv.style.display = 'none';
+    return;
+  }
+
+  try {
+    const { data: apts, error } = await db
+      .from('appointments')
+      .select('*')
+      .eq('phone', phone)
+      .order('date', { ascending: false });
+
+    if (error) throw error;
+
+    if (!apts || apts.length === 0) {
+      resultsDiv.innerHTML = '<p style="color: #888; margin: 0;">無查詢結果，尚未預約或電話號碼有誤。</p>';
+      resultsDiv.style.display = 'block';
+      return;
+    }
+
+    const html = apts.map(a => {
+      const appt = apptFromDb(a);
+      const statusMap = { '未處理': '⏳ 待確認', '已確認': '✅ 已確認', '已取消': '❌ 已取消' };
+      const statusText = statusMap[appt.status] || appt.status;
+      return `
+        <div style="margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #ddd;">
+          <div style="font-weight: 500; margin-bottom: 6px;">${escHtml(appt.propertyTitle || '（未指定物件）')}</div>
+          <div style="font-size: 14px; color: #666;">
+            📅 ${appt.date} ${appt.time} | 姓名：${escHtml(appt.name)} | ${statusText}
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    resultsDiv.innerHTML = `<div style="margin-bottom: 8px; font-weight: 500; color: #333;">找到 ${apts.length} 筆預約紀錄：</div>${html}`;
+    resultsDiv.style.display = 'block';
+  } catch (err) {
+    console.error('查詢預約失敗', err);
+    resultsDiv.innerHTML = '<p style="color: #d32f2f; margin: 0;">查詢失敗，請稍後再試。</p>';
+    resultsDiv.style.display = 'block';
+  }
+}
