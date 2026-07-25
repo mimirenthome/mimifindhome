@@ -616,7 +616,7 @@ function renderPropertyCard(p) {
         <div class="property-actions">
           <button class="btn btn-primary btn-sm" onclick="openDetailModal('${p.id}')">查看詳情</button>
           <button class="btn btn-outline btn-sm compare-btn-${p.id}" onclick="toggleCompare('${p.id}')">${inCompare ? '✓ 已加入' : '比較'}</button>
-          <button class="btn btn-ghost btn-sm" onclick="goToAppt('${escHtml(p.title)}')">預約看屋</button>
+          <button class="btn btn-ghost btn-sm" onclick="goToAppt('${p.id}')">預約看屋</button>
         </div>
       </div>
     </div>`;
@@ -660,7 +660,7 @@ function renderPropertyCardMobile(p) {
         <div class="property-actions-mobile">
           <button class="btn-mobile-action" onclick="openDetailModal('${p.id}')">查看</button>
           <button class="btn-mobile-action compare-btn-${p.id}" onclick="toggleCompare('${p.id}')">${inCompare ? '✓' : '比較'}</button>
-          <button class="btn-mobile-action" onclick="goToAppt('${escHtml(p.title)}')">預約</button>
+          <button class="btn-mobile-action" onclick="goToAppt('${p.id}')">預約</button>
         </div>
       </div>
     </div>`;
@@ -797,7 +797,7 @@ function openDetailModal(id) {
 
   document.getElementById('detail-appt-btn').onclick = () => {
     closeDetailModal();
-    goToAppt(p.title);
+    goToAppt(p.id);
   };
 
   document.getElementById('detail-modal').classList.remove('hidden');

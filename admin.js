@@ -2261,7 +2261,7 @@ async function renderAppts() {
   list.innerHTML = filtered.map(a => {
     const dt = new Date(a.submittedAt).toLocaleString('zh-TW', { year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' });
     const statusClass = { '未處理': 'status-pending', '已聯繫': 'status-contacted', '已預約': 'status-booked', '已取消': 'status-cancelled' }[a.status] || 'status-pending';
-    const matchedProp = (allProps || []).find(p => p.title === a.propertyTitle);
+    const matchedProp = (allProps || []).find(p => p.id === a.propertyId) || (allProps || []).find(p => p.title === a.propertyTitle);
     const propAddress = matchedProp && matchedProp.address ? matchedProp.address : '';
     return `
       <div class="appt-card">
@@ -2298,7 +2298,7 @@ async function renderAppts() {
             <option ${a.status==='已預約'?'selected':''}>已預約</option>
             <option ${a.status==='已取消'?'selected':''}>已取消</option>
           </select>
-          <button class="btn btn-primary btn-sm" onclick="editApptDateTime('${a.id}')">✏️ 改日期</button>
+          <button class="btn btn-primary btn-sm" onclick="editApptDetail('${a.id}')">✏️ 修改</button>
           <button class="btn btn-ghost btn-sm" onclick="copyAppt('${a.id}')">📋</button>
           <button class="btn btn-danger btn-sm" onclick="deleteAppt('${a.id}')">刪除</button>
         </div>
@@ -2669,19 +2669,30 @@ async function editApptTitle(id) {
   showToast('物件名稱已更新', 'success');
 }
 
-function editApptDateTime(id) {
+function editApptDetail(id) {
   const appt = (window._apptCache || []).find(x => x.id === id);
   if (!appt) { showToast('找不到資料', 'error'); return; }
 
+  const currentProp = (allProps || []).find(p => p.id === appt.propertyId);
   const modal = document.createElement('div');
   modal.className = 'modal-overlay';
   modal.innerHTML = `
-    <div class="modal-box" style="max-width: 400px;">
+    <div class="modal-box" style="max-width: 450px;">
       <div class="modal-header">
-        <div class="modal-title">編輯預約日期時間</div>
+        <div class="modal-title">修改預約</div>
         <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">✕</button>
       </div>
       <div class="modal-body" style="padding: 24px;">
+        <div class="form-group">
+          <label class="form-label">搜尋物件 <span class="required">*</span></label>
+          <input type="text" class="form-input" id="edit-prop-search" placeholder="輸入物件地址或房型..." autocomplete="off" />
+        </div>
+        <div id="edit-prop-results" style="margin-bottom: 12px; max-height: 200px; overflow-y: auto;"></div>
+        <div id="edit-prop-selected" style="margin-bottom: 12px; padding: 12px; background: #e8f5e9; border-radius: 6px; display: ${currentProp ? 'block' : 'none'};">
+          <strong>已選擇：</strong> <span id="edit-selected-prop-display">${currentProp ? currentProp.address : ''}</span>
+          <input type="hidden" id="edit-selected-prop-id" value="${appt.propertyId || ''}">
+        </div>
+
         <div class="form-group">
           <label class="form-label">預約日期</label>
           <input type="date" id="edit-appt-date" class="form-input" value="${appt.date}" />
@@ -2713,13 +2724,10 @@ function editApptDateTime(id) {
             <option value="21:00">21:00</option>
           </select>
         </div>
-        <div style="color: var(--color-text-muted); font-size: 12px; margin-top: 12px;">
-          原來：${appt.date} ${appt.time}
-        </div>
       </div>
       <div class="modal-footer">
         <button class="btn btn-ghost" onclick="this.closest('.modal-overlay').remove()">取消</button>
-        <button class="btn btn-primary" onclick="saveApptDateTime('${id}')">確定修改</button>
+        <button class="btn btn-primary" onclick="saveApptDetail('${id}')">確定修改</button>
       </div>
     </div>
   `;
@@ -2728,6 +2736,73 @@ function editApptDateTime(id) {
   // 設定時間選項的初始值
   const timeSelect = modal.querySelector('#edit-appt-time');
   timeSelect.value = appt.time;
+
+  // 物件搜尋功能
+  const searchInput = modal.querySelector('#edit-prop-search');
+  const resultsDiv = modal.querySelector('#edit-prop-results');
+
+  searchInput.addEventListener('input', () => {
+    const keyword = searchInput.value.toLowerCase().trim();
+    if (!keyword) {
+      resultsDiv.innerHTML = '';
+      return;
+    }
+
+    const filtered = (allProps || []).filter(p => {
+      const searchStr = `${p.address || ''} ${p.title || ''} ${p.district || ''}`.toLowerCase();
+      return searchStr.includes(keyword);
+    });
+
+    resultsDiv.innerHTML = filtered.length === 0
+      ? '<div style="padding: 8px; color: #999; text-align: center;">找不到物件</div>'
+      : filtered.map(p => `
+        <div onclick="selectEditProp('${p.id}', '${escHtml(p.address || p.title)}')"
+             style="padding: 10px; background: #f5f5f5; border-radius: 6px; margin-bottom: 6px; cursor: pointer; border-left: 4px solid #2d6e45;">
+          <div style="font-weight: 600; font-size: 13px;">${escHtml(p.address || p.title)}</div>
+          <div style="font-size: 11px; color: #999; margin-top: 2px;">${escHtml(p.district || '')} ${escHtml(p.layout || '')}</div>
+        </div>
+      `).join('');
+  });
+}
+
+function selectEditProp(propId, propAddress) {
+  document.getElementById('edit-selected-prop-id').value = propId;
+  document.getElementById('edit-selected-prop-display').textContent = propAddress;
+  document.getElementById('edit-prop-selected').style.display = 'block';
+  document.getElementById('edit-prop-search').value = '';
+  document.getElementById('edit-prop-results').innerHTML = '';
+}
+
+async function saveApptDetail(id) {
+  const newDate = document.getElementById('edit-appt-date').value;
+  const newTime = document.getElementById('edit-appt-time').value;
+  const newPropertyId = document.getElementById('edit-selected-prop-id').value;
+
+  if (!newDate || !newTime) {
+    showToast('請選擇日期和時間', 'error');
+    return;
+  }
+
+  const prop = (allProps || []).find(p => p.id === newPropertyId);
+  const newPropertyTitle = prop ? prop.title : '';
+
+  try {
+    const { error } = await db.from('appointments').update({
+      date: newDate,
+      time: newTime,
+      property_id: newPropertyId,
+      property_title: newPropertyTitle
+    }).eq('id', id);
+
+    if (error) throw error;
+
+    document.querySelector('.modal-overlay').remove();
+    await renderAppts();
+    showToast('✅ 預約已修改', 'success');
+  } catch(e) {
+    console.error('修改失敗:', e);
+    showToast('❌ 修改失敗', 'error');
+  }
 }
 
 async function saveApptDateTime(id) {
@@ -2747,8 +2822,9 @@ async function saveApptDateTime(id) {
   if (error) { showToast('更新失敗', 'error'); return; }
 
   document.querySelector('.modal-overlay').remove();
+  await renderApptCalendar();
   await renderAppts();
-  showToast('預約日期時間已更新', 'success');
+  showToast('✅ 預約已更新', 'success');
 }
 
 async function exportAppointmentsData() {
@@ -3527,9 +3603,9 @@ async function saveApptProperty(apptId) {
     // 關閉所有 modal（修改物件modal和預約詳情modal）
     document.querySelectorAll('.modal-overlay').forEach(m => m.remove());
 
-    // 重新渲染日曆和預約列表
-    renderApptCalendar();
-    renderAppts();
+    // 重新渲染日曆和預約列表（兩邊都要更新）
+    await renderApptCalendar();
+    await renderAppts();
     showToast('✅ 物件已修改', 'success');
   } catch(e) {
     console.error('修改失敗:', e);
@@ -3614,4 +3690,50 @@ function editBlockedTimeFromData(btn) {
   const date = btn.dataset.date;
   const notes = decodeURIComponent(btn.dataset.notes);
   editBlockedTime(date, notes);
+}
+
+// 生成所有物件的編號（格式：YYMMMDD + 001序號）
+async function generatePropertyCodes() {
+  if (!confirm('確認要為所有物件生成編號？\n格式：0260725001（年月日+序號）')) return;
+
+  try {
+    const { data, error } = await db.from('properties').select('*').order('created_at', { ascending: true });
+    if (error) throw error;
+
+    const updates = [];
+    const dateGroups = {};
+
+    // 按日期分組
+    data.forEach(prop => {
+      const dateStr = new Date(prop.created_at).toISOString().split('T')[0]; // YYYY-MM-DD
+      if (!dateGroups[dateStr]) dateGroups[dateStr] = [];
+      dateGroups[dateStr].push(prop.id);
+    });
+
+    // 為每個物件生成編號
+    let totalCount = 0;
+    Object.keys(dateGroups).sort().forEach(dateStr => {
+      const [year, month, day] = dateStr.split('-');
+      const yy = year.slice(2); // 取年的後2位
+      const ids = dateGroups[dateStr];
+
+      ids.forEach((propId, idx) => {
+        const seq = String(idx + 1).padStart(3, '0'); // 001, 002, ...
+        const code = `0${yy}${month}${day}${seq}`;
+        updates.push({ id: propId, code });
+        totalCount++;
+      });
+    });
+
+    // 批量更新
+    for (const update of updates) {
+      await db.from('properties').update({ property_code: update.code }).eq('id', update.id);
+    }
+
+    alert(`✅ 已為 ${totalCount} 個物件生成編號！`);
+    location.reload();
+  } catch(e) {
+    console.error('生成編號失敗:', e);
+    alert('❌ 生成失敗：' + (e.message || JSON.stringify(e)));
+  }
 }

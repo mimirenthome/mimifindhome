@@ -61,6 +61,7 @@ function propFromDb(row) {
     video: row.video || '',
     isActive: row.is_active,
     recommendCategories: row.recommend_categories || [],
+    propertyCode: row.property_code || '',
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -89,6 +90,7 @@ function propToDb(p) {
     cover_index: p.coverIndex || 0,
     is_active: p.isActive !== undefined ? p.isActive : true,
     recommend_categories: p.recommendCategories || [],
+    property_code: p.propertyCode || '',
     updated_at: new Date().toISOString(),
   };
   if (p.createdAt) row.created_at = p.createdAt;
