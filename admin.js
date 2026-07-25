@@ -2923,7 +2923,7 @@ async function saveApptDetail(apptId) {
     // 刪除原預約
     await db.from('appointments').delete().eq('id', apptId);
 
-    // 為每個時段創建新預約
+    // 為每個時段創建新預約（保留原始的 submitted_at）
     const appts = slots.map((slot, idx) => ({
       id: 'appt_' + Date.now() + '_' + idx,
       name: originalAppt?.name || '',
@@ -2931,8 +2931,8 @@ async function saveApptDetail(apptId) {
       date: slot.date,
       time: slot.time,
       property_id: slot.propId || '',
-      status: '已預約',
-      submitted_at: new Date().toISOString(),
+      status: originalAppt?.status || '已預約',
+      submitted_at: originalAppt?.submittedAt || new Date().toISOString(),
       occupants: originalAppt?.occupants || '',
       relationship: originalAppt?.relationship || '',
       occupation: originalAppt?.occupation || '',
