@@ -3437,12 +3437,7 @@ function editApptProperty(apptId, currentPropertyId) {
   const modal = document.createElement('div');
   modal.className = 'modal-overlay';
 
-  // 建立物件列表
-  const propOptions = (allProps || []).map(p => `
-    <option value="${p.id}" ${p.id === currentPropertyId ? 'selected' : ''}>
-      ${p.address || '無地址'}
-    </option>
-  `).join('');
+  const currentProp = (allProps || []).find(p => p.id === currentPropertyId);
 
   modal.innerHTML = `
     <div class="modal-box" style="max-width:450px;">
@@ -3451,11 +3446,13 @@ function editApptProperty(apptId, currentPropertyId) {
       </div>
       <div class="modal-body">
         <div class="form-group">
-          <label class="form-label">選擇物件 <span class="required">*</span></label>
-          <select class="form-select" id="appt-prop-select">
-            <option value="">-- 未指定 --</option>
-            ${propOptions}
-          </select>
+          <label class="form-label">搜尋物件 <span class="required">*</span></label>
+          <input type="text" class="form-input" id="appt-prop-search" placeholder="輸入物件地址或房型..." autocomplete="off" />
+        </div>
+        <div id="appt-prop-results" style="margin-top: 12px; max-height: 300px; overflow-y: auto;"></div>
+        <div id="appt-prop-selected" style="margin-top: 16px; padding: 12px; background: #e8f5e9; border-radius: 6px; display: ${currentProp ? 'block' : 'none'};">
+          <strong>已選擇：</strong> <span id="selected-prop-display">${currentProp ? currentProp.address : ''}</span>
+          <input type="hidden" id="appt-prop-selected-id" value="${currentPropertyId || ''}">
         </div>
       </div>
       <div class="modal-footer">
@@ -3466,11 +3463,57 @@ function editApptProperty(apptId, currentPropertyId) {
   `;
 
   document.body.appendChild(modal);
+
+  const searchInput = document.getElementById('appt-prop-search');
+  const resultsDiv = document.getElementById('appt-prop-results');
+
+  searchInput.addEventListener('input', () => {
+    const keyword = searchInput.value.toLowerCase().trim();
+
+    if (!keyword) {
+      resultsDiv.innerHTML = '';
+      return;
+    }
+
+    const filtered = (allProps || []).filter(p => {
+      const searchStr = `${p.address || ''} ${p.title || ''} ${p.district || ''}`.toLowerCase();
+      return searchStr.includes(keyword);
+    });
+
+    if (filtered.length === 0) {
+      resultsDiv.innerHTML = '<div style="padding: 12px; color: #999; text-align: center;">找不到物件</div>';
+      return;
+    }
+
+    resultsDiv.innerHTML = filtered.map(p => `
+      <div onclick="selectApptProperty('${p.id}', '${escHtml(p.address || p.title)}')"
+           style="padding: 12px; background: #f5f5f5; border-radius: 6px; margin-bottom: 8px; cursor: pointer; border-left: 4px solid #2d6e45; transition: all 0.2s;">
+        <div style="font-weight: 600; font-size: 14px;">${escHtml(p.address || p.title)}</div>
+        <div style="font-size: 12px; color: #999; margin-top: 4px;">${escHtml(p.district || '')} ${escHtml(p.layout || '')}</div>
+      </div>
+    `).join('');
+  });
+
+  searchInput.focus();
+}
+
+function selectApptProperty(propId, propAddress) {
+  document.getElementById('appt-prop-selected-id').value = propId;
+  document.getElementById('selected-prop-display').textContent = propAddress;
+  document.getElementById('appt-prop-selected').style.display = 'block';
+  document.getElementById('appt-prop-search').value = '';
+  document.getElementById('appt-prop-results').innerHTML = '';
 }
 
 // 保存預約物件
 async function saveApptProperty(apptId) {
-  const newPropertyId = document.getElementById('appt-prop-select').value;
+  const newPropertyId = document.getElementById('appt-prop-selected-id').value;
+
+  if (!newPropertyId) {
+    alert('❌ 請先選擇物件');
+    return;
+  }
+
   const prop = (allProps || []).find(p => p.id === newPropertyId);
   const newPropertyTitle = prop ? prop.title : '';
 
@@ -3487,6 +3530,7 @@ async function saveApptProperty(apptId) {
     // 重新渲染日曆和預約列表
     renderApptCalendar();
     renderAppts();
+    showToast('✅ 物件已修改', 'success');
   } catch(e) {
     console.error('修改失敗:', e);
     alert('❌ 修改失敗：' + (e.message || e.code || JSON.stringify(e)));
