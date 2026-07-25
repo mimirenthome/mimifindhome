@@ -2771,22 +2771,16 @@ function editApptDetail(id) {
     resultsDiv.innerHTML = filtered.length === 0
       ? '<div style="padding: 8px; color: #999; text-align: center;">找不到物件</div>'
       : filtered.map(p => `
-        <div class="edit-prop-item" data-prop-id="${p.id}" style="padding: 10px; background: #f5f5f5; border-radius: 6px; margin-bottom: 6px; cursor: pointer; border-left: 4px solid #2d6e45; transition: all 0.2s; user-select: none;">
+        <div style="padding: 10px; background: #f5f5f5; border-radius: 6px; margin-bottom: 6px; cursor: pointer; border-left: 4px solid #2d6e45; transition: all 0.2s; user-select: none;" onclick="selectEditPropDirectById('${p.id}')">
           <div style="font-weight: 600; font-size: 13px;">${escHtml(p.address || p.title)}</div>
           <div style="font-size: 11px; color: #999; margin-top: 2px;">${escHtml(p.district || '')} ${escHtml(p.layout || '')} ${p.propertyCode ? `(${p.propertyCode})` : ''}</div>
         </div>
       `).join('');
   });
+}
 
-  // 事件委託：點擊搜尋結果項目
-  resultsDiv.addEventListener('click', (e) => {
-    const item = e.target.closest('.edit-prop-item');
-    if (!item) return;
-    const propId = item.getAttribute('data-prop-id');
-    if (propId) {
-      selectEditPropDirect(propId);
-    }
-  });
+function selectEditPropDirectById(propId) {
+  selectEditPropDirect(propId);
 }
 
 function selectEditPropDirect(propId) {
