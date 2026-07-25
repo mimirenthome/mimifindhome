@@ -2847,13 +2847,11 @@ async function saveApptDetail(id) {
 
   try {
     const mainPropId = newPropertyIds[0];
-    const mainProp = (allProps || []).find(p => p.id === mainPropId);
 
     const updateData = {
       date: newDate,
       time: newTime,
-      property_id: mainPropId,
-      property_title: mainProp ? mainProp.title : ''
+      property_id: mainPropId
     };
 
     const { error } = await db.from('appointments').update(updateData).eq('id', id);
