@@ -3915,3 +3915,149 @@ async function generatePropertyCodes() {
     showToast('❌ 生成失敗：' + (e.message || JSON.stringify(e)), 'error');
   }
 }
+
+function openAddApptModal() {
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.innerHTML = `
+    <div class="modal-box" style="max-width: 500px;">
+      <div class="modal-header">
+        <div class="modal-title">新增預約</div>
+        <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">✕</button>
+      </div>
+      <div class="modal-body" style="padding: 24px;">
+        <div class="form-group">
+          <label class="form-label">客人姓名 <span class="required">*</span></label>
+          <input type="text" id="add-appt-name" class="form-input" placeholder="姓名" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">電話號碼 <span class="required">*</span></label>
+          <input type="tel" id="add-appt-phone" class="form-input" placeholder="09xxxxxxxx" />
+        </div>
+        <div class="form-row form-row-2">
+          <div class="form-group">
+            <label class="form-label">預約日期 <span class="required">*</span></label>
+            <input type="date" id="add-appt-date" class="form-input" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">預約時間 <span class="required">*</span></label>
+            <select id="add-appt-time" class="form-select">
+              <option value="">選擇時間</option>
+              <option value="10:00">10:00</option><option value="10:30">10:30</option>
+              <option value="11:00">11:00</option><option value="11:30">11:30</option><option value="12:00">12:00</option><option value="12:30">12:30</option>
+              <option value="13:00">13:00</option><option value="13:30">13:30</option><option value="14:00">14:00</option><option value="14:30">14:30</option>
+              <option value="15:00">15:00</option><option value="15:30">15:30</option><option value="16:00">16:00</option><option value="16:30">16:30</option>
+              <option value="17:00">17:00</option><option value="17:30">17:30</option><option value="18:00">18:00</option><option value="18:30">18:30</option>
+              <option value="19:00">19:00</option><option value="19:30">19:30</option><option value="20:00">20:00</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">物件（可選）</label>
+          <input type="text" id="add-appt-property" class="form-input" placeholder="輸入物件地址或編號..." autocomplete="off" />
+          <div id="add-appt-prop-results" style="margin-top: 8px; max-height: 150px; overflow-y: auto;"></div>
+          <input type="hidden" id="add-appt-prop-id" value="" />
+          <div id="add-appt-prop-selected" style="margin-top: 8px; padding: 8px; background: #e8f5e9; border-radius: 4px; display: none;"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="this.closest('.modal-overlay').remove()">取消</button>
+        <button class="btn btn-primary" onclick="handleSaveNewAppt()">確定新增</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+
+  // 物件搜尋
+  const propInput = modal.querySelector('#add-appt-property');
+  const propResults = modal.querySelector('#add-appt-prop-results');
+  const propIdInput = modal.querySelector('#add-appt-prop-id');
+  const propSelected = modal.querySelector('#add-appt-prop-selected');
+
+  propInput.addEventListener('input', () => {
+    const keyword = propInput.value.toLowerCase().trim();
+    if (!keyword) {
+      propResults.innerHTML = '';
+      return;
+    }
+
+    const filtered = (allProps || []).filter(p => {
+      const searchStr = `${p.address || ''} ${p.title || ''} ${p.propertyCode || ''}`.toLowerCase();
+      return searchStr.includes(keyword);
+    });
+
+    propResults.innerHTML = filtered.length === 0
+      ? '<div style="padding: 8px; color: #999; text-align: center;">找不到物件</div>'
+      : filtered.map(p => `
+        <div style="padding: 8px; background: #f5f5f5; border-radius: 4px; margin-bottom: 4px; cursor: pointer; border-left: 3px solid #2d6e45;" onclick="selectAddApptProp('${p.id}', '${escHtml(p.propertyCode || p.title)}')">
+          <div style="font-weight: 500; font-size: 12px;">${escHtml(p.propertyCode || p.title)}</div>
+          <div style="font-size: 11px; color: #999;">${escHtml(p.address || '')}</div>
+        </div>
+      `).join('');
+  });
+}
+
+function selectAddApptProp(propId, propName) {
+  document.getElementById('add-appt-prop-id').value = propId;
+  document.getElementById('add-appt-prop-selected').innerHTML = `✓ ${propName}`;
+  document.getElementById('add-appt-prop-selected').style.display = 'block';
+  document.getElementById('add-appt-property').value = '';
+  document.getElementById('add-appt-prop-results').innerHTML = '';
+}
+
+async function handleSaveNewAppt() {
+  const name = document.getElementById('add-appt-name').value.trim();
+  const phone = document.getElementById('add-appt-phone').value.trim();
+  const date = document.getElementById('add-appt-date').value;
+  const time = document.getElementById('add-appt-time').value;
+  const propId = document.getElementById('add-appt-prop-id').value;
+
+  if (!name || !phone || !date || !time) {
+    showToast('請填寫必填欄位', 'error');
+    return;
+  }
+
+  if (!/^09\d{8}$/.test(phone)) {
+    showToast('電話號碼格式不正確', 'error');
+    return;
+  }
+
+  try {
+    const prop = propId ? (allProps || []).find(p => p.id === propId) : null;
+    const newAppt = {
+      id: 'appt_' + Date.now(),
+      name,
+      phone,
+      date,
+      time,
+      property_id: propId || '',
+      property_title: prop ? (prop.address || prop.title) : '',
+      status: '已預約',
+      submitted_at: new Date().toISOString(),
+      occupants: '',
+      relationship: '',
+      occupation: '',
+      age: '',
+      move_in_date: '',
+      has_pet: '',
+      pet_detail: '',
+      smokes: '',
+      knows_fee: '',
+      needs_subsidy: '',
+      needs_registration: '',
+      can_provide_proof: '',
+      notes: ''
+    };
+
+    const { error } = await db.from('appointments').insert(newAppt);
+    if (error) throw error;
+
+    document.querySelector('.modal-overlay').remove();
+    await renderApptCalendar();
+    await renderAppts();
+    showToast('✅ 預約已新增', 'success');
+  } catch (err) {
+    console.error('新增預約失敗:', err);
+    showToast('❌ 新增失敗：' + (err.message || '請重試'), 'error');
+  }
+}
