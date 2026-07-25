@@ -2760,70 +2760,19 @@ function editApptDetail(id) {
     resultsDiv.innerHTML = filtered.length === 0
       ? '<div style="padding: 8px; color: #999; text-align: center;">找不到物件</div>'
       : filtered.map(p => `
-        <div class="prop-result" data-prop-id="${p.id}" data-prop-address="${escHtml(p.address || p.title)}"
-             style="padding: 10px; background: #f5f5f5; border-radius: 6px; margin-bottom: 6px; cursor: pointer; border-left: 4px solid #2d6e45; transition: all 0.2s;">
+        <div style="padding: 10px; background: #f5f5f5; border-radius: 6px; margin-bottom: 6px; cursor: pointer; border-left: 4px solid #2d6e45; transition: all 0.2s; user-select: none;"
+             onclick="event.stopPropagation(); selectEditPropDirect('${p.id}', '${escHtml(p.address || p.title)}', modal)">
           <div style="font-weight: 600; font-size: 13px;">${escHtml(p.address || p.title)}</div>
           <div style="font-size: 11px; color: #999; margin-top: 2px;">${escHtml(p.district || '')} ${escHtml(p.layout || '')}</div>
         </div>
       `).join('');
   });
-
-  // 事件委託：點擊搜尋結果
-  resultsDiv.addEventListener('click', (e) => {
-    const propItem = e.target.closest('.prop-result');
-    if (!propItem) return;
-
-    const propId = propItem.dataset.propId;
-    const propAddress = propItem.dataset.propAddress;
-
-    const selectedIds = JSON.parse(selectedIdsInput.value || '[]');
-    if (selectedIds.includes(propId)) {
-      showToast('該物件已選擇', 'info');
-      return;
-    }
-
-    selectedIds.push(propId);
-    selectedIdsInput.value = JSON.stringify(selectedIds);
-
-    // 更新顯示
-    const prop = allProps.find(p => p.id === propId);
-    const propName = prop ? (prop.address || prop.title) : '未知物件';
-
-    selectedList.innerHTML += `
-      <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 8px; background: white; border-radius: 4px; margin-bottom: 4px; border: 1px solid #ddd;">
-        <span>${escHtml(propName)}</span>
-        <button type="button" class="remove-prop" data-prop-id="${propId}" style="background: none; border: none; color: #d32f2f; cursor: pointer; font-size: 16px; padding: 0;">✕</button>
-      </div>
-    `;
-
-    selectedDiv.style.display = 'block';
-    searchInput.value = '';
-    resultsDiv.innerHTML = '';
-  });
-
-  // 移除已選物件
-  selectedList.addEventListener('click', (e) => {
-    const removeBtn = e.target.closest('.remove-prop');
-    if (!removeBtn) return;
-
-    const propId = removeBtn.dataset.propId;
-    let selectedIds = JSON.parse(selectedIdsInput.value || '[]');
-    selectedIds = selectedIds.filter(id => id !== propId);
-    selectedIdsInput.value = JSON.stringify(selectedIds);
-
-    removeBtn.closest('div').remove();
-
-    if (selectedIds.length === 0) {
-      selectedDiv.style.display = 'none';
-    }
-  });
 }
 
-function addSelectedProp(propId, propAddress) {
-  const selectedIdsInput = document.getElementById('edit-selected-prop-ids');
+function selectEditPropDirect(propId, propAddress, modal) {
+  const selectedIdsInput = modal.querySelector('#edit-selected-prop-ids');
   const selectedIds = JSON.parse(selectedIdsInput.value || '[]');
 
-  // 避免重複
   if (selectedIds.includes(propId)) {
     showToast('該物件已選擇', 'info');
     return;
@@ -2832,42 +2781,35 @@ function addSelectedProp(propId, propAddress) {
   selectedIds.push(propId);
   selectedIdsInput.value = JSON.stringify(selectedIds);
 
-  // 更新顯示
-  updateSelectedPropsDisplay();
-  document.getElementById('edit-prop-search').value = '';
-  document.getElementById('edit-prop-results').innerHTML = '';
+  const selectedDiv = modal.querySelector('#edit-prop-selected');
+  const selectedList = modal.querySelector('#edit-selected-props-list');
+  const prop = (allProps || []).find(p => p.id === propId);
+  const propName = prop ? (prop.address || prop.title) : '未知物件';
+
+  selectedList.innerHTML += `
+    <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 8px; background: white; border-radius: 4px; margin-bottom: 4px; border: 1px solid #ddd;">
+      <span>${escHtml(propName)}</span>
+      <button type="button" style="background: none; border: none; color: #d32f2f; cursor: pointer; font-size: 16px; padding: 0; margin: 0;" onclick="removeEditPropDirect('${propId}', this)">✕</button>
+    </div>
+  `;
+
+  selectedDiv.style.display = 'block';
+  modal.querySelector('#edit-prop-search').value = '';
+  modal.querySelector('#edit-prop-results').innerHTML = '';
 }
 
-function removeSelectedProp(propId) {
-  const selectedIdsInput = document.getElementById('edit-selected-prop-ids');
+function removeEditPropDirect(propId, btn) {
+  const modal = btn.closest('.modal-box');
+  const selectedIdsInput = modal.querySelector('#edit-selected-prop-ids');
   let selectedIds = JSON.parse(selectedIdsInput.value || '[]');
   selectedIds = selectedIds.filter(id => id !== propId);
   selectedIdsInput.value = JSON.stringify(selectedIds);
-  updateSelectedPropsDisplay();
-}
 
-function updateSelectedPropsDisplay() {
-  const selectedIdsInput = document.getElementById('edit-selected-prop-ids');
-  const selectedIds = JSON.parse(selectedIdsInput.value || '[]');
-  const list = document.getElementById('edit-selected-props-list');
-  const selectedDiv = document.getElementById('edit-prop-selected');
+  btn.closest('div').remove();
 
   if (selectedIds.length === 0) {
-    selectedDiv.style.display = 'none';
-    return;
+    modal.querySelector('#edit-prop-selected').style.display = 'none';
   }
-
-  selectedDiv.style.display = 'block';
-  list.innerHTML = selectedIds.map(propId => {
-    const prop = (allProps || []).find(p => p.id === propId);
-    const propName = prop ? (prop.address || prop.title) : '未知物件';
-    return `
-      <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 8px; background: white; border-radius: 4px; margin-bottom: 4px; border: 1px solid #ddd;">
-        <span>${escHtml(propName)}</span>
-        <button type="button" style="background: none; border: none; color: #d32f2f; cursor: pointer; font-size: 16px; padding: 0;" onclick="removeSelectedProp('${propId}')">✕</button>
-      </div>
-    `;
-  }).join('');
 }
 
 async function saveApptDetail(id) {
