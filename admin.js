@@ -4076,7 +4076,6 @@ async function handleSaveNewAppt() {
   }
 
   try {
-    const prop = propId ? (allProps || []).find(p => p.id === propId) : null;
     const newAppt = {
       id: 'appt_' + Date.now(),
       name,
@@ -4084,7 +4083,6 @@ async function handleSaveNewAppt() {
       date,
       time,
       property_id: propId || '',
-      property_title: prop ? (prop.address || prop.title) : '',
       status: '已預約',
       submitted_at: new Date().toISOString(),
       occupants: '',
