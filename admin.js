@@ -2332,7 +2332,7 @@ async function renderApptCalendar() {
   const lockedTimesByDate = {}; // 追蹤每日已鎖定時間（只取第一個）
   appts.forEach(a => {
     if (a.status === '已取消') return; // 行事曆上不顯示已取消
-    if (a.status === '已鎖定' && !a.propertyTitle) return; // 已鎖定無物件不顯示
+    if (a.status === '已鎖定' && !a.propertyId) return; // 已鎖定無物件不顯示
     if (!apptsByDate[a.date]) apptsByDate[a.date] = [];
 
     // 已鎖定時間只取第一個開始時間
@@ -2468,15 +2468,15 @@ function showApptsByDate(dateStr) {
   cancelledAppts.sort((a, b) => timeToMinutes(a.time) - timeToMinutes(b.time));
 
   // 分離已鎖定：有物件的和沒物件的
-  const lockedWithProp = lockedAppts.filter(a => a.propertyTitle);
-  const lockedNoProp = lockedAppts.filter(a => !a.propertyTitle);
+  const lockedWithProp = lockedAppts.filter(a => a.propertyId);
+  const lockedNoProp = lockedAppts.filter(a => !a.propertyId);
 
   const lockedExpandId = 'locked-' + dateStr;
   const cancelledExpandId = 'cancelled-' + dateStr;
 
   // 構建活躍預約 HTML
   const activeApptHtml = activeAppts.map(a => {
-    const prop = (allProps || []).find(p => p.title === a.propertyTitle);
+    const prop = (allProps || []).find(p => p.id === a.propertyId) || (allProps || []).find(p => p.title === a.propertyTitle);
     const displayAddress = (prop && prop.address) ? prop.address : (a.propertyTitle || '未指定');
     return `
       <div style="background: #f5f5f5; border-radius: 6px; padding: 12px; margin-bottom: 8px; font-size: 13px; border-left: 4px solid transparent;">
@@ -2485,7 +2485,7 @@ function showApptsByDate(dateStr) {
         <div style="color: var(--color-text-muted); margin-top: 4px;">📍 ${displayAddress}</div>
         <div style="color: var(--color-text-muted); font-size: 12px; margin-top: 4px;">狀態: <span style="background: #e8f5e9; padding: 2px 6px; border-radius: 3px;">${a.status}</span></div>
         <div style="display: flex; gap: 8px; margin-top: 8px;">
-          <button class="btn btn-sm btn-primary" onclick="editApptProperty('${a.id}', '${a.propertyTitle || ''}')">🏠 修改物件</button>
+          <button class="btn btn-sm btn-primary" onclick="editApptProperty('${a.id}', '${a.propertyId || ''}')">🏠 修改物件</button>
           <button class="btn btn-sm btn-ghost" onclick="editApptDateTime('${a.id}')">📅 改日期</button>
           <button class="btn btn-sm btn-danger" onclick="deleteAppt('${a.id}')">🗑️ 刪除</button>
         </div>
@@ -2495,7 +2495,7 @@ function showApptsByDate(dateStr) {
 
   // 構建有物件的已鎖定時間 HTML（不折疊）
   const lockedWithPropHtml = lockedWithProp.map(a => {
-    const prop = (allProps || []).find(p => p.title === a.propertyTitle);
+    const prop = (allProps || []).find(p => p.id === a.propertyId) || (allProps || []).find(p => p.title === a.propertyTitle);
     const displayAddress = (prop && prop.address) ? prop.address : (a.propertyTitle || '未指定');
     return `
       <div style="background: #fff3cd; border-radius: 6px; padding: 12px; margin-bottom: 8px; font-size: 13px; border-left: 4px solid #ffc107;">
@@ -3433,13 +3433,13 @@ async function deleteBlockedTime(groupId, date) {
 }
 
 // 編輯預約物件
-function editApptProperty(apptId, currentPropertyTitle) {
+function editApptProperty(apptId, currentPropertyId) {
   const modal = document.createElement('div');
   modal.className = 'modal-overlay';
 
   // 建立物件列表
   const propOptions = (allProps || []).map(p => `
-    <option value="${p.title}" ${p.title === currentPropertyTitle ? 'selected' : ''}>
+    <option value="${p.id}" ${p.id === currentPropertyId ? 'selected' : ''}>
       ${p.address || '無地址'}
     </option>
   `).join('');
@@ -3470,11 +3470,13 @@ function editApptProperty(apptId, currentPropertyTitle) {
 
 // 保存預約物件
 async function saveApptProperty(apptId) {
-  const newProperty = document.getElementById('appt-prop-select').value;
+  const newPropertyId = document.getElementById('appt-prop-select').value;
+  const prop = (allProps || []).find(p => p.id === newPropertyId);
+  const newPropertyTitle = prop ? prop.title : '';
 
   try {
     const { error } = await db.from('appointments')
-      .update({ property_title: newProperty })
+      .update({ property_id: newPropertyId, property_title: newPropertyTitle })
       .eq('id', apptId);
 
     if (error) throw error;

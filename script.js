@@ -1288,8 +1288,10 @@ function closeCompareModal() {
 }
 
 // ===== APPOINTMENT =====
-function goToAppt(propertyTitle) {
-  document.getElementById('appt-property').value = propertyTitle || '';
+function goToAppt(propertyId) {
+  window._selectedPropertyId = propertyId || '';
+  const prop = allProperties.find(p => p.id === propertyId);
+  document.getElementById('appt-property').value = prop ? `${prop.title}` : '';
   const apptSection = document.getElementById('appointment');
   apptSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
   setTimeout(() => {
@@ -1351,6 +1353,7 @@ function initAppointmentForm() {
       id: 'appt_' + Date.now(),
       submittedAt: new Date().toISOString(),
       propertyTitle: document.getElementById('appt-property').value.trim(),
+      propertyId: window._selectedPropertyId || '',
       name: document.getElementById('appt-name').value.trim(),
       phone: document.getElementById('appt-phone').value.trim(),
       date: document.getElementById('appt-date').value,
