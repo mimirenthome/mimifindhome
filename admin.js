@@ -2714,46 +2714,6 @@ function editApptDetail(id) {
 
   renderEditApptSlots();
 }
-  const resultsDiv = modal.querySelector('#edit-prop-results');
-  const selectedIdsInput = modal.querySelector('#edit-selected-prop-ids');
-  const selectedDiv = modal.querySelector('#edit-prop-selected');
-  const selectedList = modal.querySelector('#edit-selected-props-list');
-
-  searchInput.addEventListener('input', () => {
-    const keyword = searchInput.value.toLowerCase().trim();
-    if (!keyword) {
-      resultsDiv.innerHTML = '';
-      return;
-    }
-
-    const filtered = (allProps || []).filter(p => {
-      const searchStr = `${p.address || ''} ${p.title || ''} ${p.district || ''} ${p.propertyCode || ''}`.toLowerCase();
-      return searchStr.includes(keyword);
-    });
-
-    if (filtered.length === 0) {
-      resultsDiv.innerHTML = '<div style="padding: 8px; color: #999; text-align: center;">找不到物件</div>';
-      return;
-    }
-
-    resultsDiv.innerHTML = filtered.map(p => `
-      <button type="button" class="edit-search-result" data-id="${p.id}" style="display: block; width: 100%; padding: 10px; background: #f5f5f5; border: none; border-left: 4px solid #2d6e45; border-radius: 6px; margin-bottom: 6px; cursor: pointer; transition: all 0.2s; text-align: left;">
-        <div style="font-weight: 600; font-size: 13px;">${escHtml(p.address || p.title)}</div>
-        <div style="font-size: 11px; color: #999; margin-top: 2px;">${escHtml(p.district || '')} ${escHtml(p.layout || '')} ${p.propertyCode ? `(${p.propertyCode})` : ''}</div>
-      </button>
-    `).join('');
-
-    // 立即為每個結果按鈕綁定事件
-    resultsDiv.querySelectorAll('.edit-search-result').forEach(btn => {
-      btn.addEventListener('mousedown', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        const propId = btn.getAttribute('data-id');
-        selectEditPropDirect(propId);
-      });
-    });
-  });
-}
 
 function renderEditApptSlots() {
   const modal = window._editApptModal;
