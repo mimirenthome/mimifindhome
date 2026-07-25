@@ -2846,27 +2846,29 @@ async function saveApptDetail(id) {
   }
 
   try {
-    // 取第一個物件作為主物件（向後相容）
+    // 取第一個物件作為主物件
     const mainPropId = newPropertyIds[0];
     const mainProp = (allProps || []).find(p => p.id === mainPropId);
 
-    const { error } = await db.from('appointments').update({
+    const updateData = {
       date: newDate,
       time: newTime,
       property_id: mainPropId,
-      property_ids: newPropertyIds,
       property_title: mainProp ? mainProp.title : ''
-    }).eq('id', id);
+    };
+
+    const { error } = await db.from('appointments').update(updateData).eq('id', id);
 
     if (error) throw error;
 
-    document.querySelector('.modal-overlay').remove();
+    const modal = document.querySelector('.modal-overlay');
+    if (modal) modal.remove();
     await renderApptCalendar();
     await renderAppts();
     showToast('✅ 預約已修改', 'success');
   } catch(e) {
     console.error('修改失敗:', e);
-    showToast('❌ 修改失敗', 'error');
+    showToast('❌ 修改失敗，請檢查日期或時間是否有衝突', 'error');
   }
 }
 
