@@ -384,7 +384,6 @@
         <input type="text" class="filter-select" id="appt-search-phone" placeholder="搜尋電話號碼" oninput="renderAppts()" style="min-width:140px;" />
       </div>
       <div class="filter-group">
-        <button class="btn btn-primary btn-sm" onclick="openAddApptModal()" style="align-self: flex-end;">➕ 新增預約</button>
         <button class="btn btn-primary btn-sm" onclick="checkGhostAppointments()" style="align-self: flex-end;">🔍 檢查預約</button>
         <button class="btn btn-ghost btn-sm" onclick="exportAppointmentsData()" style="align-self: flex-end;">📥 導出預約資料</button>
       </div>
@@ -395,6 +394,7 @@
       <div class="calendar-header">
         <h2 style="margin: 0; font-size: 16px; font-weight: 600;">📅 預約日期</h2>
         <div style="display: flex; gap: 8px;">
+          <button class="btn btn-primary" onclick="openAddApptModal()" style="white-space: nowrap; font-size: 13px; padding: 6px 12px;">➕ 新增預約</button>
           <button class="btn btn-primary" onclick="openAddBlockedTimeModal()" style="white-space: nowrap; font-size: 13px; padding: 6px 12px;">+ 新增不可預約</button>
           <button class="btn btn-primary" onclick="setupRecurringLockTime()" style="white-space: nowrap; font-size: 13px; padding: 6px 12px;">⏰ 定期鎖定</button>
         </div>

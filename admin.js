@@ -3928,7 +3928,8 @@ function openAddApptModal() {
       <div class="modal-body" style="padding: 24px;">
         <div class="form-group">
           <label class="form-label">客人姓名 <span class="required">*</span></label>
-          <input type="text" id="add-appt-name" class="form-input" placeholder="姓名" />
+          <input type="text" id="add-appt-name" class="form-input" placeholder="輸入姓名搜索歷史客人..." autocomplete="off" />
+          <div id="add-appt-name-results" style="margin-top: 8px; max-height: 150px; overflow-y: auto;"></div>
         </div>
         <div class="form-group">
           <label class="form-label">電話號碼 <span class="required">*</span></label>
@@ -3968,6 +3969,49 @@ function openAddApptModal() {
   `;
   document.body.appendChild(modal);
 
+  // 客人姓名搜尋
+  const nameInput = modal.querySelector('#add-appt-name');
+  const nameResults = modal.querySelector('#add-appt-name-results');
+  const phoneInput = modal.querySelector('#add-appt-phone');
+
+  nameInput.addEventListener('input', async () => {
+    const keyword = nameInput.value.toLowerCase().trim();
+    if (!keyword || keyword.length < 1) {
+      nameResults.innerHTML = '';
+      return;
+    }
+
+    try {
+      const { data: appts } = await db.from('appointments')
+        .select('name, phone, date, time, property_title')
+        .like('name', `%${keyword}%`)
+        .order('submitted_at', { ascending: false })
+        .limit(5);
+
+      if (!appts || appts.length === 0) {
+        nameResults.innerHTML = '';
+        return;
+      }
+
+      const uniqueCustomers = {};
+      appts.forEach(a => {
+        if (!uniqueCustomers[a.phone]) {
+          uniqueCustomers[a.phone] = a;
+        }
+      });
+
+      nameResults.innerHTML = Object.values(uniqueCustomers).map(customer => `
+        <div style="padding: 10px; background: #f5f5f5; border-radius: 4px; margin-bottom: 6px; cursor: pointer; border-left: 3px solid #2d6e45;" onclick="selectHistoryCustomer('${escHtml(customer.name)}', '${customer.phone}')">
+          <div style="font-weight: 500; font-size: 12px;">👤 ${escHtml(customer.name)}</div>
+          <div style="font-size: 11px; color: #666;">📱 ${customer.phone}</div>
+          <div style="font-size: 11px; color: #999;">最後預約: ${customer.date} ${customer.time}</div>
+        </div>
+      `).join('');
+    } catch (err) {
+      console.error('搜尋客人失敗:', err);
+    }
+  });
+
   // 物件搜尋
   const propInput = modal.querySelector('#add-appt-property');
   const propResults = modal.querySelector('#add-appt-prop-results');
@@ -3995,6 +4039,12 @@ function openAddApptModal() {
         </div>
       `).join('');
   });
+}
+
+function selectHistoryCustomer(name, phone) {
+  document.getElementById('add-appt-name').value = name;
+  document.getElementById('add-appt-phone').value = phone;
+  document.getElementById('add-appt-name-results').innerHTML = '';
 }
 
 function selectAddApptProp(propId, propName) {
