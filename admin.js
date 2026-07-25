@@ -324,7 +324,7 @@ function renderAdminProps() {
             <div class="admin-prop-card-info">
               ${p.address ? `<div class="admin-prop-card-addr">📍 ${escHtml(p.address)}</div>` : ''}
               ${p.address ? `<div style="font-size:11px;color:var(--color-text-muted);margin-bottom:4px;">📌 大略位置：${escHtml(maskAddress(p.address))}</div>` : ''}
-              <div class="admin-prop-card-title">${escHtml(p.title)}</div>
+              <div class="admin-prop-card-title" style="color:#2d6e45;font-weight:600;">🔑 ${escHtml(p.propertyCode || p.title)}</div>
               <div class="admin-prop-card-meta">
                 <span>${escHtml(p.district)}</span>
                 <span>·</span>
@@ -389,7 +389,7 @@ function renderAdminProps() {
             : `<div style="width:52px;height:38px;background:var(--color-soft-green);border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:16px;opacity:0.4;">🏠</div>`}
         </td>
         <td style="max-width:180px;">
-          <div style="font-weight:600;font-size:12px;line-height:1.4;color:var(--color-primary-dark);">${escHtml(p.title)}</div>
+          <div style="font-weight:600;font-size:12px;line-height:1.4;color:#2d6e45;">🔑 ${escHtml(p.propertyCode || p.title)}</div>
         </td>
         <td style="max-width:160px;">${addrDisplay}</td>
         <td style="white-space:nowrap;font-size:12px;">${escHtml(p.district)}</td>
