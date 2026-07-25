@@ -2261,11 +2261,12 @@ async function renderAppts() {
     const matchedProp = (allProps || []).find(p => p.id === a.propertyId) || (allProps || []).find(p => p.title === a.propertyTitle);
     const propAddress = matchedProp && matchedProp.address ? matchedProp.address : '';
     const propCode = matchedProp && matchedProp.propertyCode ? matchedProp.propertyCode : '';
+    const propDisplay = propCode ? `🔑 ${escHtml(propCode)}` : (a.propertyTitle || '（未指定物件）');
     return `
       <div class="appt-card">
         <div class="appt-card-top">
           <div class="appt-property">
-            <div>${propCode ? `<span style="color:#2d6e45;font-weight:600;">🔑 ${escHtml(propCode)}</span>` : ''} ${escHtml(a.propertyTitle || '（未指定物件）')}</div>
+            <div style="color:#2d6e45;font-weight:600;">${propDisplay}</div>
             ${propAddress ? `<div style="font-size:11px;color:var(--color-text-muted);margin-top:2px;">📍 ${escHtml(propAddress)}</div>` : ''}
           </div>
           <span class="status-badge ${statusClass}" style="flex-shrink:0;">${escHtml(a.status)}</span>
@@ -2751,7 +2752,7 @@ function editApptDetail(id) {
     }
 
     const filtered = (allProps || []).filter(p => {
-      const searchStr = `${p.address || ''} ${p.title || ''} ${p.district || ''}`.toLowerCase();
+      const searchStr = `${p.address || ''} ${p.title || ''} ${p.district || ''} ${p.propertyCode || ''}`.toLowerCase();
       return searchStr.includes(keyword);
     });
 
@@ -2760,22 +2761,21 @@ function editApptDetail(id) {
       : filtered.map(p => `
         <div data-prop-id="${p.id}" class="edit-prop-result" style="padding: 10px; background: #f5f5f5; border-radius: 6px; margin-bottom: 6px; cursor: pointer; border-left: 4px solid #2d6e45; transition: all 0.2s; user-select: none;">
           <div style="font-weight: 600; font-size: 13px;">${escHtml(p.address || p.title)}</div>
-          <div style="font-size: 11px; color: #999; margin-top: 2px;">${escHtml(p.district || '')} ${escHtml(p.layout || '')}</div>
+          <div style="font-size: 11px; color: #999; margin-top: 2px;">${escHtml(p.district || '')} ${escHtml(p.layout || '')} ${p.propertyCode ? `(${p.propertyCode})` : ''}</div>
         </div>
       `).join('');
+  });
 
-    resultsDiv.querySelectorAll('.edit-prop-result').forEach(el => {
-      el.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const propId = el.getAttribute('data-prop-id');
-        selectEditPropDirect(propId);
-      });
-    });
+  resultsDiv.addEventListener('click', (e) => {
+    const result = e.target.closest('.edit-prop-result');
+    if (!result) return;
+    e.stopPropagation();
+    const propId = result.getAttribute('data-prop-id');
+    selectEditPropDirect(propId, modal);
   });
 }
 
-function selectEditPropDirect(propId) {
-  const modal = document.querySelector('.modal-overlay');
+function selectEditPropDirect(propId, modal) {
   const selectedIdsInput = modal.querySelector('#edit-selected-prop-ids');
   const selectedIds = JSON.parse(selectedIdsInput.value || '[]');
 
@@ -2791,6 +2791,7 @@ function selectEditPropDirect(propId) {
   const selectedList = modal.querySelector('#edit-selected-props-list');
   const prop = (allProps || []).find(p => p.id === propId);
   const propName = prop ? (prop.address || prop.title) : '未知物件';
+  const propCode = prop ? (prop.propertyCode || '') : '';
 
   selectedDiv.style.display = 'block';
   const itemDiv = document.createElement('div');
@@ -2798,14 +2799,14 @@ function selectEditPropDirect(propId) {
   itemDiv.setAttribute('data-prop-id', propId);
   itemDiv.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 6px 8px; background: white; border-radius: 4px; margin-bottom: 4px; border: 1px solid #ddd;';
   itemDiv.innerHTML = `
-    <span>${escHtml(propName)}</span>
+    <span>${propCode ? `<span style="color:#2d6e45;font-weight:600;">🔑 ${escHtml(propCode)}</span> ` : ''}${escHtml(propName)}</span>
     <button type="button" class="remove-edit-prop-btn" style="background: none; border: none; color: #d32f2f; cursor: pointer; font-size: 16px; padding: 0; margin: 0;">✕</button>
   `;
 
   const removeBtn = itemDiv.querySelector('.remove-edit-prop-btn');
   removeBtn.addEventListener('click', (e) => {
     e.stopPropagation();
-    removeEditPropDirect(propId);
+    removeEditPropDirect(propId, modal);
   });
 
   selectedList.appendChild(itemDiv);
@@ -2815,8 +2816,7 @@ function selectEditPropDirect(propId) {
   modal.querySelector('#edit-prop-results').innerHTML = '';
 }
 
-function removeEditPropDirect(propId) {
-  const modal = document.querySelector('.modal-overlay');
+function removeEditPropDirect(propId, modal) {
   const selectedIdsInput = modal.querySelector('#edit-selected-prop-ids');
   let selectedIds = JSON.parse(selectedIdsInput.value || '[]');
   selectedIds = selectedIds.filter(id => id !== propId);
