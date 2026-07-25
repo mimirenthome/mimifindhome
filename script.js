@@ -407,7 +407,7 @@ function applyFilters() {
       if (!hasTags) return false;
     }
     if (keyword) {
-      const searchable = [p.title, p.address, p.nearbyLandmarks, p.district, p.highlights, p.pros]
+      const searchable = [p.title, p.address, p.nearbyLandmarks, p.district, p.highlights, p.pros, p.propertyCode]
         .filter(Boolean).join(' ').toLowerCase();
       if (!searchable.includes(keyword)) return false;
     }
@@ -735,7 +735,12 @@ function openDetailModal(id) {
 
   body.innerHTML = `
     ${galleryHtml}
-    <div class="detail-title-mobile" style="padding:12px 0 8px;border-bottom:1px solid var(--color-border);margin-bottom:16px;">${escHtml(p.title)}</div>
+    <div class="detail-title-mobile" style="padding:12px 0 8px;border-bottom:1px solid var(--color-border);margin-bottom:16px;">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <span>${escHtml(p.title)}</span>
+        ${p.propertyCode ? `<span style="font-size: 12px; color: var(--color-text-muted); background: #f0f0f0; padding: 4px 8px; border-radius: 4px;">ID: ${escHtml(p.propertyCode)}</span>` : ''}
+      </div>
+    </div>
     <div class="detail-info-grid">
       <div class="detail-info-item full">
         <span class="detail-info-label">租金</span>
@@ -1291,7 +1296,10 @@ function closeCompareModal() {
 function goToAppt(propertyId) {
   window._selectedPropertyId = propertyId || '';
   const prop = allProperties.find(p => p.id === propertyId);
-  document.getElementById('appt-property').value = prop ? `${prop.title}` : '';
+  if (prop) {
+    const propDisplay = prop.propertyCode ? `${prop.title} (${prop.propertyCode})` : prop.title;
+    document.getElementById('appt-property').value = propDisplay;
+  }
   const apptSection = document.getElementById('appointment');
   apptSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
   setTimeout(() => {
