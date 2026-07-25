@@ -2757,10 +2757,26 @@ function renderEditApptSlots() {
     </div>
   `).join('');
 
-  // 為每個搜尋框綁定事件
+  // 為每個時段綁定事件
   (window._editApptSlots || []).forEach((slot, idx) => {
     const searchInput = modal.querySelector(`#edit-search-${idx}`);
     const resultsDiv = modal.querySelector(`#edit-results-${idx}`);
+    const dateInput = modal.querySelector(`#edit-date-${idx}`);
+    const timeSelect = modal.querySelector(`#edit-time-${idx}`);
+
+    // 日期變更事件
+    if (dateInput) {
+      dateInput.addEventListener('change', () => {
+        window._editApptSlots[idx].date = dateInput.value;
+      });
+    }
+
+    // 時間變更事件
+    if (timeSelect) {
+      timeSelect.addEventListener('change', () => {
+        window._editApptSlots[idx].time = timeSelect.value;
+      });
+    }
 
     if (!searchInput) return;
 
