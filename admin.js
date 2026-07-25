@@ -2757,16 +2757,23 @@ function editApptDetail(id) {
     resultsDiv.innerHTML = filtered.length === 0
       ? '<div style="padding: 8px; color: #999; text-align: center;">找不到物件</div>'
       : filtered.map(p => `
-        <div style="padding: 10px; background: #f5f5f5; border-radius: 6px; margin-bottom: 6px; cursor: pointer; border-left: 4px solid #2d6e45; transition: all 0.2s; user-select: none;"
-             onclick="event.stopPropagation(); selectEditPropDirect('${p.id}', '${escHtml(p.address || p.title)}')">
+        <div data-prop-id="${p.id}" class="edit-prop-result" style="padding: 10px; background: #f5f5f5; border-radius: 6px; margin-bottom: 6px; cursor: pointer; border-left: 4px solid #2d6e45; transition: all 0.2s; user-select: none;">
           <div style="font-weight: 600; font-size: 13px;">${escHtml(p.address || p.title)}</div>
           <div style="font-size: 11px; color: #999; margin-top: 2px;">${escHtml(p.district || '')} ${escHtml(p.layout || '')}</div>
         </div>
       `).join('');
+
+    resultsDiv.querySelectorAll('.edit-prop-result').forEach(el => {
+      el.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const propId = el.getAttribute('data-prop-id');
+        selectEditPropDirect(propId);
+      });
+    });
   });
 }
 
-function selectEditPropDirect(propId, propAddress) {
+function selectEditPropDirect(propId) {
   const modal = document.querySelector('.modal-overlay');
   const selectedIdsInput = modal.querySelector('#edit-selected-prop-ids');
   const selectedIds = JSON.parse(selectedIdsInput.value || '[]');
@@ -2785,12 +2792,22 @@ function selectEditPropDirect(propId, propAddress) {
   const propName = prop ? (prop.address || prop.title) : '未知物件';
 
   selectedDiv.style.display = 'block';
-  selectedList.innerHTML += `
-    <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 8px; background: white; border-radius: 4px; margin-bottom: 4px; border: 1px solid #ddd;">
-      <span>${escHtml(propName)}</span>
-      <button type="button" style="background: none; border: none; color: #d32f2f; cursor: pointer; font-size: 16px; padding: 0; margin: 0;" onclick="removeEditPropDirect('${propId}')">✕</button>
-    </div>
+  const itemDiv = document.createElement('div');
+  itemDiv.className = 'edit-selected-prop-item';
+  itemDiv.setAttribute('data-prop-id', propId);
+  itemDiv.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 6px 8px; background: white; border-radius: 4px; margin-bottom: 4px; border: 1px solid #ddd;';
+  itemDiv.innerHTML = `
+    <span>${escHtml(propName)}</span>
+    <button type="button" class="remove-edit-prop-btn" style="background: none; border: none; color: #d32f2f; cursor: pointer; font-size: 16px; padding: 0; margin: 0;">✕</button>
   `;
+
+  const removeBtn = itemDiv.querySelector('.remove-edit-prop-btn');
+  removeBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    removeEditPropDirect(propId);
+  });
+
+  selectedList.appendChild(itemDiv);
 
   selectedDiv.style.display = 'block';
   modal.querySelector('#edit-prop-search').value = '';
@@ -2804,8 +2821,8 @@ function removeEditPropDirect(propId) {
   selectedIds = selectedIds.filter(id => id !== propId);
   selectedIdsInput.value = JSON.stringify(selectedIds);
 
-  const btn = event.target;
-  btn.closest('div').remove();
+  const itemDiv = modal.querySelector(`.edit-selected-prop-item[data-prop-id="${propId}"]`);
+  if (itemDiv) itemDiv.remove();
 
   if (selectedIds.length === 0) {
     modal.querySelector('#edit-prop-selected').style.display = 'none';
