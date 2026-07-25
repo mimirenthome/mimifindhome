@@ -3795,48 +3795,50 @@ async function setupRecurringLockTime() {
   }
 }
 
-// 生成所有物件的編號（格式：YYMMMDD + 001序號）
+// 生成所有物件的編號（格式：0YMMDD + 001序號）
 async function generatePropertyCodes() {
   if (!confirm('確認要為所有物件生成編號？\n格式：0260725001（年月日+序號）')) return;
 
   try {
-    const { data, error } = await db.from('properties').select('*').order('created_at', { ascending: true });
+    showToast('生成中...', 'info');
+
+    const { data, error } = await db.from('properties').select('id, created_at').order('created_at', { ascending: true });
     if (error) throw error;
 
-    const updates = [];
     const dateGroups = {};
 
     // 按日期分組
     data.forEach(prop => {
-      const dateStr = new Date(prop.created_at).toISOString().split('T')[0]; // YYYY-MM-DD
-      if (!dateGroups[dateStr]) dateGroups[dateStr] = [];
-      dateGroups[dateStr].push(prop.id);
+      const d = new Date(prop.created_at);
+      const year = String(d.getFullYear()).slice(1);
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      const dateKey = `0${year}${month}${day}`;
+
+      if (!dateGroups[dateKey]) dateGroups[dateKey] = [];
+      dateGroups[dateKey].push(prop.id);
     });
 
-    // 為每個物件生成編號
+    // 為每個物件生成編號並更新
     let totalCount = 0;
-    Object.keys(dateGroups).sort().forEach(dateStr => {
-      const [year, month, day] = dateStr.split('-');
-      const yy = year.slice(2); // 取年的後2位
-      const ids = dateGroups[dateStr];
+    for (const [dateKey, propIds] of Object.entries(dateGroups)) {
+      for (let i = 0; i < propIds.length; i++) {
+        const seq = String(i + 1).padStart(3, '0');
+        const code = `${dateKey}${seq}`;
 
-      ids.forEach((propId, idx) => {
-        const seq = String(idx + 1).padStart(3, '0'); // 001, 002, ...
-        const code = `0${yy}${month}${day}${seq}`;
-        updates.push({ id: propId, code });
+        const { error: updateError } = await db.from('properties')
+          .update({ property_code: code })
+          .eq('id', propIds[i]);
+
+        if (updateError) throw updateError;
         totalCount++;
-      });
-    });
-
-    // 批量更新
-    for (const update of updates) {
-      await db.from('properties').update({ property_code: update.code }).eq('id', update.id);
+      }
     }
 
-    alert(`✅ 已為 ${totalCount} 個物件生成編號！`);
-    location.reload();
+    showToast(`✅ 已為 ${totalCount} 個物件生成編號！`, 'success');
+    setTimeout(() => location.reload(), 1500);
   } catch(e) {
     console.error('生成編號失敗:', e);
-    alert('❌ 生成失敗：' + (e.message || JSON.stringify(e)));
+    showToast('❌ 生成失敗：' + (e.message || JSON.stringify(e)), 'error');
   }
 }
