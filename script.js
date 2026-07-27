@@ -616,7 +616,7 @@ function renderPropertyCard(p) {
         <div class="property-actions">
           <button class="btn btn-primary btn-sm" onclick="openDetailModal('${p.id}')">查看詳情</button>
           <button class="btn btn-outline btn-sm compare-btn-${p.id}" onclick="toggleCompare('${p.id}')">${inCompare ? '✓ 已加入' : '比較'}</button>
-          <button class="btn btn-ghost btn-sm" onclick="goToAppt('${p.id}')">預約看屋</button>
+          <button class="btn btn-ghost btn-sm" onclick="goToAppt('${p.propertyCode}')">預約看屋</button>
         </div>
       </div>
     </div>`;
@@ -660,7 +660,7 @@ function renderPropertyCardMobile(p) {
         <div class="property-actions-mobile">
           <button class="btn-mobile-action" onclick="openDetailModal('${p.id}')">查看</button>
           <button class="btn-mobile-action compare-btn-${p.id}" onclick="toggleCompare('${p.id}')">${inCompare ? '✓' : '比較'}</button>
-          <button class="btn-mobile-action" onclick="goToAppt('${p.id}')">預約</button>
+          <button class="btn-mobile-action" onclick="goToAppt('${p.propertyCode}')">預約</button>
         </div>
       </div>
     </div>`;
@@ -802,7 +802,7 @@ function openDetailModal(id) {
 
   document.getElementById('detail-appt-btn').onclick = () => {
     closeDetailModal();
-    goToAppt(p.id);
+    goToAppt(p.propertyCode);
   };
 
   document.getElementById('detail-modal').classList.remove('hidden');
@@ -1293,9 +1293,9 @@ function closeCompareModal() {
 }
 
 // ===== APPOINTMENT =====
-function goToAppt(propertyId) {
-  window._selectedPropertyId = propertyId || '';
-  const prop = allProperties.find(p => p.id === propertyId);
+function goToAppt(propertyCode) {
+  window._selectedPropertyCode = propertyCode || '';
+  const prop = allProperties.find(p => p.propertyCode === propertyCode);
   if (prop) {
     document.getElementById('appt-property').value = prop.propertyCode || prop.title;
   }
@@ -1360,7 +1360,7 @@ function initAppointmentForm() {
       id: 'appt_' + Date.now(),
       submittedAt: new Date().toISOString(),
       propertyTitle: document.getElementById('appt-property').value.trim(),
-      propertyId: window._selectedPropertyId || '',
+      propertyCode: window._selectedPropertyCode || '',
       name: document.getElementById('appt-name').value.trim(),
       phone: document.getElementById('appt-phone').value.trim(),
       date: document.getElementById('appt-date').value,
@@ -1717,8 +1717,7 @@ async function queryApptByPhone() {
 
     const html = apts.map(a => {
       const appt = apptFromDb(a);
-      const matchedProp = (allProperties || []).find(p => p.id === appt.propertyId);
-      const propDisplay = matchedProp?.propertyCode || appt.propertyId || '（未指定物件）';
+      const propDisplay = appt.propertyCode || '（未指定物件）';
       return `
         <div style="margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #ddd;">
           <div style="font-weight: 500; margin-bottom: 6px; color: #2d6e45;">🔑 ID: ${escHtml(propDisplay)}</div>

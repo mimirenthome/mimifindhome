@@ -2267,10 +2267,9 @@ async function renderAppts() {
   list.innerHTML = filtered.map(a => {
     const dt = new Date(a.submittedAt).toLocaleString('zh-TW', { year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' });
     const statusClass = { '未處理': 'status-pending', '已聯繫': 'status-contacted', '已預約': 'status-booked', '已取消': 'status-cancelled' }[a.status] || 'status-pending';
-    const matchedProp = (allProps || []).find(p => p.id === a.propertyId) || (allProps || []).find(p => p.title === a.propertyTitle);
+    const matchedProp = (allProps || []).find(p => p.propertyCode === a.propertyCode);
     const propAddress = matchedProp && matchedProp.address ? matchedProp.address : '';
-    const propCode = matchedProp && matchedProp.propertyCode ? matchedProp.propertyCode : '';
-    const propDisplay = propCode ? `🔑 ${escHtml(propCode)}` : (a.propertyTitle || '（未指定物件）');
+    const propDisplay = a.propertyCode ? `🔑 ${escHtml(a.propertyCode)}` : (a.propertyTitle || '（未指定物件）');
     return `
       <div class="appt-card">
         <div class="appt-card-top">
@@ -2340,7 +2339,7 @@ async function renderApptCalendar() {
   const lockedTimesByDate = {}; // 追蹤每日已鎖定時間（只取第一個）
   appts.forEach(a => {
     if (a.status === '已取消') return; // 行事曆上不顯示已取消
-    if (a.status === '已鎖定' && !a.propertyId) return; // 已鎖定無物件不顯示
+    if (a.status === '已鎖定' && !a.propertyCode) return; // 已鎖定無物件不顯示
     if (!apptsByDate[a.date]) apptsByDate[a.date] = [];
 
     // 已鎖定時間只取第一個開始時間
@@ -2483,15 +2482,15 @@ function showApptsByDate(dateStr) {
   cancelledAppts.sort((a, b) => timeToMinutes(a.time) - timeToMinutes(b.time));
 
   // 分離已鎖定：有物件的和沒物件的
-  const lockedWithProp = lockedAppts.filter(a => a.propertyId);
-  const lockedNoProp = lockedAppts.filter(a => !a.propertyId);
+  const lockedWithProp = lockedAppts.filter(a => a.propertyCode);
+  const lockedNoProp = lockedAppts.filter(a => !a.propertyCode);
 
   const lockedExpandId = 'locked-' + dateStr;
   const cancelledExpandId = 'cancelled-' + dateStr;
 
   // 構建活躍預約 HTML
   const activeApptHtml = activeAppts.map(a => {
-    const prop = (allProps || []).find(p => p.id === a.propertyId) || (allProps || []).find(p => p.title === a.propertyTitle);
+    const prop = (allProps || []).find(p => p.propertyCode === a.propertyCode);
     const displayAddress = (prop && prop.address) ? prop.address : (a.propertyTitle || '未指定');
     return `
       <div style="background: #f5f5f5; border-radius: 6px; padding: 12px; margin-bottom: 8px; font-size: 13px; border-left: 4px solid transparent;">
@@ -2509,7 +2508,7 @@ function showApptsByDate(dateStr) {
 
   // 構建有物件的已鎖定時間 HTML（不折疊）
   const lockedWithPropHtml = lockedWithProp.map(a => {
-    const prop = (allProps || []).find(p => p.id === a.propertyId) || (allProps || []).find(p => p.title === a.propertyTitle);
+    const prop = (allProps || []).find(p => p.propertyCode === a.propertyCode);
     const displayAddress = (prop && prop.address) ? prop.address : (a.propertyTitle || '未指定');
     return `
       <div style="background: #fff3cd; border-radius: 6px; padding: 12px; margin-bottom: 8px; font-size: 13px; border-left: 4px solid #ffc107;">
@@ -2711,7 +2710,7 @@ function editApptDetail(id) {
   // 初始化預約時段組合
   window._editApptSlots = window._editApptSlots || [];
   window._editApptSlots = [{
-    propId: appt.propertyId || '',
+    propCode: appt.propertyCode || '',
     propName: appt.propertyTitle || '',
     date: appt.date,
     time: appt.time
@@ -2805,7 +2804,7 @@ function renderEditApptSlots() {
       }
 
       resultsDiv.innerHTML = filtered.map(p => `
-        <button type="button" class="edit-search-result" data-idx="${idx}" data-id="${p.id}" style="display: block; width: 100%; padding: 8px; background: #f5f5f5; border: none; border-left: 3px solid #2d6e45; border-radius: 4px; margin-bottom: 4px; cursor: pointer; text-align: left;">
+        <button type="button" class="edit-search-result" data-idx="${idx}" data-code="${p.propertyCode}" style="display: block; width: 100%; padding: 8px; background: #f5f5f5; border: none; border-left: 3px solid #2d6e45; border-radius: 4px; margin-bottom: 4px; cursor: pointer; text-align: left;">
           <div style="font-weight: 500; font-size: 12px;">${escHtml(p.propertyCode || p.title)}</div>
           <div style="font-size: 11px; color: #999;">${escHtml(p.address || '')}</div>
         </button>
@@ -2817,10 +2816,10 @@ function renderEditApptSlots() {
           e.preventDefault();
           e.stopPropagation();
           const slotIdx = btn.getAttribute('data-idx');
-          const propId = btn.getAttribute('data-id');
-          const prop = (allProps || []).find(p => p.id === propId);
+          const propCode = btn.getAttribute('data-code');
+          const prop = (allProps || []).find(p => p.propertyCode === propCode);
 
-          window._editApptSlots[slotIdx].propId = propId;
+          window._editApptSlots[slotIdx].propCode = propCode;
           window._editApptSlots[slotIdx].propName = prop ? (prop.address || prop.title) : '';
 
           renderEditApptSlots();
@@ -2916,7 +2915,7 @@ async function saveApptDetail(apptId) {
   // 驗證所有時段
   for (let i = 0; i < slots.length; i++) {
     const slot = slots[i];
-    if (!slot.propId) {
+    if (!slot.propCode) {
       showToast(`時段 ${i + 1} 請選擇物件`, 'error');
       return;
     }
@@ -2942,7 +2941,7 @@ async function saveApptDetail(apptId) {
       phone: originalAppt?.phone || '',
       date: slot.date,
       time: slot.time,
-      property_id: slot.propId || '',
+      property_code: slot.propCode || '',
       status: origStatus,
       submitted_at: origSubmittedAt,
       occupants: originalAppt?.occupants || '',
@@ -4126,7 +4125,7 @@ function openAddApptModal() {
     }
 
     timePropResults.innerHTML = filtered.map(p => `
-      <div style="padding: 8px; background: #f5f5f5; border-radius: 4px; margin-bottom: 4px; cursor: pointer; border-left: 3px solid #2d6e45;" onclick="selectTimeProp('${p.id}', '${escHtml(p.propertyCode || p.title)}')">
+      <div style="padding: 8px; background: #f5f5f5; border-radius: 4px; margin-bottom: 4px; cursor: pointer; border-left: 3px solid #2d6e45;" onclick="selectTimeProp('${p.propertyCode}', '${escHtml(p.propertyCode || p.title)}')">
         <div style="font-weight: 500; font-size: 12px;">${escHtml(p.propertyCode || p.title)}</div>
         <div style="font-size: 11px; color: #999;">${escHtml(p.address || '')}</div>
       </div>
@@ -4147,14 +4146,14 @@ window._timeSlots = [];
 function addTimeSlot() {
   const time = document.getElementById('add-appt-time').value;
   const propInput = document.getElementById('add-appt-time-property').value.trim();
-  const propId = document.getElementById('add-appt-time-prop-id')?.value || '';
+  const propCode = document.getElementById('add-appt-time-prop-id')?.value || '';
 
   if (!time) {
     showToast('請選擇時間', 'error');
     return;
   }
 
-  const slot = { time, propId, propName: propInput };
+  const slot = { time, propCode, propName: propInput };
   window._timeSlots.push(slot);
 
   renderTimeSlots();
@@ -4184,8 +4183,8 @@ function renderTimeSlots() {
   `).join('');
 }
 
-function selectTimeProp(propId, propName) {
-  document.getElementById('add-appt-time-prop-id').value = propId;
+function selectTimeProp(propCode, propName) {
+  document.getElementById('add-appt-time-prop-id').value = propCode;
   document.getElementById('add-appt-time-property').value = propName;
   document.getElementById('add-appt-time-prop-results').style.display = 'none';
 }
@@ -4226,7 +4225,7 @@ async function handleSaveNewAppt() {
       phone,
       date,
       time: slot.time,
-      property_id: slot.propId || '',
+      property_code: slot.propCode || '',
       status: '已預約',
       submitted_at: new Date().toISOString(),
       occupants: '1',
