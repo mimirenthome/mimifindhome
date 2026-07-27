@@ -1717,7 +1717,7 @@ async function queryApptByPhone() {
 
     const html = apts.map(a => {
       const appt = apptFromDb(a);
-      const propDisplay = appt.propertyCode || '（未指定物件）';
+      const propDisplay = appt.propertyCode || appt.propertyTitle || '（未指定物件）';
       return `
         <div style="margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #ddd;">
           <div style="font-weight: 500; margin-bottom: 6px; color: #2d6e45;">🔑 ID: ${escHtml(propDisplay)}</div>
