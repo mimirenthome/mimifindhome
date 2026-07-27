@@ -2378,25 +2378,32 @@ async function renderApptCalendar() {
     const dayAppts = apptsByDate[dateStr] || [];
     const hasAppt = dayAppts.length > 0;
 
-    // 時間排序和垂直優先排列
+    // 時間排序和左右排列
     let timesHtml = '';
     if (hasAppt) {
       const sortedTimes = [...dayAppts].sort((a, b) => a.localeCompare(b));
 
-      // 垂直優先排列：按最多3行計算列數
-      const maxRows = 3;
-      const columns = [];
-      for (let i = 0; i < sortedTimes.length; i += maxRows) {
-        columns.push(sortedTimes.slice(i, i + maxRows));
+      // 左右分列：左邊填滿了再填右邊
+      const leftTimes = [];
+      const rightTimes = [];
+      for (let i = 0; i < sortedTimes.length; i++) {
+        if (i % 2 === 0) {
+          leftTimes.push(sortedTimes[i]);
+        } else {
+          rightTimes.push(sortedTimes[i]);
+        }
       }
 
       timesHtml = `
         <div class="appt-times-list">
-          ${columns.map(column => `
+          <div class="appt-times-column">
+            ${leftTimes.map(t => `<div class="appt-time-item">🕐 ${t}</div>`).join('')}
+          </div>
+          ${rightTimes.length > 0 ? `
             <div class="appt-times-column">
-              ${column.map(t => `<div class="appt-time-item">🕐 ${t}</div>`).join('')}
+              ${rightTimes.map(t => `<div class="appt-time-item">🕐 ${t}</div>`).join('')}
             </div>
-          `).join('')}
+          ` : ''}
         </div>
       `;
     }
@@ -2920,6 +2927,11 @@ async function saveApptDetail(apptId) {
   }
 
   try {
+    // 從 DB 查詢原始時間戳
+    const { data: dbAppt } = await db.from('appointments').select('submitted_at, status').eq('id', apptId).single();
+    const origSubmittedAt = dbAppt?.submitted_at || new Date().toISOString();
+    const origStatus = dbAppt?.status || (originalAppt?.status || '已預約');
+
     // 刪除原預約
     await db.from('appointments').delete().eq('id', apptId);
 
@@ -2931,8 +2943,8 @@ async function saveApptDetail(apptId) {
       date: slot.date,
       time: slot.time,
       property_id: slot.propId || '',
-      status: originalAppt?.status || '已預約',
-      submitted_at: originalAppt?.submittedAt || new Date().toISOString(),
+      status: origStatus,
+      submitted_at: origSubmittedAt,
       occupants: originalAppt?.occupants || '',
       relationship: originalAppt?.relationship || '',
       occupation: originalAppt?.occupation || '',
