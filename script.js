@@ -762,15 +762,12 @@ function openDetailModal(id) {
           <span class="detail-info-label">樓層</span>
           <span class="detail-info-value">${escHtml(p.floor)}${p.totalFloors ? ' / 共 '+p.totalFloors+' 樓' : ''}</span>
         </div>` : ''}
-        <div class="detail-info-item" style="display: flex; gap: 16px; align-items: flex-start;">
-          <div style="flex: 1;">
-            <span class="detail-info-label">類型</span>
+        <div class="detail-info-item">
+          <span class="detail-info-label">類型</span>
+          <div style="display: flex; gap: 8px; align-items: center;">
             <span class="detail-info-value">${escHtml(p.type)}</span>
+            ${p.propertyCode ? `<span style="font-size: 11px; color: var(--color-text-muted);">${escHtml(p.propertyCode)}</span>` : ''}
           </div>
-          ${p.propertyCode ? `<div style="flex: 1;">
-            <span class="detail-info-label">物件ID</span>
-            <span class="detail-info-value">${escHtml(p.propertyCode)}</span>
-          </div>` : ''}
         </div>
       </div>
       ${p.address ? `
