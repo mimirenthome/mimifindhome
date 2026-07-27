@@ -4012,6 +4012,54 @@ async function generatePropertyCodes() {
   }
 }
 
+async function repairApptPropertyCodes() {
+  if (!confirm('確認要修復所有預約的物件編碼？\n此操作會查詢所有 property_code 為空的預約，並透過 property_id 補齊編碼。')) return;
+
+  try {
+    showToast('修復中...', 'info');
+
+    // 查詢所有預約
+    const { data: allAppts, error: queryError } = await db.from('appointments').select('*');
+    if (queryError) throw queryError;
+
+    // 篩選出 property_code 為空但 property_id 有值的預約
+    const needsRepair = (allAppts || []).filter(a => !a.property_code && a.property_id);
+
+    if (needsRepair.length === 0) {
+      showToast('✅ 所有預約都已有物件編碼，無需修復！', 'success');
+      return;
+    }
+
+    // 獲取所有物件的對應關係
+    const { data: allProps, error: propsError } = await db.from('properties').select('id, property_code');
+    if (propsError) throw propsError;
+
+    const propMap = {};
+    (allProps || []).forEach(p => {
+      propMap[p.id] = p.property_code;
+    });
+
+    // 批量更新預約
+    let repaired = 0;
+    for (const appt of needsRepair) {
+      const propCode = propMap[appt.property_id];
+      if (propCode) {
+        const { error: updateError } = await db.from('appointments')
+          .update({ property_code: propCode })
+          .eq('id', appt.id);
+
+        if (!updateError) repaired++;
+      }
+    }
+
+    showToast(`✅ 已修復 ${repaired} 筆預約的物件編碼！`, 'success');
+    setTimeout(() => location.reload(), 1500);
+  } catch(e) {
+    console.error('修復失敗:', e);
+    showToast('❌ 修復失敗：' + (e.message || JSON.stringify(e)), 'error');
+  }
+}
+
 function openAddApptModal() {
   const modal = document.createElement('div');
   modal.className = 'modal-overlay';
