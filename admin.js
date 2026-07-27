@@ -2267,9 +2267,16 @@ async function renderAppts() {
   list.innerHTML = filtered.map(a => {
     const dt = new Date(a.submittedAt).toLocaleString('zh-TW', { year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' });
     const statusClass = { '未處理': 'status-pending', '已聯繫': 'status-contacted', '已預約': 'status-booked', '已取消': 'status-cancelled' }[a.status] || 'status-pending';
-    const matchedProp = (allProps || []).find(p => p.propertyCode === a.propertyCode);
+
+    // 優先級 1: 用 propertyCode 查詢
+    let matchedProp = a.propertyCode ? (allProps || []).find(p => p.propertyCode === a.propertyCode) : null;
+    // 優先級 2: 用 propertyId 查詢（回退）
+    if (!matchedProp && a.propertyId) {
+      matchedProp = (allProps || []).find(p => p.id === a.propertyId);
+    }
+
     const propAddress = matchedProp && matchedProp.address ? matchedProp.address : '';
-    const propDisplay = a.propertyCode ? `🔑 ${escHtml(a.propertyCode)}` : (a.propertyTitle || '（未指定物件）');
+    const propDisplay = a.propertyCode ? `🔑 ${escHtml(a.propertyCode)}` : (matchedProp?.propertyCode ? `🔑 ${escHtml(matchedProp.propertyCode)}` : (a.propertyTitle || '（未指定物件）'));
     return `
       <div class="appt-card">
         <div class="appt-card-top">
@@ -2710,6 +2717,7 @@ function editApptDetail(id) {
   // 初始化預約時段組合
   window._editApptSlots = window._editApptSlots || [];
   window._editApptSlots = [{
+    propId: appt.propertyId || '',
     propCode: appt.propertyCode || '',
     propName: appt.propertyTitle || '',
     date: appt.date,
@@ -2819,6 +2827,7 @@ function renderEditApptSlots() {
           const propCode = btn.getAttribute('data-code');
           const prop = (allProps || []).find(p => p.propertyCode === propCode);
 
+          window._editApptSlots[slotIdx].propId = prop?.id || '';
           window._editApptSlots[slotIdx].propCode = propCode;
           window._editApptSlots[slotIdx].propName = prop ? (prop.address || prop.title) : '';
 
@@ -2941,7 +2950,9 @@ async function saveApptDetail(apptId) {
       phone: originalAppt?.phone || '',
       date: slot.date,
       time: slot.time,
-      property_code: slot.propCode || '',
+      property_id: slot.propId || originalAppt?.propertyId || '',
+      property_code: slot.propCode || originalAppt?.propertyCode || '',
+      property_title: slot.propName || '',
       status: origStatus,
       submitted_at: origSubmittedAt,
       occupants: originalAppt?.occupants || '',
@@ -4184,7 +4195,9 @@ function renderTimeSlots() {
 }
 
 function selectTimeProp(propCode, propName) {
-  document.getElementById('add-appt-time-prop-id').value = propCode;
+  // 保存 propCode，但也需要透過 propCode 查詢取得 propId
+  const prop = (allProps || []).find(p => p.propertyCode === propCode);
+  document.getElementById('add-appt-time-prop-id').value = prop?.id || propCode;
   document.getElementById('add-appt-time-property').value = propName;
   document.getElementById('add-appt-time-prop-results').style.display = 'none';
 }
@@ -4225,6 +4238,7 @@ async function handleSaveNewAppt() {
       phone,
       date,
       time: slot.time,
+      property_id: slot.propId || '',
       property_code: slot.propCode || '',
       status: '已預約',
       submitted_at: new Date().toISOString(),

@@ -1717,14 +1717,23 @@ async function queryApptByPhone() {
 
     const html = apts.map(a => {
       const appt = apptFromDb(a);
-      // 用 propertyCode 查詢物件（統一字串格式，移除空格）
-      const propCode = appt.propertyCode ? String(appt.propertyCode).trim() : '';
-      const matchedProp = propCode ? (allProperties || []).find(p => {
-        const pCode = p.propertyCode ? String(p.propertyCode).trim() : '';
-        return pCode === propCode;
-      }) : null;
+      let matchedProp = null;
 
-      const propDisplay = propCode ? `🔑 ${escHtml(propCode)}` : '（未指定物件）';
+      // 優先級 1: 用 propertyCode 查詢
+      const propCode = appt.propertyCode ? String(appt.propertyCode).trim() : '';
+      if (propCode) {
+        matchedProp = (allProperties || []).find(p => {
+          const pCode = p.propertyCode ? String(p.propertyCode).trim() : '';
+          return pCode === propCode;
+        });
+      }
+
+      // 優先級 2: 用 propertyId 查詢（回退）
+      if (!matchedProp && appt.propertyId) {
+        matchedProp = (allProperties || []).find(p => p.id === appt.propertyId);
+      }
+
+      const propDisplay = propCode ? `🔑 ${escHtml(propCode)}` : (matchedProp?.propertyCode ? `🔑 ${escHtml(matchedProp.propertyCode)}` : '（未指定物件）');
       const propAddress = matchedProp?.address ? `📍 ${escHtml(matchedProp.address)}` : '';
 
       return `
