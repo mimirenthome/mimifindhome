@@ -323,7 +323,6 @@ function renderAdminProps() {
               : `<div class="admin-prop-card-img admin-prop-card-img--placeholder">🏠</div>`}
             <div class="admin-prop-card-info">
               ${p.address ? `<div class="admin-prop-card-addr">📍 ${escHtml(p.address)}</div>` : ''}
-              ${p.address ? `<div style="font-size:11px;color:var(--color-text-muted);margin-bottom:4px;">📌 大略位置：${escHtml(maskAddress(p.address))}</div>` : ''}
               <div class="admin-prop-card-title" style="color:#2d6e45;font-weight:600;">🔑 ${escHtml(p.propertyCode || p.title)}</div>
               <div class="admin-prop-card-meta">
                 <span>${escHtml(p.district)}</span>
@@ -366,7 +365,7 @@ function renderAdminProps() {
     const img = getCoverImg(p);
     const date = new Date(p.createdAt).toLocaleDateString('zh-TW', { month:'2-digit', day:'2-digit', year:'2-digit' });
     const addrDisplay = p.address
-      ? `<div style="font-size:12px;"><div style="color:var(--color-text);">${escHtml(p.address)}</div><div style="color:var(--color-text-muted);font-size:11px;margin-top:2px;">📌 ${escHtml(maskAddress(p.address))}</div></div>`
+      ? `<div style="font-size:12px;color:var(--color-text);">${escHtml(p.address)}</div>`
       : '<span style="color:var(--color-border);font-size:12px;">—</span>';
     const floorStr = p.floor ? (p.totalFloors ? `${p.floor}/${p.totalFloors}F` : `${p.floor}F`) : '';
     const layoutSize = [p.layout, p.size ? p.size+'坪' : '', floorStr].filter(Boolean).join(' · ') || '—';
