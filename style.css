@@ -1629,11 +1629,11 @@ input[type="date"].form-input {
 }
 
 .appt-process-label {
-  font-size: 11px;
+  font-size: 16px;
   font-weight: 700;
   color: var(--color-primary-medium);
-  letter-spacing: 1px;
-  text-transform: uppercase;
+  letter-spacing: 0px;
+  text-transform: none;
   margin-bottom: 14px;
 }
 .appt-steps { display: flex; flex-direction: column; gap: 4px; margin-bottom: 28px; }
@@ -1660,8 +1660,8 @@ input[type="date"].form-input {
   margin-top: 2px;
 }
 .appt-step-title {
-  font-size: 19px;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 600;
   color: var(--color-primary-dark);
   margin-bottom: 4px;
 }
@@ -3318,7 +3318,7 @@ input[type="date"].form-input {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  padding: 0;
 }
 
 .media-lightbox-overlay.hidden {
@@ -3328,17 +3328,16 @@ input[type="date"].form-input {
 .media-lightbox-container {
   position: relative;
   width: 100%;
-  max-width: 90vw;
-  height: 90vh;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .media-lightbox-content {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .media-lightbox-video-wrapper,
