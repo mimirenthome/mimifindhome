@@ -738,7 +738,6 @@ function openDetailModal(id) {
     <div class="detail-title-mobile" style="padding:12px 0 8px;border-bottom:1px solid var(--color-border);margin-bottom:16px;">
       <div style="display: flex; justify-content: space-between; align-items: center;">
         <span>${escHtml(p.title)}</span>
-        ${p.propertyCode ? `<span style="font-size: 12px; color: var(--color-text-muted); background: #f0f0f0; padding: 4px 8px; border-radius: 4px;">ID: ${escHtml(p.propertyCode)}</span>` : ''}
       </div>
     </div>
     <div class="detail-info-grid">
@@ -763,9 +762,15 @@ function openDetailModal(id) {
           <span class="detail-info-label">樓層</span>
           <span class="detail-info-value">${escHtml(p.floor)}${p.totalFloors ? ' / 共 '+p.totalFloors+' 樓' : ''}</span>
         </div>` : ''}
-        <div class="detail-info-item">
-          <span class="detail-info-label">類型</span>
-          <span class="detail-info-value">${escHtml(p.type)}</span>
+        <div class="detail-info-item" style="display: flex; gap: 16px; align-items: flex-start;">
+          <div style="flex: 1;">
+            <span class="detail-info-label">類型</span>
+            <span class="detail-info-value">${escHtml(p.type)}</span>
+          </div>
+          ${p.propertyCode ? `<div style="flex: 1;">
+            <span class="detail-info-label">物件ID</span>
+            <span class="detail-info-value">${escHtml(p.propertyCode)}</span>
+          </div>` : ''}
         </div>
       </div>
       ${p.address ? `
