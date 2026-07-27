@@ -1718,10 +1718,10 @@ async function queryApptByPhone() {
     const html = apts.map(a => {
       const appt = apptFromDb(a);
       const matchedProp = (allProperties || []).find(p => p.id === appt.propertyId);
-      const propCode = matchedProp?.propertyCode || '（未指定物件）';
+      const propDisplay = matchedProp?.propertyCode || appt.propertyId || '（未指定物件）';
       return `
         <div style="margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #ddd;">
-          <div style="font-weight: 500; margin-bottom: 6px; color: #2d6e45;">🔑 ID: ${escHtml(propCode)}</div>
+          <div style="font-weight: 500; margin-bottom: 6px; color: #2d6e45;">🔑 ID: ${escHtml(propDisplay)}</div>
           <div style="font-size: 14px; color: #666;">
             📅 ${appt.date} ${appt.time} | 姓名：${escHtml(appt.name)}
           </div>
