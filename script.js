@@ -736,6 +736,7 @@ function openDetailModal(id) {
   body.innerHTML = `
     ${galleryHtml}
     <div class="detail-title-mobile" style="padding:12px 0 8px;border-bottom:1px solid var(--color-border);margin-bottom:16px;">
+      ${p.propertyCode ? `<div style="font-size: 13px; color: var(--color-text-muted); margin-bottom: 4px;">物件ID: ${escHtml(p.propertyCode)}</div>` : ''}
       <div style="display: flex; justify-content: space-between; align-items: center;">
         <span>${escHtml(p.title)}</span>
       </div>
@@ -764,10 +765,7 @@ function openDetailModal(id) {
         </div>` : ''}
         <div class="detail-info-item">
           <span class="detail-info-label">類型</span>
-          <div style="display: flex; gap: 8px; align-items: center;">
-            <span class="detail-info-value">${escHtml(p.type)}</span>
-            ${p.propertyCode ? `<span style="font-size: 11px; color: var(--color-text-muted);">${escHtml(p.propertyCode)}</span>` : ''}
-          </div>
+          <span class="detail-info-value">${escHtml(p.type)}</span>
         </div>
       </div>
       ${p.address ? `
