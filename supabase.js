@@ -103,7 +103,6 @@ function apptToDb(a) {
     id: a.id,
     name: a.name || '',
     phone: a.phone || '',
-    property_title: a.propertyTitle || '',
     property_id: a.propertyId || '',
     property_code: a.propertyCode || '',
     date: a.date || '',

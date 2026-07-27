@@ -2952,7 +2952,6 @@ async function saveApptDetail(apptId) {
       time: slot.time,
       property_id: slot.propId || originalAppt?.propertyId || '',
       property_code: slot.propCode || originalAppt?.propertyCode || '',
-      property_title: slot.propName || '',
       status: origStatus,
       submitted_at: origSubmittedAt,
       occupants: originalAppt?.occupants || '',
