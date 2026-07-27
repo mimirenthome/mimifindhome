@@ -1660,8 +1660,8 @@ input[type="date"].form-input {
   margin-top: 2px;
 }
 .appt-step-title {
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 19px;
+  font-weight: 700;
   color: var(--color-primary-dark);
   margin-bottom: 4px;
 }
