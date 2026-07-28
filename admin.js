@@ -2633,9 +2633,15 @@ function apptDetail(label, value) {
 function copyAppt(id) {
   const a = (window._apptCache || []).find(x => x.id === id);
   if (!a) { showToast('找不到資料', 'error'); return; }
-  // 用物件標題去找地址
-  const prop = (allProps || []).find(p => p.title === a.propertyTitle);
-  const propDisplay = prop && prop.address ? prop.address : (a.propertyTitle || '未指定');
+  // 用物件編碼或ID去找地址
+  let prop;
+  if (a.propertyCode) {
+    prop = (allProps || []).find(p => p.propertyCode === a.propertyCode);
+  }
+  if (!prop && a.propertyId) {
+    prop = (allProps || []).find(p => p.id === a.propertyId);
+  }
+  const propDisplay = prop && prop.address ? prop.address : (prop?.title || a.propertyCode || a.propertyId || '未指定');
   const lines = [
     `【預約資料】`,
     `物件：${propDisplay}`,
