@@ -431,13 +431,11 @@ function clearFilters() {
   if (kw) kw.value = '';
   activeTagFilters = [];
   document.querySelectorAll('.filter-tag-btn').forEach(b => b.classList.remove('active'));
-  filteredProperties = [...allProperties];
   mobileExpanded = false;
   desktopExpanded = false;
   document.getElementById('properties-sort').value = '';
   currentSort = '';
-  renderProperties();
-  updateFilterHint();
+  applyFilters();
   updateFilterCount();
 }
 
