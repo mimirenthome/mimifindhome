@@ -1731,7 +1731,9 @@ async function queryApptByPhone() {
         matchedProp = (allProperties || []).find(p => p.id === appt.propertyId);
       }
 
-      const propDisplay = propCode ? `🔑 ${escHtml(propCode)}` : (matchedProp?.propertyCode ? `🔑 ${escHtml(matchedProp.propertyCode)}` : '（未指定物件）');
+      const propDisplay = matchedProp
+        ? `🏠 ${escHtml(matchedProp.title)}`
+        : (propCode ? `🔑 ${escHtml(propCode)}` : '（未指定物件）');
 
       return `
         <div style="margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #ddd;">
