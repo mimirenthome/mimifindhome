@@ -3181,10 +3181,10 @@ function openConfirm(msg, cb) {
   document.getElementById('confirm-msg').textContent = msg;
   confirmCallback = cb;
   document.getElementById('confirm-modal').classList.remove('hidden');
-  document.getElementById('confirm-ok-btn').onclick = () => {
-    const cb = confirmCallback;
+  document.getElementById('confirm-ok-btn').onclick = async () => {
+    const callback = confirmCallback;
     closeConfirm();
-    if (cb) cb();
+    if (callback) await callback();
   };
 }
 
