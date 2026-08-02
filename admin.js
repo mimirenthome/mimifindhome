@@ -3540,13 +3540,21 @@ async function saveBlockedTime() {
     const groupId = 'blocked_' + Date.now();
     const timeRangeNote = `${timeStart}-${timeEnd}`;
 
+    // 查找選中的物件，取得property_code
+    let propCode = '';
+    if (property) {
+      const selectedProp = (allProps || []).find(p => p.id === property || p.propertyCode === property);
+      propCode = selectedProp?.propertyCode || '';
+    }
+
     const blockedAppts = times.map((time, idx) => ({
       id: groupId + '_' + idx,
       date: date,
       time: time,
       name: '【已鎖定】' + (reason || '不可預約'),
       phone: '',
-      property_title: property || '',
+      property_id: property || '',
+      property_code: propCode,
       status: '已鎖定',
       occupants: '',
       relationship: '',
