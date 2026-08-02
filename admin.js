@@ -2674,13 +2674,21 @@ async function updateApptStatus(id, status) {
   showToast(`狀態已更新為「${status}」`, 'success');
 }
 
-function deleteAppt(id) {
-  openConfirm('確定要刪除這筆預約資料？', async () => {
+async function deleteAppt(id) {
+  if (!confirm('確定要刪除這筆預約資料？')) return;
+  try {
     const { error } = await db.from('appointments').delete().eq('id', id);
-    if (error) { showToast('刪除失敗', 'error'); return; }
-    await renderAppts();
+    if (error) throw error;
     showToast('預約資料已刪除', 'success');
-  });
+    await renderAppts();
+    renderApptCalendar();
+    // 如果在日曆modal中，關閉該modal
+    const modal = document.querySelector('.modal-overlay:not(#confirm-modal)');
+    if (modal) modal.remove();
+  } catch(e) {
+    console.error('刪除失敗:', e);
+    showToast('刪除失敗：' + (e.message || '未知錯誤'), 'error');
+  }
 }
 
 async function editApptTitle(id) {
