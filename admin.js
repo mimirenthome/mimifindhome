@@ -244,8 +244,11 @@ async function showSection(name) {
   }
   if (name === 'feedback') loadFeedbackSection();
   if (name === 'pw') updateKeyStatus();
-  if (name === 'add' && !editingId) {
-    document.getElementById('form-section-title').textContent = '新增物件';
+  if (name === 'add') {
+    if (!editingId) {
+      resetPropForm();
+    }
+    document.getElementById('form-section-title').textContent = editingId ? '編輯物件' : '新增物件';
   }
 }
 
