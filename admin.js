@@ -3504,13 +3504,10 @@ function closeAddBlockedTimeModal() {
   document.getElementById('blocked-property-results').style.display = 'none';
   document.getElementById('blocked-property-selected').style.display = 'none';
 
-  // 重置modal標題和按鈕到新增模式
+  // 重置modal標題到新增模式
   const modal = document.getElementById('add-blocked-time-modal');
   const title = modal.querySelector('.modal-title');
-  const btn = modal.querySelector('.modal-footer .btn-primary');
   title.textContent = '🔒 新增不可預約時間';
-  btn.textContent = '新增';
-  btn.onclick = null;
 }
 
 // 時間區間轉換為所有時間點（30分鐘間隔）
