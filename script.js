@@ -422,19 +422,38 @@ function applyFilters() {
 }
 
 function clearFilters() {
-  clearDistrictFilter();
+  // 清除地區
+  selectedDistricts = [];
+  document.querySelectorAll('.district-opt input[type="checkbox"]').forEach(b => b.checked = false);
+  updateDistrictTrigger();
+
+  // 清除格局
   document.getElementById('filter-layout').value = '';
-  clearTypeFilter();
+
+  // 清除類型
+  selectedTypes = [];
+  document.querySelectorAll('.filter-type-checkbox').forEach(b => b.checked = false);
+  updateTypeTrigger();
+
+  // 清除租金
   document.getElementById('filter-rent-min').value = '';
   document.getElementById('filter-rent-max').value = '';
+
+  // 清除商圈/地標
   const kw = document.getElementById('filter-keyword');
   if (kw) kw.value = '';
+
+  // 清除特色標籤
   activeTagFilters = [];
   document.querySelectorAll('.filter-tag-btn').forEach(b => b.classList.remove('active'));
+
+  // 清除排序
   mobileExpanded = false;
   desktopExpanded = false;
   document.getElementById('properties-sort').value = '';
   currentSort = '';
+
+  // 重新應用過濾
   applyFilters();
   updateFilterCount();
 }
