@@ -148,12 +148,12 @@
   <!-- 手機版收合切換列 -->
   <div class="filter-toggle-bar">
     <button class="filter-toggle-btn" onclick="toggleMobileFilter()" id="filter-toggle-btn">
-      <span>🔍</span> 快速篩選
+      <span>✕</span> 收合篩選
       <span class="filter-active-count" id="filter-active-count">0</span>
     </button>
   </div>
 
-  <div class="filter-panel" id="filter-panel">
+  <div class="filter-panel open" id="filter-panel">
   <div class="filters-inner">
     <div class="filters-title">快速篩選</div>
     <div class="filters-row">
@@ -168,25 +168,25 @@
           <div class="district-dropdown" id="district-dropdown">
             <div class="district-clear-row" onclick="clearDistrictFilter()">全部地區 ／ 清除選擇</div>
             <div class="district-grid">
-              <label class="district-opt"><input type="checkbox" value="中區"  onchange="onDistrictChange()"><span>中區</span></label>
-              <label class="district-opt"><input type="checkbox" value="東區"  onchange="onDistrictChange()"><span>東區</span></label>
-              <label class="district-opt"><input type="checkbox" value="南區"  onchange="onDistrictChange()"><span>南區</span></label>
+              <label class="district-opt"><input type="checkbox" value="西屯區" onchange="onDistrictChange()"><span>西屯區</span></label>
+              <label class="district-opt"><input type="checkbox" value="北屯區" onchange="onDistrictChange()"><span>北屯區</span></label>
+              <label class="district-opt"><input type="checkbox" value="南屯區" onchange="onDistrictChange()"><span>南屯區</span></label>
               <label class="district-opt"><input type="checkbox" value="西區"  onchange="onDistrictChange()"><span>西區</span></label>
               <label class="district-opt"><input type="checkbox" value="北區"  onchange="onDistrictChange()"><span>北區</span></label>
-              <label class="district-opt"><input type="checkbox" value="北屯區" onchange="onDistrictChange()"><span>北屯區</span></label>
-              <label class="district-opt"><input type="checkbox" value="西屯區" onchange="onDistrictChange()"><span>西屯區</span></label>
-              <label class="district-opt"><input type="checkbox" value="南屯區" onchange="onDistrictChange()"><span>南屯區</span></label>
+              <label class="district-opt"><input type="checkbox" value="南區"  onchange="onDistrictChange()"><span>南區</span></label>
+              <label class="district-opt"><input type="checkbox" value="東區"  onchange="onDistrictChange()"><span>東區</span></label>
+              <label class="district-opt"><input type="checkbox" value="中區"  onchange="onDistrictChange()"><span>中區</span></label>
+              <label class="district-opt"><input type="checkbox" value="大雅區" onchange="onDistrictChange()"><span>大雅區</span></label>
+              <label class="district-opt"><input type="checkbox" value="龍井區" onchange="onDistrictChange()"><span>龍井區</span></label>
+              <label class="district-opt"><input type="checkbox" value="沙鹿區" onchange="onDistrictChange()"><span>沙鹿區</span></label>
               <label class="district-opt"><input type="checkbox" value="太平區" onchange="onDistrictChange()"><span>太平區</span></label>
               <label class="district-opt"><input type="checkbox" value="大里區" onchange="onDistrictChange()"><span>大里區</span></label>
               <label class="district-opt"><input type="checkbox" value="霧峰區" onchange="onDistrictChange()"><span>霧峰區</span></label>
               <label class="district-opt"><input type="checkbox" value="烏日區" onchange="onDistrictChange()"><span>烏日區</span></label>
               <label class="district-opt"><input type="checkbox" value="豐原區" onchange="onDistrictChange()"><span>豐原區</span></label>
               <label class="district-opt"><input type="checkbox" value="潭子區" onchange="onDistrictChange()"><span>潭子區</span></label>
-              <label class="district-opt"><input type="checkbox" value="大雅區" onchange="onDistrictChange()"><span>大雅區</span></label>
-              <label class="district-opt"><input type="checkbox" value="沙鹿區" onchange="onDistrictChange()"><span>沙鹿區</span></label>
               <label class="district-opt"><input type="checkbox" value="清水區" onchange="onDistrictChange()"><span>清水區</span></label>
               <label class="district-opt"><input type="checkbox" value="梧棲區" onchange="onDistrictChange()"><span>梧棲區</span></label>
-              <label class="district-opt"><input type="checkbox" value="龍井區" onchange="onDistrictChange()"><span>龍井區</span></label>
               <label class="district-opt"><input type="checkbox" value="大肚區" onchange="onDistrictChange()"><span>大肚區</span></label>
               <label class="district-opt"><input type="checkbox" value="大甲區" onchange="onDistrictChange()"><span>大甲區</span></label>
               <label class="district-opt"><input type="checkbox" value="后里區" onchange="onDistrictChange()"><span>后里區</span></label>
