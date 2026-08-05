@@ -650,10 +650,10 @@ function renderPropertyCardMobile(p) {
 
   // 最多 3 個標籤，超過顯示 +N；排除「衛浴乾濕分離」，優先顯示短標籤
   const filteredTags = (p.tags || []).filter(t => t !== '衛浴乾濕分離').sort((a, b) => a.length - b.length);
-  const tagsArr = filteredTags.slice(0, 3);
+  const tagsArr = filteredTags.slice(0, 5);
   const tagsDisplay = tagsArr.length > 0
     ? tagsArr.map(t => `<span class="tag-mobile">${escHtml(t)}</span>`).join('') +
-      (tagsArr.length < filteredTags.length ? `<span class="tag-more">+${filteredTags.length - 3}</span>` : '')
+      (tagsArr.length < filteredTags.length ? `<span class="tag-more">+${filteredTags.length - 5}</span>` : '')
     : '';
 
   const recBadges = (p.recommendCategories || []).map(c =>

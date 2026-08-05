@@ -898,16 +898,15 @@ input[type="date"].form-input {
     box-shadow: var(--shadow-sm);
     transition: all 0.25s;
     display: flex;
-    flex-direction: row;
-    height: 180px;
+    flex-direction: column;
     align-items: stretch;
     margin-bottom: 12px;
   }
   .property-card-mobile:active { box-shadow: var(--shadow-md); transform: scale(0.98); }
 
   .property-card-mobile-img {
-    width: 35%;
-    height: 100%;
+    width: 100%;
+    height: 220px;
     background: var(--color-soft-green);
     position: relative;
     overflow: hidden;
