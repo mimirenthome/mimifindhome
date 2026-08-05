@@ -3949,6 +3949,97 @@ async function setupRecurringLockTime() {
   }
 }
 
+// 查詢定期鎖定時間
+async function queryRecurringLockTime() {
+  try {
+    const { data: appts, error } = await db.from('appointments')
+      .select('id, date, time, name, notes')
+      .like('name', '%定期鎖定%')
+      .eq('status', '已鎖定')
+      .order('date', { ascending: true });
+
+    if (error) throw error;
+
+    if (!appts || appts.length === 0) {
+      alert('❌ 沒有設定定期鎖定');
+      return;
+    }
+
+    // 按星期和時間分組
+    const grouped = {};
+    appts.forEach(appt => {
+      const date = new Date(appt.date + 'T00:00:00');
+      const dow = date.getDay();
+      const dayName = ['日', '一', '二', '三', '四', '五', '六'][dow];
+      const key = `${dayName} ${appt.time}`;
+
+      if (!grouped[key]) {
+        grouped[key] = { dow, time: appt.time, dates: [], name: appt.name, notes: appt.notes };
+      }
+      grouped[key].dates.push(appt.date);
+    });
+
+    // 顯示 modal
+    let html = '<div style="max-height: 400px; overflow-y: auto;">';
+    html += '<table style="width:100%; border-collapse: collapse;">';
+    html += '<tr style="background: #f0f0f0;"><th style="border: 1px solid #ccc; padding: 8px; text-align: left;">星期</th><th style="border: 1px solid #ccc; padding: 8px; text-align: left;">時間</th><th style="border: 1px solid #ccc; padding: 8px; text-align: left;">記錄數</th><th style="border: 1px solid #ccc; padding: 8px; text-align: center;">刪除</th></tr>';
+
+    Object.entries(grouped).forEach(([key, data]) => {
+      html += `<tr>
+        <td style="border: 1px solid #ccc; padding: 8px;">${key.split(' ')[0]}（星期${key.split(' ')[0]}）</td>
+        <td style="border: 1px solid #ccc; padding: 8px;">${key.split(' ')[1]}</td>
+        <td style="border: 1px solid #ccc; padding: 8px;">${data.dates.length} 個</td>
+        <td style="border: 1px solid #ccc; padding: 8px; text-align: center;">
+          <button onclick="deleteRecurringLock('${data.dow}', '${data.time}')" style="background: #dc3545; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 12px;">刪除</button>
+        </td>
+      </tr>`;
+    });
+
+    html += '</table></div>';
+
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.innerHTML = `
+      <div class="modal-box" style="max-width: 500px;">
+        <div class="modal-header">
+          <div class="modal-title">📋 定期鎖定設定</div>
+          <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">✕</button>
+        </div>
+        <div class="modal-body">
+          ${html}
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost" onclick="this.closest('.modal-overlay').remove()">關閉</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+  } catch(e) {
+    console.error('查詢失敗:', e);
+    alert('❌ 查詢失敗：' + (e.message || JSON.stringify(e)));
+  }
+}
+
+// 刪除定期鎖定規則
+async function deleteRecurringLock(dow, time) {
+  if (!confirm(`確定要刪除每週${['日', '一', '二', '三', '四', '五', '六'][dow]} ${time} 的定期鎖定嗎？`)) return;
+
+  try {
+    const { error } = await db.from('appointments')
+      .delete()
+      .like('name', '%定期鎖定%')
+      .eq('status', '已鎖定')
+      .eq('time', time);
+
+    if (error) throw error;
+    alert('✅ 已刪除定期鎖定規則！');
+    location.reload();
+  } catch(e) {
+    console.error('刪除失敗:', e);
+    alert('❌ 刪除失敗：' + (e.message || JSON.stringify(e)));
+  }
+}
+
 // 生成所有物件的編號（格式：0YMMDD + 001序號）
 async function generatePropertyCodeForNew(propId) {
   try {
