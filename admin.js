@@ -3920,11 +3920,34 @@ async function setupRecurringLockTime() {
     const endDate = new Date(today.getFullYear(), today.getMonth() + monthCount, 0);
     const lockedDates = [];
 
+    // 轉換時間為分鐘，生成時間段列表
+    const timeToMinutes = (timeStr) => {
+      const [h, m] = timeStr.split(':').map(Number);
+      return h * 60 + m;
+    };
+    const minutesToTime = (minutes) => {
+      const h = Math.floor(minutes / 60);
+      const m = minutes % 60;
+      return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+    };
+
+    const startMin = timeToMinutes(startTime);
+    const endMin = timeToMinutes(endTime);
+    const timeRange = [];
+
+    // 生成開始到結束之間的所有 30 分鐘時段
+    for (let min = startMin; min < endMin; min += 30) {
+      timeRange.push(minutesToTime(min));
+    }
+
     // 找出所有符合的日期
     for (let d = new Date(today); d <= endDate; d.setDate(d.getDate() + 1)) {
       if (d.getDay() === dow) {
         const dateStr = d.toISOString().split('T')[0];
-        lockedDates.push({ date: dateStr, time: startTime });
+        // 為每個時段都建立鎖定
+        for (const time of timeRange) {
+          lockedDates.push({ date: dateStr, time });
+        }
       }
     }
 
