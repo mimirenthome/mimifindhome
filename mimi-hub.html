@@ -86,10 +86,6 @@
     <div class="admin-section-title">物件管理</div>
     <div class="admin-section-sub">管理所有租屋物件，可新增、編輯、刪除、上下架。</div>
 
-    <div style="margin-bottom: 16px;">
-      <button class="btn btn-primary" onclick="generatePropertyCodes()" style="font-size: 13px; padding: 8px 16px;">🔑 生成物件編號</button>
-      <button class="btn btn-primary" onclick="repairApptPropertyCodes()" style="font-size: 13px; padding: 8px 16px; margin-left: 8px;">🔧 修復預約編碼</button>
-    </div>
 
     <!-- 上架 / 下架 Tab -->
     <div class="props-tab-bar">
@@ -385,9 +381,7 @@
         <input type="text" class="filter-select" id="appt-search-phone" placeholder="搜尋電話號碼" oninput="renderAppts()" style="min-width:140px;" />
       </div>
       <div class="filter-group">
-        <button class="btn btn-primary btn-sm" onclick="repairApptPropertyCodes()" style="align-self: flex-end;">🔧 修復預約編碼</button>
         <button class="btn btn-primary btn-sm" onclick="checkGhostAppointments()" style="align-self: flex-end;">🔍 檢查預約</button>
-        <button class="btn btn-ghost btn-sm" onclick="exportAppointmentsData()" style="align-self: flex-end;">📥 導出預約資料</button>
       </div>
     </div>
 
