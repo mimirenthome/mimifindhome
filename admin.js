@@ -427,6 +427,7 @@ function renderAdminProps() {
           <div class="table-actions">
             <button class="btn btn-outline btn-sm" onclick="editProp('${p.id}')" style="padding:4px 10px;font-size:12px;">編輯</button>
             <button class="btn btn-ghost btn-sm" onclick="toggleActive('${p.id}')" style="padding:4px 10px;font-size:12px;">${p.isActive ? '下架' : '上架'}</button>
+            <button class="btn btn-primary btn-sm" onclick="generateNewPropertyCode('${p.id}')" style="padding:4px 10px;font-size:12px;">🔄 新代碼</button>
             <button class="btn btn-danger btn-sm" onclick="deleteProp('${p.id}')" style="padding:4px 10px;font-size:12px;">刪除</button>
           </div>
         </td>
@@ -4097,6 +4098,50 @@ async function generatePropertyCodeForNew(propId) {
     if (updateError) throw updateError;
   } catch(err) {
     console.error('自動編號失敗:', err);
+  }
+}
+
+async function generateNewPropertyCode(propId) {
+  try {
+    if (!confirm('確認要重新生成新代碼嗎？\n新代碼會使用今天的日期。')) return;
+
+    // 生成今天日期的編號
+    const d = new Date();
+    const year = String(d.getFullYear()).slice(1);
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    const dateKey = `0${year}${month}${day}`;
+
+    // 查詢今天同日期的物件數量（不含要更新的這個）
+    const { data: sameDay, error: countErr } = await db.from('properties')
+      .select('id, property_code')
+      .like('property_code', `${dateKey}%`)
+      .neq('id', propId);
+
+    if (countErr) throw countErr;
+
+    // 計算新序號（要避免與現有代碼重複）
+    const existingSeqs = (sameDay || []).map(p => {
+      const match = p.property_code?.match(/(\d{3})$/);
+      return match ? parseInt(match[1]) : 0;
+    }).sort((a, b) => b - a);
+
+    const nextSeq = (existingSeqs[0] || 0) + 1;
+    const seq = String(nextSeq).padStart(3, '0');
+    const newCode = `${dateKey}${seq}`;
+
+    // 更新物件的代碼
+    const { error: updateError } = await db.from('properties')
+      .update({ property_code: newCode })
+      .eq('id', propId);
+
+    if (updateError) throw updateError;
+
+    showToast(`✅ 代碼已更新為 ${newCode}！`, 'success');
+    renderAdminProps();
+  } catch(err) {
+    console.error('重新生成代碼失敗:', err);
+    showToast('❌ 生成失敗：' + (err.message || JSON.stringify(err)), 'error');
   }
 }
 
