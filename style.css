@@ -129,12 +129,12 @@ input, select, textarea { font-family: inherit; }
 input[type="date"].form-input,
 input[type="time"].form-input,
 input[type="datetime-local"].form-input {
-  width: 90%;
+  width: 93%;
   padding: 8px 10px;
   line-height: 1;
   text-align: left;
-  font-size: 16px;
-  height: 36px;
+  font-size: 14px;
+  height: 30px;
 }
 .form-input:focus, .form-select:focus, .form-textarea:focus {
   border-color: var(--color-primary-button);
