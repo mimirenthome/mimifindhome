@@ -111,28 +111,28 @@ input, select, textarea { font-family: inherit; }
 }
 .form-label .required { color: var(--color-warning); margin-left: 2px; }
 .form-input, .form-select, .form-textarea {
-  width: 100%;
+  width: 90%;
   max-width: 100%;
   box-sizing: border-box;
-  padding: 10px 14px;
+  padding: 8px 10px;
   border: 1.5px solid var(--color-border);
   border-radius: var(--radius-sm);
   background: #fff;
   color: var(--color-text);
-  font-size: 14px;
+  font-size: 16px;
   font-family: inherit;
-  line-height: 1.5;
+  line-height: 1;
   transition: border-color 0.2s;
   outline: none;
-  height: 44px;
+  height: 36px;
 }
 input[type="date"].form-input,
 input[type="time"].form-input,
 input[type="datetime-local"].form-input {
-  padding: 10px 14px;
-  line-height: 1.5;
+  padding: 8px 10px;
+  line-height: 1;
   text-align: left;
-  font-size: 14px;
+  font-size: 16px;
 }
 .form-input:focus, .form-select:focus, .form-textarea:focus {
   border-color: var(--color-primary-button);
