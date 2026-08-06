@@ -1740,9 +1740,9 @@ input[type="datetime-local"].form-input {
 }
 
 @media (max-width: 767px) {
-  .appt-form-card { padding: 12px 8px; }
-  #appointment { padding: 20px 12px; }
-  .modal-body { padding: 12px 8px; }
+  .appt-form-card { padding: 16px 12px; }
+  #appointment { padding: 24px 16px; }
+  .modal-body { padding: 16px 12px; }
 }
 
 .appt-privacy {
