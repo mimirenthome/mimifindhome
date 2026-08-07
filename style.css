@@ -3342,6 +3342,11 @@ input[type="datetime-local"].form-input {
     align-self: flex-end;
   }
 
+  .query-lock-btn {
+    flex-basis: 100%;
+    text-align: left;
+  }
+
   .calendar-toolbar {
     font-size: 13px;
   }
