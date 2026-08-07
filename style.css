@@ -3191,7 +3191,7 @@ input[type="datetime-local"].form-input {
   background: #fff;
   aspect-ratio: 1;
   cursor: pointer;
-  font-size: 12px;
+  font-size: 10px;
   transition: all 0.2s;
   display: flex;
   flex-direction: column;
@@ -3215,7 +3215,7 @@ input[type="datetime-local"].form-input {
   font-weight: 600;
   color: var(--color-primary-dark);
   margin-bottom: 2px;
-  font-size: 11px;
+  font-size: 15px;
   line-height: 1;
 }
 
@@ -3224,7 +3224,7 @@ input[type="datetime-local"].form-input {
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  font-size: 9px;
+  font-size: 10px;
   gap: 2px;
 }
 
