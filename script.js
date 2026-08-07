@@ -1419,6 +1419,11 @@ function initAppointmentForm() {
     form.style.display = 'none';
     document.getElementById('appt-success').classList.add('show');
     showToast('預約資料已送出！', 'success');
+
+    // 自動打開 LINE 頁面
+    setTimeout(() => {
+      window.open('https://lin.ee/q3oHrS1', '_blank');
+    }, 800);
   });
 }
 
