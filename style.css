@@ -1766,14 +1766,15 @@ input[type="datetime-local"].form-input {
 .appt-success {
   text-align: center;
   padding: 40px 24px;
-  background: var(--color-soft-green);
+  background: var(--color-cream);
   border-radius: var(--radius-lg);
   display: none;
+  border: 2px solid var(--color-primary-button);
 }
 .appt-success.show { display: block; }
-.appt-success .icon { font-size: 48px; margin-bottom: 12px; }
-.appt-success h3 { font-size: 20px; color: var(--color-primary-dark); margin-bottom: 8px; }
-.appt-success p { font-size: 14px; color: var(--color-text-muted); }
+.appt-success .icon { font-size: 56px; margin-bottom: 12px; }
+.appt-success h3 { font-size: 22px; color: var(--color-primary-button); margin-bottom: 16px; font-weight: 600; }
+.appt-success p { font-size: 14px; color: var(--color-text); }
 
 /* ===== FOOTER ===== */
 #footer {
