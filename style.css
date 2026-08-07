@@ -3283,6 +3283,14 @@ input[type="datetime-local"].form-input {
   .appt-calendar-mobile {
     display: none;
   }
+
+  .desktop-text {
+    display: inline;
+  }
+
+  .mobile-text {
+    display: none;
+  }
 }
 
 /* ===== 手機版（<768px） ===== */
@@ -3345,6 +3353,14 @@ input[type="datetime-local"].form-input {
   .query-lock-btn {
     flex-basis: 100%;
     text-align: left;
+  }
+
+  .desktop-text {
+    display: none;
+  }
+
+  .mobile-text {
+    display: inline !important;
   }
 
   .calendar-toolbar {
