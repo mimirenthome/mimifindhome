@@ -1671,20 +1671,26 @@ function parsePropertyText(text) {
   const submotherSelfManage = /自理/.test(rawSubmother);
   const hasSubmother = !submotherSelfManage
     && /子母車|垃圾集中|免追垃圾車|不用追垃圾車/.test(rawSubmother + ' ' + text)
-    && !/子母車[：:\s]*無|沒有子母車/.test(text);
+    && !/子母車[：:\s]*無|沒有子母車|無子母車/.test(text);
+  // 🆕 檢查明確的「無子母車」
+  const noSubmother = /子母車[：:\s]*無|沒有子母車|無子母車/.test(text);
 
   // ===== PARKING（嚴格：只有明確車位關鍵字才算，子母車絕對不算）=====
   const parkingStr = rawParking || '';
   const parkingExplicitNo = /^(無|沒有|不含|無車位|無停車)/.test(parkingStr.trim());
   const fakeParking = /騎樓|路邊|隨到隨停|自行|公共停車|附近停車|自找/.test(parkingStr);
-  // 只有這些關鍵字才算有車位
+
+  // 🆕 機車位單獨處理（不列入標籤，在標題最後標註）
+  const isMotorcycleOnly = /機車位/.test(parkingStr) && !/汽車位|平車|機械|地下|門前|附車位|含車位/.test(parkingStr);
+
+  // 只有這些關鍵字才算有車位（排除機車位）
   // 社區可另租車位 → 不算附車位，只在缺點提醒
   const isParkingCommunityRentable = /社區可另租|可另租車位|社區另租/.test(parkingStr);
-  const parkingKeywords = !isParkingCommunityRentable && /平車|機械車位|坡道平面|坡道機械|B[123]車位|汽車位|機車位|門前停車|附車位|含車位|車位另租|車位費|雙平車|地下停車位/.test(parkingStr);
+  const parkingKeywords = !isParkingCommunityRentable && !isMotorcycleOnly && /平車|機械車位|坡道平面|坡道機械|B[123]車位|汽車位|門前停車|附車位|含車位|車位另租|車位費|雙平車|地下停車位/.test(parkingStr);
   const hasParking = parkingKeywords && !parkingExplicitNo && !fakeParking;
-  // 若車位欄為空，掃全文（仍排除子母車相關字）
-  const hasParking2 = !rawParking && !parkingExplicitNo &&
-    /平面車位|機械車位|地下停車位|坡道車位|汽車位|機車位|門前停車|附車位|含車位|車位另租/.test(text);
+  // 若車位欄為空，掃全文（仍排除子母車相關字和機車位）
+  const hasParking2 = !rawParking && !parkingExplicitNo && !isMotorcycleOnly &&
+    /平面車位|機械車位|地下停車位|坡道車位|汽車位|門前停車|附車位|含車位|車位另租/.test(text);
   const parkingActive = hasParking || hasParking2;
   const isDoubleParking = parkingActive && /雙/.test(parkingStr + text);
   const isParkingExtra = parkingActive && /另計|另租|另外/.test(parkingStr);
@@ -1692,7 +1698,6 @@ function parsePropertyText(text) {
     : /平車|坡道平面/.test(parkingStr) ? '平面車位'
     : /機械/.test(parkingStr) ? '機械車位'
     : /地下/.test(parkingStr) ? '地下停車位'
-    : /機車位/.test(parkingStr) ? '機車位'
     : /門前/.test(parkingStr) ? '門前停車'
     : '車位';
 
@@ -1734,16 +1739,16 @@ function parsePropertyText(text) {
     if ((petFriendly || /可養貓|可貓|歡迎貓|寵物可貓/.test(text)) && !/不可貓|禁貓/.test(text)) tags.push('可貓');
   }
 
-  // 台水 / 台電（排除「水X元/電X元」自訂計費）
+  // 台水 / 台電（排除「水X元/電X元」自訂計費，排除「台電分算/台電新制」）
   const waterElecRaw = rawWater + ' ' + text;
   const isFlatRate = /水\s*\d+[元\/]|電\s*\d+[元度\/]/.test(waterElecRaw);
   const hasTaiWater = !isFlatRate && /台水電|台水台電|台電台水|台灣自來水|台水/.test(waterElecRaw);
-  const hasTaiElec  = !isFlatRate && /台水電|台水台電|台電台水|台電分算|台灣電力|台電|水電照帳單/.test(waterElecRaw);
+  const hasTaiElec  = !isFlatRate && /台水電|台水台電|台電台水|台灣電力|台電計費|水電照帳單/.test(waterElecRaw) && !/台電分算|台電新制|新制台電/.test(waterElecRaw);
   if (hasTaiWater) tags.push('台水');
   if (hasTaiElec)  tags.push('台電');
 
-  // 可開伙（排除不可開伙）
-  if (/可開伙|可煮|可電磁爐|廚房可用|開放開伙|開伙/.test(text) && !/不可開伙|禁止開伙|不開伙|不可煮/.test(text))
+  // 可開伙（排除不可開伙；電磁爐也算可開伙）
+  if (/可開伙|可煮|可電磁爐|廚房可用|開放開伙|開伙|可用電磁爐|電磁爐可用/.test(text) && !/不可開伙|禁止開伙|不開伙|不可煮/.test(text))
     tags.push('可開伙');
 
   // 獨洗曬（精確規則：只要出現以下文字就要勾選；但「共洗」或「投幣洗衣」不算）
@@ -1908,17 +1913,22 @@ function parsePropertyText(text) {
   if (/烹飪室|烹飪教室|公共廚房/.test(text)) pros.push('附社區烹飪室');
   if (tags.includes('管理室'))               pros.push('設有管理室');
 
-  // 水電透明
-  if (tags.includes('台水') && tags.includes('台電')) pros.push('台水台電');
-  else if (tags.includes('台電'))            pros.push('台電分算');
+  // 水電透明（去重：同時有台水和台電才寫一次）
+  const hasWaterElectricity = tags.includes('台水') || tags.includes('台電');
+  if (hasWaterElectricity) {
+    if (tags.includes('台水') && tags.includes('台電')) pros.push('台水台電');
+    else if (tags.includes('台電')) pros.push('台電分算');
+  }
 
   // 子母車
   if (hasSubmother) pros.push('有子母車');
 
-  // 水電計費
-  if (rawWater) {
+  // 水電計費（不要重複台水台電）
+  if (rawWater && !hasWaterElectricity) {
     const waterText = rawWater.replace(/[\/\\]/g, '／').replace(/\s+/g, '').trim();
-    pros.push(waterText);
+    if (!/台水|台電/.test(waterText)) {
+      pros.push(waterText);
+    }
   }
 
   // 寵物
@@ -2006,6 +2016,10 @@ function parsePropertyText(text) {
   // 禁寵（嚴格：只要有可貓/可狗就不輸出）
   const strictPetBan = /禁寵|不可寵|謝絕寵物|禁止寵物|寵物[：:]\s*❌|不養寵物|🈲寵|禁貓狗|不可貓不可狗/.test(text);
   if (strictPetBan && !petAllowText) cons.push('禁寵');
+  // 🆕 沒有可狗/可貓標籤，也沒有明確禁寵 → 預設「不可養寵物」
+  else if (!tags.includes('可狗') && !tags.includes('可貓') && !petAllowText && !strictPetBan) {
+    cons.push('不可養寵物');
+  }
 
   // 寵物附加條件（有養寵物才寫）
   const hasPetTag = tags.includes('可狗') || tags.includes('可貓');
@@ -2099,6 +2113,28 @@ function parsePropertyText(text) {
   const moveOutM = (rawNotes || text).match(/([一二三四五六七八九十\d]+月(?:初|中|底|末)?)\s*退租/);
   if (moveOutM) cons.push(`目前有租客，${moveOutM[1]}退租後方可帶看`);
 
+  // 🆕 檢查缺少的設備
+  const missingEquipList = [];
+  if (!/冷氣|冷空調|變頻冷氣|冷暖機|分離式冷氣/.test(text)) missingEquipList.push('冷氣');
+  if (!/洗衣機|洗衣|滾筒|全自動|半自動|投幣洗衣/.test(text)) missingEquipList.push('洗衣機');
+  if (!/冰箱|雪櫃/.test(text)) missingEquipList.push('冰箱');
+  if (!/微波爐|烤箱|烘烤/.test(text)) missingEquipList.push('微波爐');
+  if (!/熱水器|瓦斯熱水|電熱水/.test(text)) missingEquipList.push('熱水器');
+  if (!/床|床架|床墊/.test(text) && !/空屋|無任何設備/.test(text)) missingEquipList.push('床');
+  if (!/沙發|沙發椅/.test(text) && !/空屋|無任何設備/.test(text)) missingEquipList.push('沙發');
+  // 只在不是空屋的情況下提示缺少設備
+  if (missingEquipList.length > 0 && !noEquip) {
+    const missText = missingEquipList.join('、');
+    cons.push(`缺少設備：${missText}`);
+  }
+
+  // 🆕 無子母車（明確寫「無子母車」或如果沒有子母車標籤且沒有明確說有）
+  if (noSubmother) {
+    cons.push('無子母車');
+  } else if (!hasSubmother && !/子母車|垃圾集中|免追垃圾/.test(text)) {
+    cons.push('無子母車（需自行處理垃圾）');
+  }
+
   if (cons.length > 0) result.cons = cons.map(c => `• ${c}`).join('\n');
 
   // ===== TITLE =====
@@ -2121,10 +2157,18 @@ function parsePropertyText(text) {
     const titleParts = [];
     // 1. 區域
     if (result.district) titleParts.push(result.district);
-    // 2. 格局（完整保留，1房→套房）
+    // 2. 格局（🆕 只寫房廳，不寫衛陽台；1房→套房）
     if (result.layout) {
       const isSingleRoom = /^(1房|一房|套房)/.test(result.layout.trim());
-      titleParts.push(isSingleRoom ? '套房' : result.layout);
+      // 只提取房和廳的部分
+      let layoutDisplay = isSingleRoom ? '套房' : result.layout;
+      // 如果格局包含衛陽台，只保留房廳
+      const roomTingMatch = layoutDisplay.match(/(\d+\+?\d*房)(\d+廳)?/);
+      if (roomTingMatch) {
+        layoutDisplay = roomTingMatch[1];
+        if (roomTingMatch[2]) layoutDisplay += roomTingMatch[2];
+      }
+      titleParts.push(layoutDisplay);
     }
     // 3. 類型（套房格局不重複輸出）
     const layoutIsSuite = result.layout && /套房/.test(result.layout);
@@ -2136,7 +2180,9 @@ function parsePropertyText(text) {
     if (tags.includes('可狗') && tags.includes('可貓')) highlights2.push('可貓可狗');
     else if (tags.includes('可狗'))       highlights2.push('可狗');
     else if (tags.includes('可貓'))       highlights2.push('可貓');
-    if (parkingActive && !isParkingExtra) highlights2.push('附車位');
+    if (parkingActive && !isParkingExtra && !isMotorcycleOnly) highlights2.push('附車位');
+    // 🆕 機車位單獨在最後標註，不放在亮點
+    if (isMotorcycleOnly) highlights2.push('機車位');
     if (tags.includes('獨洗曬'))          highlights2.push('陽台獨洗曬');
     if (/可營登/.test(text))              highlights2.push('可營登');
     titleParts.push(...highlights2.slice(0, 2));
