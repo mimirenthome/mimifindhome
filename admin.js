@@ -2113,20 +2113,11 @@ function parsePropertyText(text) {
   const moveOutM = (rawNotes || text).match(/([一二三四五六七八九十\d]+月(?:初|中|底|末)?)\s*退租/);
   if (moveOutM) cons.push(`目前有租客，${moveOutM[1]}退租後方可帶看`);
 
-  // 🆕 檢查缺少的設備
-  const missingEquipList = [];
-  if (!/冷氣|冷空調|變頻冷氣|冷暖機|分離式冷氣/.test(text)) missingEquipList.push('冷氣');
-  if (!/洗衣機|洗衣|滾筒|全自動|半自動|投幣洗衣/.test(text)) missingEquipList.push('洗衣機');
-  if (!/冰箱|雪櫃/.test(text)) missingEquipList.push('冰箱');
-  if (!/微波爐|烤箱|烘烤/.test(text)) missingEquipList.push('微波爐');
-  if (!/熱水器|瓦斯熱水|電熱水/.test(text)) missingEquipList.push('熱水器');
-  if (!/床|床架|床墊/.test(text) && !/空屋|無任何設備/.test(text)) missingEquipList.push('床');
-  if (!/沙發|沙發椅/.test(text) && !/空屋|無任何設備/.test(text)) missingEquipList.push('沙發');
-  // 只在不是空屋的情況下提示缺少設備
-  if (missingEquipList.length > 0 && !noEquip) {
-    const missText = missingEquipList.join('、');
-    cons.push(`缺少設備：${missText}`);
-  }
+  // 🆕 檢查明確「沒有」的設備（只針對明確說無的情況）
+  // 而不是檢查「沒提到」的設備
+  if (/無冷氣|沒有冷氣|不含冷氣|冷氣[：:\s]*無/.test(text)) cons.push('無冷氣');
+  if (/無洗衣機|沒有洗衣機|不含洗衣機/.test(text)) cons.push('無洗衣機');
+  if (/無冰箱|沒有冰箱|不含冰箱/.test(text)) cons.push('無冰箱');
 
   // 🆕 無子母車（明確寫「無子母車」或如果沒有子母車標籤且沒有明確說有）
   if (noSubmother) {
