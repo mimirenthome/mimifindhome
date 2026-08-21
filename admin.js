@@ -1891,7 +1891,7 @@ function parsePropertyText(text) {
   // 設備
   if (/雙門.*冰箱|冰箱.*雙門|大冰箱/.test(text)) pros.push('雙門大冰箱');
   if (tags.includes('變頻冷氣'))      pros.push('變頻冷氣');
-  if (hasSmartTV)                     pros.push('附聯網電視');
+  // 🆕 聯網電視已在highlights和網路部分處理，不重複添加
   if (/RO逆滲透|逆滲透飲水機|RO飲水機/.test(text)) pros.push('RO逆滲透飲水機');
   if (/專人代收|有人代收|管理員代收|代收包裹/.test(text)) pros.push('有專人代收包裹');
 
@@ -1940,11 +1940,10 @@ function parsePropertyText(text) {
   if (tags.includes('可雙租補'))   pros.push('可租補＆可雙租補');
   else if (tags.includes('可租補')) pros.push('可租補');
 
-  // 網路
+  // 網路（聯網電視已在highlights處理）
   if (internetFieldYes || (hasNetworkPos && !hasNetworkNeg)) {
-    if (hasSmartTV)      pros.push('有網路＋聯網電視');
-    else if (hasCableTV) pros.push('有網路＋第四台');
-    else                 pros.push('有網路');
+    if (!hasSmartTV && !hasCableTV) pros.push('有網路');
+    // hasSmartTV 和 hasCableTV 已在 highlights 中處理，不重複
   }
 
   // 獨洗曬
