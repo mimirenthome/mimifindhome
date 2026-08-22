@@ -95,6 +95,7 @@
     <div class="props-tab-bar">
       <button class="props-tab active" id="tab-active" onclick="switchPropsTab('1')">上架中</button>
       <button class="props-tab" id="tab-inactive" onclick="switchPropsTab('0')">已下架</button>
+      <button class="props-tab" style="margin-left:auto;" onclick="openTagChecker()">🏷️ 標籤檢查</button>
     </div>
     <!-- 隱藏的狀態篩選（由 Tab 控制） -->
     <select id="admin-filter-status" style="display:none;">
@@ -579,6 +580,28 @@
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeConfirm()">取消</button>
       <button class="btn btn-danger" id="confirm-ok-btn">確認</button>
+    </div>
+  </div>
+</div>
+
+<!-- 🏷️ 標籤檢查工具 -->
+<div class="modal-overlay hidden" id="tag-checker-modal">
+  <div class="modal-box" style="max-width:1000px;max-height:85vh;display:flex;flex-direction:column;">
+    <div class="modal-header">
+      <div class="modal-title">🏷️ 標籤檢查工具</div>
+      <button class="modal-close" onclick="closeTagChecker()">✕</button>
+    </div>
+    <div class="modal-body" style="flex:1;display:flex;gap:20px;overflow:hidden;">
+      <!-- 左側：標籤列表 -->
+      <div style="width:180px;border-right:1px solid var(--color-border);padding-right:12px;overflow-y:auto;">
+        <div style="font-weight:600;margin-bottom:12px;font-size:13px;color:var(--color-text-muted);">選擇標籤</div>
+        <div id="tag-list" style="display:flex;flex-direction:column;gap:6px;"></div>
+      </div>
+      <!-- 右側：物件列表 -->
+      <div style="flex:1;display:flex;flex-direction:column;">
+        <div id="tag-result-header" style="font-weight:600;margin-bottom:12px;font-size:14px;color:var(--color-text);">選擇左邊標籤檢查</div>
+        <div id="tag-result" style="flex:1;overflow-y:auto;"></div>
+      </div>
     </div>
   </div>
 </div>

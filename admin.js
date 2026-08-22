@@ -4535,3 +4535,101 @@ async function handleSaveNewAppt() {
     showToast('❌ 新增失敗：' + (err.message || '請重試'), 'error');
   }
 }
+
+// ===== 🏷️ 標籤檢查工具 =====
+const ALL_TAGS = ['可租補', '可狗', '可貓', '陽台', '獨洗曬', '可開伙', '車位', '台水', '台電', '衛浴乾濕分離', '變頻冷氣', '管理室', '子母車', '飲水機', '網路'];
+
+async function openTagChecker() {
+  document.getElementById('tag-checker-modal').classList.remove('hidden');
+
+  // 載入並顯示所有標籤
+  const tagList = document.getElementById('tag-list');
+  tagList.innerHTML = ALL_TAGS.map(tag =>
+    `<button class="tag-check-btn" onclick="checkTag('${tag}')" style="padding:8px 10px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;text-align:left;font-size:13px;transition:all 0.2s;">
+      ${tag}
+    </button>`
+  ).join('');
+}
+
+function closeTagChecker() {
+  document.getElementById('tag-checker-modal').classList.add('hidden');
+}
+
+async function checkTag(tagName) {
+  // 高亮選中的標籤按鈕
+  document.querySelectorAll('.tag-check-btn').forEach(btn => {
+    btn.style.background = btn.textContent.includes(tagName) ? '#7d8a72' : '#fff';
+    btn.style.color = btn.textContent.includes(tagName) ? '#fff' : '#000';
+  });
+
+  // 載入所有物件
+  try {
+    const { data, error } = await db.from('properties').select('id, title, tags, is_active');
+    if (error) throw error;
+
+    const props = data || [];
+    const header = document.getElementById('tag-result-header');
+    const result = document.getElementById('tag-result');
+
+    // 有標籤和沒標籤的分組
+    const withTag = props.filter(p => p.tags && p.tags.includes(tagName));
+    const withoutTag = props.filter(p => !p.tags || !p.tags.includes(tagName));
+
+    header.textContent = `📌 ${tagName} - 有 ${withTag.length} 個物件，缺 ${withoutTag.length} 個物件`;
+
+    let html = '';
+
+    // 有標籤的物件
+    if (withTag.length > 0) {
+      html += `<div style="margin-bottom:16px;">
+        <div style="font-weight:600;color:#2d7a2d;margin-bottom:8px;">✅ 已有此標籤 (${withTag.length})</div>`;
+      html += withTag.map(p =>
+        `<div style="padding:8px;background:#f0f7f0;border-left:3px solid #2d7a2d;margin-bottom:4px;border-radius:2px;font-size:13px;">
+          ${p.title}
+        </div>`
+      ).join('');
+      html += '</div>';
+    }
+
+    // 沒有標籤的物件
+    if (withoutTag.length > 0) {
+      html += `<div>
+        <div style="font-weight:600;color:#d32f2f;margin-bottom:8px;">❌ 缺少此標籤 (${withoutTag.length})</div>`;
+      html += withoutTag.map(p =>
+        `<div style="padding:8px;background:#fef5f5;border-left:3px solid #d32f2f;margin-bottom:4px;border-radius:2px;font-size:13px;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.background='#ffe0e0'" onmouseout="this.style.background='#fef5f5'" onclick="editPropTag('${p.id}', '${tagName}')">
+          ${p.title} <span style="color:#999;font-size:12px;margin-left:8px;">(點擊編輯)</span>
+        </div>`
+      ).join('');
+      html += '</div>';
+    }
+
+    result.innerHTML = html;
+  } catch (err) {
+    console.error('標籤檢查失敗:', err);
+    document.getElementById('tag-result').innerHTML = '<p style="color:#d32f2f;">載入失敗，請重試</p>';
+  }
+}
+
+async function editPropTag(propId, tagName) {
+  // 快速編輯物件標籤 - 打開編輯modal
+  const prop = allProperties.find(p => p.id === propId);
+  if (!prop) { showToast('找不到物件', 'error'); return; }
+
+  // 將該物件的tags加上新標籤
+  if (!prop.tags) prop.tags = [];
+  if (!prop.tags.includes(tagName)) {
+    prop.tags.push(tagName);
+    // 更新到資料庫
+    const { error } = await db.from('properties')
+      .update({ tags: prop.tags })
+      .eq('id', propId);
+
+    if (!error) {
+      showToast(`✅ 已為「${prop.title}」添加「${tagName}」標籤`, 'success');
+      // 重新檢查該標籤
+      checkTag(tagName);
+    } else {
+      showToast('更新失敗', 'error');
+    }
+  }
+}
