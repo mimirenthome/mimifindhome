@@ -4613,28 +4613,14 @@ async function checkTag(tagName) {
   }
 }
 
-async function openEditPropFromTagChecker(propId, missingTag) {
+function openEditPropFromTagChecker(propId, missingTag) {
   // 從標籤檢查工具打開編輯物件
   // 1. 關閉標籤檢查modal
   closeTagChecker();
 
-  // 2. 從Supabase查詢物件
-  try {
-    const { data, error } = await db.from('properties').select('*').eq('id', propId).single();
-    if (error || !data) {
-      showToast('找不到物件', 'error');
-      return;
-    }
+  // 2. 打開編輯modal（editProp接收id）
+  editProp(propId);
 
-    const prop = propFromDb(data);
-
-    // 3. 打開編輯modal
-    editProp(prop);
-
-    // 4. 提示用戶這個標籤缺少
-    showToast(`💡 提示：此物件缺少「${missingTag}」標籤`, 'info');
-  } catch (err) {
-    console.error('打開編輯失敗:', err);
-    showToast('操作失敗，請重試', 'error');
-  }
+  // 3. 提示用戶這個標籤缺少
+  showToast(`💡 提示：此物件缺少「${missingTag}」標籤，記得勾選！`, 'info');
 }
