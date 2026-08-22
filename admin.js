@@ -4599,8 +4599,8 @@ async function checkTag(tagName) {
         const propId = p.id;
         const addr = p.address || '（無地址）';
         const title = p.title;
-        return `<div style="padding:8px;background:#fef5f5;border-left:3px solid #d32f2f;margin-bottom:4px;border-radius:2px;font-size:13px;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.background='#ffe0e0'" onmouseout="this.style.background='#fef5f5'" onclick="addTagToProp('${propId}', '${tagName}')">
-          📍 ${addr} | ${title} <span style="color:#999;font-size:12px;margin-left:8px;">(點擊新增)</span>
+        return `<div style="padding:8px;background:#fef5f5;border-left:3px solid #d32f2f;margin-bottom:4px;border-radius:2px;font-size:13px;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.background='#ffe0e0'" onmouseout="this.style.background='#fef5f5'" onclick="openEditPropFromTagChecker('${propId}', '${tagName}')">
+          📍 ${addr} | ${title} <span style="color:#999;font-size:12px;margin-left:8px;">(點擊編輯)</span>
         </div>`;
       }).join('');
       html += '</div>';
@@ -4613,42 +4613,28 @@ async function checkTag(tagName) {
   }
 }
 
-async function addTagToProp(propId, tagName) {
-  // 快速添加標籤到物件
-  try {
-    // 1. 查詢物件目前的tags
-    const { data, error: selectError } = await db.from('properties')
-      .select('title, tags')
-      .eq('id', propId)
-      .single();
+async function openEditPropFromTagChecker(propId, missingTag) {
+  // 從標籤檢查工具打開編輯物件
+  // 1. 關閉標籤檢查modal
+  closeTagChecker();
 
-    if (selectError || !data) {
+  // 2. 從Supabase查詢物件
+  try {
+    const { data, error } = await db.from('properties').select('*').eq('id', propId).single();
+    if (error || !data) {
       showToast('找不到物件', 'error');
       return;
     }
 
-    // 2. 添加新標籤
-    const tags = data.tags || [];
-    if (!tags.includes(tagName)) {
-      tags.push(tagName);
+    const prop = propFromDb(data);
 
-      // 3. 更新資料庫
-      const { error: updateError } = await db.from('properties')
-        .update({ tags: tags })
-        .eq('id', propId);
+    // 3. 打開編輯modal
+    editProp(prop);
 
-      if (updateError) {
-        showToast('更新失敗：' + updateError.message, 'error');
-        return;
-      }
-
-      showToast(`✅ 已為「${data.title}」添加「${tagName}」標籤`, 'success');
-
-      // 4. 重新檢查該標籤
-      checkTag(tagName);
-    }
+    // 4. 提示用戶這個標籤缺少
+    showToast(`💡 提示：此物件缺少「${missingTag}」標籤`, 'info');
   } catch (err) {
-    console.error('添加標籤失敗:', err);
+    console.error('打開編輯失敗:', err);
     showToast('操作失敗，請重試', 'error');
   }
 }
