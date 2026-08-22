@@ -4562,12 +4562,12 @@ async function checkTag(tagName) {
     btn.style.color = btn.textContent.includes(tagName) ? '#fff' : '#000';
   });
 
-  // 載入所有物件
+  // 載入所有物件（從Supabase）
   try {
-    const { data, error } = await db.from('properties').select('id, title, tags, is_active');
+    const { data, error } = await db.from('properties').select('*').order('created_at', { ascending: false });
     if (error) throw error;
 
-    const props = data || [];
+    const props = (data || []).map(propFromDb);
     const header = document.getElementById('tag-result-header');
     const result = document.getElementById('tag-result');
 
@@ -4585,7 +4585,7 @@ async function checkTag(tagName) {
         <div style="font-weight:600;color:#2d7a2d;margin-bottom:8px;">✅ 已有此標籤 (${withTag.length})</div>`;
       html += withTag.map(p =>
         `<div style="padding:8px;background:#f0f7f0;border-left:3px solid #2d7a2d;margin-bottom:4px;border-radius:2px;font-size:13px;">
-          ${p.title}
+          📍 ${p.address || '（無地址）'} | ${p.title}
         </div>`
       ).join('');
       html += '</div>';
@@ -4595,11 +4595,14 @@ async function checkTag(tagName) {
     if (withoutTag.length > 0) {
       html += `<div>
         <div style="font-weight:600;color:#d32f2f;margin-bottom:8px;">❌ 缺少此標籤 (${withoutTag.length})</div>`;
-      html += withoutTag.map(p =>
-        `<div style="padding:8px;background:#fef5f5;border-left:3px solid #d32f2f;margin-bottom:4px;border-radius:2px;font-size:13px;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.background='#ffe0e0'" onmouseout="this.style.background='#fef5f5'" onclick="editPropTag('${p.id}', '${tagName}')">
-          ${p.title} <span style="color:#999;font-size:12px;margin-left:8px;">(點擊編輯)</span>
-        </div>`
-      ).join('');
+      html += withoutTag.map(p => {
+        const propId = p.id;
+        const addr = p.address || '（無地址）';
+        const title = p.title;
+        return `<div style="padding:8px;background:#fef5f5;border-left:3px solid #d32f2f;margin-bottom:4px;border-radius:2px;font-size:13px;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.background='#ffe0e0'" onmouseout="this.style.background='#fef5f5'" onclick="addTagToProp('${propId}', '${tagName}')">
+          📍 ${addr} | ${title} <span style="color:#999;font-size:12px;margin-left:8px;">(點擊新增)</span>
+        </div>`;
+      }).join('');
       html += '</div>';
     }
 
@@ -4610,26 +4613,42 @@ async function checkTag(tagName) {
   }
 }
 
-async function editPropTag(propId, tagName) {
-  // 快速編輯物件標籤 - 打開編輯modal
-  const prop = allProperties.find(p => p.id === propId);
-  if (!prop) { showToast('找不到物件', 'error'); return; }
+async function addTagToProp(propId, tagName) {
+  // 快速添加標籤到物件
+  try {
+    // 1. 查詢物件目前的tags
+    const { data, error: selectError } = await db.from('properties')
+      .select('title, tags')
+      .eq('id', propId)
+      .single();
 
-  // 將該物件的tags加上新標籤
-  if (!prop.tags) prop.tags = [];
-  if (!prop.tags.includes(tagName)) {
-    prop.tags.push(tagName);
-    // 更新到資料庫
-    const { error } = await db.from('properties')
-      .update({ tags: prop.tags })
-      .eq('id', propId);
-
-    if (!error) {
-      showToast(`✅ 已為「${prop.title}」添加「${tagName}」標籤`, 'success');
-      // 重新檢查該標籤
-      checkTag(tagName);
-    } else {
-      showToast('更新失敗', 'error');
+    if (selectError || !data) {
+      showToast('找不到物件', 'error');
+      return;
     }
+
+    // 2. 添加新標籤
+    const tags = data.tags || [];
+    if (!tags.includes(tagName)) {
+      tags.push(tagName);
+
+      // 3. 更新資料庫
+      const { error: updateError } = await db.from('properties')
+        .update({ tags: tags })
+        .eq('id', propId);
+
+      if (updateError) {
+        showToast('更新失敗：' + updateError.message, 'error');
+        return;
+      }
+
+      showToast(`✅ 已為「${data.title}」添加「${tagName}」標籤`, 'success');
+
+      // 4. 重新檢查該標籤
+      checkTag(tagName);
+    }
+  } catch (err) {
+    console.error('添加標籤失敗:', err);
+    showToast('操作失敗，請重試', 'error');
   }
 }
