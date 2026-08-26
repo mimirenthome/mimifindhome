@@ -4588,9 +4588,12 @@ async function checkTag(tagName) {
     const header = document.getElementById('tag-result-header');
     const result = document.getElementById('tag-result');
 
+    // 🆕 只檢查上架的物件，排除已下架的
+    const activeProps = props.filter(p => p.isActive);
+
     // 有標籤和沒標籤的分組
-    const withTag = props.filter(p => p.tags && p.tags.includes(tagName));
-    const withoutTag = props.filter(p => !p.tags || !p.tags.includes(tagName));
+    const withTag = activeProps.filter(p => p.tags && p.tags.includes(tagName));
+    const withoutTag = activeProps.filter(p => !p.tags || !p.tags.includes(tagName));
 
     header.textContent = `📌 ${tagName} - 有 ${withTag.length} 個物件，缺 ${withoutTag.length} 個物件`;
 
