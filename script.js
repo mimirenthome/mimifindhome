@@ -1176,7 +1176,7 @@ function openCompareModal() {
               <span class="cmp-card-field-val">${f.winner ? '👑 ':''}${f.isHtml ? f.val : f.val}</span>
             </div>`).join('')}
         </div>
-        <button class="btn btn-primary btn-sm btn-full" style="margin-top:14px;" onclick="closeCompareModal();goToAppt('${escHtml(p.title)}')">📅 預約看屋</button>
+        <button class="btn btn-primary btn-sm btn-full" style="margin-top:14px;" onclick="closeCompareModal();goToAppt('${escHtml(p.propertyCode)}')">📅 預約看屋</button>
         <button class="cg-remove-btn" style="margin-top:6px;width:100%;" onclick="removeFromCompareAndRefresh('${p.id}')">✕ 移除此物件</button>
       </div>`;
     }).join('');
@@ -1245,7 +1245,7 @@ function openCompareModal() {
     const cells = compareList.map((p, i) => {
       const last = i === n-1 ? ' cg-last' : '';
       return `<div class="cg-cell cg-action${last}">
-        <button class="btn btn-primary btn-sm btn-full" onclick="closeCompareModal();goToAppt('${escHtml(p.title)}')">📅 預約看屋</button>
+        <button class="btn btn-primary btn-sm btn-full" onclick="closeCompareModal();goToAppt('${escHtml(p.propertyCode)}')">📅 預約看屋</button>
       </div>`;
     }).join('');
     return `<div class="cg-label"></div>${cells}`;
