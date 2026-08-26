@@ -280,7 +280,7 @@ function renderAdminProps() {
       if (layout === '5房以上') { if (!/^[5-9]\d*房以上$|^[5-9]房/.test(cat) && cat !== '5房以上') return false; }
       else if (cat !== layout) return false;
     }
-    if (search && !p.title.toLowerCase().includes(search) && !(p.address || '').toLowerCase().includes(search) && !(p.propertyCode || '').toLowerCase().includes(search)) return false;
+    if (search && !p.title.toLowerCase().includes(search) && !(p.address || '').toLowerCase().includes(search) && !(p.propertyCode || '').toLowerCase().includes(search) && !(p.highlights || '').toLowerCase().includes(search) && !(p.cons || '').toLowerCase().includes(search)) return false;
     return true;
   });
   // 按推薦分類排序：設定了標籤的在上面，沒設定的在下面
@@ -1789,17 +1789,30 @@ function parsePropertyText(text) {
 
   result.tags = tags;
 
-  // ===== HIGHLIGHTS（新規則：按順序排列）=====
-  // 1. 水電計費
-  // 2. 設備狀況
-  // 3. 網路／第四台
-  // 4. 寵物條件
-  // 5. 租補條件
-  // 6. 洗曬方式
-  // 7. 其他加分條件
+  // ===== HIGHLIGHTS（新規則：按租賃成本優先排列）=====
+  // 1. 管理費（最優先 - 租客最關心）
+  // 2. 水電計費
+  // 3. 設備狀況
+  // 4. 網路／第四台
+  // 5. 寵物條件
+  // 6. 租補條件
+  // 7. 洗曬方式
+  // 8. 其他加分條件
   const hl = [];
 
-  // 1. 水電計費（保留原始短句）
+  // 1. 管理費（🆕 最前面，租客最關心的）
+  if (rawMgmt) {
+    const mgmtText = rawMgmt.trim();
+    if (/^含$|^有$|^已含|^含在內/.test(mgmtText)) {
+      hl.push('租金已含管理費');
+    } else if (/^\d+/.test(mgmtText)) {
+      hl.push(`管理費${mgmtText}`);
+    } else {
+      hl.push(rawMgmt);
+    }
+  }
+
+  // 2. 水電計費（保留原始短句）
   if (rawWater) {
     hl.push(rawWater.replace(/[\/\\]/g, '／').replace(/\s+/g, '').trim());
   }
@@ -1829,11 +1842,12 @@ function parsePropertyText(text) {
   if (tags.includes('可雙租補'))    hl.push('可租補 可雙租補');
   else if (tags.includes('可租補')) hl.push('可租補');
 
-  // 6. 洗曬方式（根據實際文本判斷）
+  // 6. 洗曬方式（根據標籤判斷，不根據文本）
   if (tags.includes('獨洗曬')) {
     if (/凸窗曬|凸窗.*曬|可凸窗曬/.test(text)) {
       hl.push('獨洗凸窗曬');
-    } else if (/陽台.*曬|曬.*陽台|陽台曬|陽台獨洗曬|陽台獨洗|陽台曬衣/.test(text)) {
+    } else if (tags.includes('陽台')) {
+      // 🆕 只有真的有陽台標籤才寫「陽台獨洗曬」
       hl.push('陽台獨洗曬');
     } else {
       hl.push('獨立洗曬');
@@ -1893,7 +1907,10 @@ function parsePropertyText(text) {
   if (tags.includes('變頻冷氣'))      pros.push('變頻冷氣');
   // 🆕 聯網電視已在highlights和網路部分處理，不重複添加
   if (/RO逆滲透|逆滲透飲水機|RO飲水機/.test(text)) pros.push('RO逆滲透飲水機');
-  if (/專人代收|有人代收|管理員代收|代收包裹/.test(text)) pros.push('有專人代收包裹');
+  // 🆕 排除垃圾代收（子母車已有標籤），只找包裹/郵件代收
+  if (/代收包裹|代收郵件|代收快遞|專人代收|有人代收|管理員代收/.test(text) && !/代收垃圾|垃圾代收/.test(text)) {
+    pros.push('有專人代收包裹');
+  }
 
   // 床 / 收納
   const hasLatex   = /乳膠.*床墊|床墊.*乳膠/.test(text);
@@ -2855,7 +2872,7 @@ function renderEditApptSlots() {
       }
 
       const filtered = (allProps || []).filter(p => {
-        const searchStr = `${p.address || ''} ${p.title || ''} ${p.district || ''} ${p.propertyCode || ''}`.toLowerCase();
+        const searchStr = `${p.address || ''} ${p.title || ''} ${p.district || ''} ${p.propertyCode || ''} ${p.highlights || ''} ${p.cons || ''}`.toLowerCase();
         return searchStr.includes(keyword);
       });
 
@@ -4389,7 +4406,7 @@ function openAddApptModal() {
     }
 
     const filtered = (allProps || []).filter(p => {
-      const searchStr = `${p.address || ''} ${p.title || ''} ${p.propertyCode || ''}`.toLowerCase();
+      const searchStr = `${p.address || ''} ${p.title || ''} ${p.propertyCode || ''} ${p.highlights || ''} ${p.cons || ''}`.toLowerCase();
       return searchStr.includes(keyword);
     });
 
