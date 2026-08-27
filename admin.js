@@ -1914,6 +1914,7 @@ function parsePropertyText(text) {
   if (tags.includes('變頻冷氣'))      pros.push('變頻冷氣');
   // 🆕 聯網電視已在highlights和網路部分處理，不重複添加
   if (/RO逆滲透|逆滲透飲水機|RO飲水機/.test(text)) pros.push('RO逆滲透飲水機');
+  else if (tags.includes('飲水機'))   pros.push('附飲水機');
   // 🆕 排除垃圾代收（子母車已有標籤），只找包裹/郵件代收
   if (/代收包裹|代收郵件|代收快遞|專人代收|有人代收|管理員代收/.test(text) && !/代收垃圾|垃圾代收/.test(text)) {
     pros.push('有專人代收包裹');
