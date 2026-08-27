@@ -1466,22 +1466,24 @@ async function fetchNearbyLandmarks(address, district, rawText) {
       const isSchool = name => schoolKeywords.some(k => name.includes(k));
       const withDist = TC_LANDMARKS.map(lm => ({ ...lm, dist: haversineM(lat, lng, lm.lat, lm.lng) }));
       const added = new Set();
-      for (const radius of [50, 100, 200, 300, 400, 500]) {
+
+      // 🆕 策略改變：先收集所有500m以內的學校（不受限），再加其他地標到3個
+      const schools = withDist.filter(lm => lm.dist <= 500 && isSchool(lm.name)).sort((a, b) => a.dist - b.dist);
+      const others = withDist.filter(lm => lm.dist <= 500 && !isSchool(lm.name)).sort((a, b) => a.dist - b.dist);
+
+      // 先加所有學校
+      schools.forEach(lm => {
+        add(lm.name);
+        added.add(lm.name);
+      });
+
+      // 再加其他地標，最多到3個地標
+      for (const lm of others) {
         if (result.length >= 3) break;
-        withDist
-          .filter(lm => lm.dist <= radius && !added.has(lm.name))
-          .sort((a, b) => {
-            const aSchool = isSchool(a.name) ? 0 : 1;
-            const bSchool = isSchool(b.name) ? 0 : 1;
-            if (aSchool !== bSchool) return aSchool - bSchool;
-            return a.dist - b.dist;
-          })
-          .forEach(lm => {
-            if (result.length < 3 && !added.has(lm.name)) {
-              add(lm.name);
-              added.add(lm.name);
-            }
-          });
+        if (!added.has(lm.name)) {
+          add(lm.name);
+          added.add(lm.name);
+        }
       }
     }
   }
@@ -1609,7 +1611,7 @@ function parsePropertyText(text) {
     // 完整保留「電梯透天」、「電梯大樓」等組合
     // 「電梯透天」和「透天電梯」視為同一類型
     if (/電梯透天|透天電梯/.test(typeStr)) propType = '電梯透天';
-    else if (/電梯大樓|大樓/.test(typeStr)) propType = '電梯大樓';
+    else if (/電梯大樓|大樓|電梯華廈|華廈/.test(typeStr)) propType = '電梯大樓';
     else if (/透天/.test(typeStr))        propType = '透天';
     else if (/公寓/.test(typeStr))        propType = '公寓';
     // 套房不放類型，放 layoutCategory
@@ -1940,13 +1942,7 @@ function parsePropertyText(text) {
   // 子母車
   if (hasSubmother) pros.push('有子母車');
 
-  // 水電計費（不要重複台水台電）
-  if (rawWater && !hasWaterElectricity) {
-    const waterText = rawWater.replace(/[\/\\]/g, '／').replace(/\s+/g, '').trim();
-    if (!/台水|台電/.test(waterText)) {
-      pros.push(waterText);
-    }
-  }
+  // 🆕 水電計費只在highlights顯示，優點不需要寫
 
   // 寵物
   if (tags.includes('可狗') && tags.includes('可貓')) pros.push('可貓可狗');
