@@ -1864,6 +1864,11 @@ function parsePropertyText(text) {
   if (/可報稅|可申報/.test(text)) hl.push('可報稅');
   if (/可營登/.test(text))        hl.push('可營登');
 
+  // 8. 🆕 重要優點設備直接寫在物件重點中
+  if (tags.includes('衛浴乾濕分離')) hl.push('衛浴乾濕分離');
+  if (tags.includes('變頻冷氣'))      hl.push('變頻冷氣');
+  if (tags.includes('飲水機'))        hl.push('飲水機');
+
   result.highlights = hl.filter(Boolean).join('、');
 
   // ===== PROS (完整亮點說明，前面加「・」) =====
