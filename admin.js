@@ -1499,29 +1499,37 @@ async function fetchNearbyLandmarks(address, district, rawText) {
     }
 
     if (lat) {
-      const schoolKeywords = ['大學', '科大', '學院', '高中', '中學'];
+      const schoolKeywords = ['大學', '科大', '學院', '高中', '中學', '技術學院'];
       const isSchool = name => schoolKeywords.some(k => name.includes(k));
+      const departmentStores = ['中友百貨', '勤美誠品', '新光三越', '大遠百', 'LaLaport', '大魯閣新時代', 'SOGO'];
+      const isDeptStore = name => departmentStores.some(d => name.includes(d));
+      const landmarks = ['美術館', '科博館', '歌劇院', '眼科', '樂園', '濕地', '公園', '新村', '古堡', '農場', '溫泉', '廣場'];
+      const isLandmark = name => landmarks.some(l => name.includes(l));
+      const isMRT = name => /捷運.*站/.test(name);
+      const famousMalls = ['逢甲夜市', '一中街商圈', '逢甲', '一中'];
+      const isFamousMall = name => famousMalls.some(m => name.includes(m));
+      const isMall = name => /商圈|夜市/.test(name);
+
       const withDist = TC_LANDMARKS.map(lm => ({ ...lm, dist: haversineM(lat, lng, lm.lat, lm.lng) }));
       const added = new Set();
 
-      // 🆕 策略改變：先收集所有500m以內的學校（不受限），再加其他地標到3個
+      // 🆕 按優先級分類：學校 > 百貨 > 景點 > 超知名商圈 > 最近捷運 > 其他商圈 > 其他
       const schools = withDist.filter(lm => lm.dist <= 500 && isSchool(lm.name)).sort((a, b) => a.dist - b.dist);
-      const others = withDist.filter(lm => lm.dist <= 500 && !isSchool(lm.name)).sort((a, b) => a.dist - b.dist);
+      const depts = withDist.filter(lm => lm.dist <= 500 && isDeptStore(lm.name)).sort((a, b) => a.dist - b.dist);
+      const spots = withDist.filter(lm => lm.dist <= 500 && isLandmark(lm.name)).sort((a, b) => a.dist - b.dist);
+      const famousMallList = withDist.filter(lm => lm.dist <= 500 && isFamousMall(lm.name)).sort((a, b) => a.dist - b.dist);
+      const mrtList = withDist.filter(lm => lm.dist <= 500 && isMRT(lm.name)).sort((a, b) => a.dist - b.dist).slice(0, 1);
+      const malls = withDist.filter(lm => lm.dist <= 500 && isMall(lm.name) && !isFamousMall(lm.name)).sort((a, b) => a.dist - b.dist);
+      const others = withDist.filter(lm => lm.dist <= 500 && !isSchool(lm.name) && !isDeptStore(lm.name) && !isLandmark(lm.name) && !isFamousMall(lm.name) && !isMRT(lm.name) && !isMall(lm.name)).sort((a, b) => a.dist - b.dist);
 
-      // 先加所有學校
-      schools.forEach(lm => {
-        add(lm.name);
-        added.add(lm.name);
-      });
-
-      // 再加其他地標，最多到3個地標
-      for (const lm of others) {
-        if (result.length >= 3) break;
+      // 按優先級加入：所有學校 > 百貨 > 景點 > 超知名商圈 > 最近捷運(1個) > 其他商圈 > 其他（最多5個）
+      [...schools, ...depts, ...spots, ...famousMallList, ...mrtList, ...malls, ...others].forEach(lm => {
+        if (result.length >= 5) return;
         if (!added.has(lm.name)) {
           add(lm.name);
           added.add(lm.name);
         }
-      }
+      });
     }
   }
 
@@ -1529,14 +1537,14 @@ async function fetchNearbyLandmarks(address, district, rawText) {
   const searchText = (address || '') + ' ' + (rawText || '') + ' ' + district;
   detectKeywordLandmarks(searchText).forEach(add);
 
-  // Step 3：行政區補滿至 3 個
+  // Step 3：行政區補滿至 5 個
   const districtList = DISTRICT_LANDMARKS[district] || [];
   for (const name of districtList) {
-    if (result.length >= 3) break;
+    if (result.length >= 5) break;
     add(name);
   }
 
-  return result.slice(0, 3).join('、');
+  return result.slice(0, 5).join('、');
 }
 
 // ===== 格局分類判斷（根據完整格局推導分類用於前台篩選）=====
