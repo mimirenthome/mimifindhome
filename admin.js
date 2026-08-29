@@ -280,7 +280,18 @@ function renderAdminProps() {
       if (layout === '5房以上') { if (!/^[5-9]\d*房以上$|^[5-9]房/.test(cat) && cat !== '5房以上') return false; }
       else if (cat !== layout) return false;
     }
-    if (search && !p.title.toLowerCase().includes(search) && !(p.address || '').toLowerCase().includes(search) && !(p.propertyCode || '').toLowerCase().includes(search) && !(p.highlights || '').toLowerCase().includes(search) && !(p.cons || '').toLowerCase().includes(search)) return false;
+    if (search) {
+      const searchFields = [
+        p.title || '',
+        p.address || '',
+        p.propertyCode || '',
+        p.highlights || '',
+        p.pros || '',
+        p.cons || '',
+        (p.landmarks || []).join(' ') || ''
+      ].map(f => (f || '').toLowerCase()).join(' ');
+      if (!searchFields.includes(search)) return false;
+    }
     return true;
   });
   // 按推薦分類排序：設定了標籤的在上面，沒設定的在下面
@@ -1972,8 +1983,10 @@ function parsePropertyText(text) {
   else if (!tags.includes('獨洗曬') && !tags.includes('陽台') && /大凸窗|凸窗/.test(text)) pros.push('大凸窗');
 
   // 洗曬
-  if (tags.includes('獨洗曬'))        pros.push('陽台獨洗曬');
-  else if (tags.includes('陽台') && /陽台.*曬|曬.*陽台/.test(text)) pros.push('有陽台可曬衣');
+  if (tags.includes('獨洗曬')) {
+    if (tags.includes('陽台')) pros.push('陽台獨洗曬');
+    else pros.push('獨洗曬');
+  } else if (tags.includes('陽台') && /陽台.*曬|曬.*陽台/.test(text)) pros.push('有陽台可曬衣');
   else if (tags.includes('陽台'))     pros.push('有陽台');
 
   // 洗衣設備
@@ -2012,8 +2025,24 @@ function parsePropertyText(text) {
 
   // 停車
   if (/遮雨棚|有棚|棚式|雨棚/.test(parkingStr + ' ' + text)) pros.push('停車位附遮雨棚');
-  if (parkingActive && isDoubleParking)  pros.push('雙停車位');
-  else if (parkingActive && !isParkingExtra) pros.push('附停車位');
+
+  // 如果車位字段有詳細描述（例如「室內機車位/管理室可問」），優先用該描述
+  if (parkingStr.trim()) {
+    // 檢測是否需要詢問管理室
+    const needsConsult = /管理室|可問|詢問|洽詢/.test(parkingStr);
+    if (needsConsult) {
+      // 提取車位類型
+      if (/室內機車|機車/.test(parkingStr)) pros.push('室內機車位可詢問管理室');
+      else if (/汽車|平車|機械/.test(parkingStr)) pros.push('停車位可詢問管理室');
+      else if (/附近好停/.test(parkingStr)) pros.push('附近好停車');
+      else pros.push('停車位詳情詢問管理室');
+    } else if (parkingActive && isDoubleParking) pros.push('雙停車位');
+    else if (parkingActive && !isParkingExtra) pros.push('附停車位');
+  } else {
+    // 如果車位字段為空，用原有邏輯
+    if (parkingActive && isDoubleParking) pros.push('雙停車位');
+    else if (parkingActive && !isParkingExtra) pros.push('附停車位');
+  }
 
   // 社區設施
   if (/健身房/.test(text))                   pros.push('社區附健身房');
@@ -2032,10 +2061,22 @@ function parsePropertyText(text) {
 
   // 🆕 水電計費只在highlights顯示，優點不需要寫
 
+  // 一層幾戶
+  const floorUnitsMatch = /一層(\d+)戶|(\d+)戶\/層|每層(\d+)戶/.exec(text);
+  if (floorUnitsMatch) {
+    const units = floorUnitsMatch[1] || floorUnitsMatch[2] || floorUnitsMatch[3];
+    pros.push(`一層${units}戶`);
+  }
+
   // 寵物
-  if (tags.includes('可狗') && tags.includes('可貓')) pros.push('可貓可狗');
-  else if (tags.includes('可狗'))  pros.push('可狗');
-  else if (tags.includes('可貓'))  pros.push('可貓');
+  const hasSmallDog = /小型狗|小型犬|小狗/.test(text);
+  if (tags.includes('可狗') && tags.includes('可貓')) {
+    if (hasSmallDog) pros.push('可貓＆小型狗');
+    else pros.push('可貓可狗');
+  } else if (tags.includes('可狗')) {
+    if (hasSmallDog) pros.push('可小型狗');
+    else pros.push('可狗');
+  } else if (tags.includes('可貓'))  pros.push('可貓');
 
   // 租補
   if (tags.includes('可雙租補'))   pros.push('可租補＆可雙租補');
@@ -2043,16 +2084,14 @@ function parsePropertyText(text) {
 
   // 網路（聯網電視已在highlights處理）
   if (internetFieldYes || (hasNetworkPos && !hasNetworkNeg)) {
-    if (!hasSmartTV && !hasCableTV) pros.push('有網路');
-    // hasSmartTV 和 hasCableTV 已在 highlights 中處理，不重複
+    if (hasSmartTV) pros.push('網路＋聯網電視');
+    else if (hasCableTV) pros.push('網路＋第四台');
+    else pros.push('有網路');
   }
 
-  // 獨洗曬
-  if (tags.includes('獨洗曬')) {
-    if (/凸窗曬|凸窗.*曬|可凸窗曬/.test(text))
-      pros.push('獨洗＋凸窗曬');
-    else
-      pros.push('獨立洗衣曬衣');
+  // 獨洗曬 - 只在有凸窗曬時才寫，否則已在highlights中有"獨洗曬"相關內容
+  if (tags.includes('獨洗曬') && /凸窗曬|凸窗.*曬|可凸窗曬/.test(text)) {
+    pros.push('獨洗＋凸窗曬');
   }
 
   if (pros.length > 0) result.pros = pros.map(p => `• ${p}`).join('\n');
@@ -2968,7 +3007,7 @@ function renderEditApptSlots() {
       }
 
       const filtered = (allProps || []).filter(p => {
-        const searchStr = `${p.address || ''} ${p.title || ''} ${p.district || ''} ${p.propertyCode || ''} ${p.highlights || ''} ${p.cons || ''}`.toLowerCase();
+        const searchStr = `${p.address || ''} ${p.title || ''} ${p.district || ''} ${p.propertyCode || ''} ${p.highlights || ''} ${p.pros || ''} ${p.cons || ''} ${(p.landmarks || []).join(' ') || ''}`.toLowerCase();
         return searchStr.includes(keyword);
       });
 
