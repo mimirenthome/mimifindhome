@@ -1513,17 +1513,25 @@ async function fetchNearbyLandmarks(address, district, rawText) {
       const withDist = TC_LANDMARKS.map(lm => ({ ...lm, dist: haversineM(lat, lng, lm.lat, lm.lng) }));
       const added = new Set();
 
-      // 🆕 按優先級分類：學校 > 百貨 > 景點 > 超知名商圈 > 最近捷運 > 其他商圈 > 其他
+      // 🆕 按優先級分類（都按距離排序優先最近的）：學校 > 百貨 > 超知名商圈 > 其他商圈 > 景點 > 最近捷運 > 其他
       const schools = withDist.filter(lm => lm.dist <= 500 && isSchool(lm.name)).sort((a, b) => a.dist - b.dist);
       const depts = withDist.filter(lm => lm.dist <= 500 && isDeptStore(lm.name)).sort((a, b) => a.dist - b.dist);
-      const spots = withDist.filter(lm => lm.dist <= 500 && isLandmark(lm.name)).sort((a, b) => a.dist - b.dist);
       const famousMallList = withDist.filter(lm => lm.dist <= 500 && isFamousMall(lm.name)).sort((a, b) => a.dist - b.dist);
-      const mrtList = withDist.filter(lm => lm.dist <= 500 && isMRT(lm.name)).sort((a, b) => a.dist - b.dist).slice(0, 1);
       const malls = withDist.filter(lm => lm.dist <= 500 && isMall(lm.name) && !isFamousMall(lm.name)).sort((a, b) => a.dist - b.dist);
+      const spots = withDist.filter(lm => lm.dist <= 500 && isLandmark(lm.name)).sort((a, b) => a.dist - b.dist);
+      const mrtList = withDist.filter(lm => lm.dist <= 500 && isMRT(lm.name)).sort((a, b) => a.dist - b.dist).slice(0, 1);
       const others = withDist.filter(lm => lm.dist <= 500 && !isSchool(lm.name) && !isDeptStore(lm.name) && !isLandmark(lm.name) && !isFamousMall(lm.name) && !isMRT(lm.name) && !isMall(lm.name)).sort((a, b) => a.dist - b.dist);
 
-      // 按優先級加入：所有學校 > 百貨 > 景點 > 超知名商圈 > 最近捷運(1個) > 其他商圈 > 其他（最多5個）
-      [...schools, ...depts, ...spots, ...famousMallList, ...mrtList, ...malls, ...others].forEach(lm => {
+      // 按優先級 + 距離加入：所有學校(按距離) > 最近百貨 > 超知名商圈(按距離) > 其他商圈(按距離) > 景點 > 最近捷運(1個) > 其他（最多5個）
+      [
+        ...schools,
+        ...depts.slice(0, 1),  // 🆕 只加最近的百貨
+        ...famousMallList,
+        ...malls,
+        ...spots,
+        ...mrtList,
+        ...others
+      ].forEach(lm => {
         if (result.length >= 5) return;
         if (!added.has(lm.name)) {
           add(lm.name);
@@ -1533,15 +1541,38 @@ async function fetchNearbyLandmarks(address, district, rawText) {
     }
   }
 
-  // Step 2：路名、關鍵字偵測（地址 + 全文）
-  const searchText = (address || '') + ' ' + (rawText || '') + ' ' + district;
-  detectKeywordLandmarks(searchText).forEach(add);
+  // Step 2：路名、關鍵字偵測（地址 + 全文）- 按優先級排序
+  if (result.length < 5) {
+    const searchText = (address || '') + ' ' + (rawText || '') + ' ' + district;
+    const keywordLandmarks = detectKeywordLandmarks(searchText);
 
-  // Step 3：行政區補滿至 5 個
-  const districtList = DISTRICT_LANDMARKS[district] || [];
-  for (const name of districtList) {
-    if (result.length >= 5) break;
-    add(name);
+    // 🆕 對Step 2結果也按優先級排序
+    const schoolKeywords = ['大學', '科大', '學院', '高中', '中學', '技術學院'];
+    const isSchool = name => schoolKeywords.some(k => name.includes(k));
+    const departmentStores = ['中友百貨', '勤美誠品', '新光三越', '大遠百', 'LaLaport', '大魯閣新時代', 'SOGO'];
+    const isDeptStore = name => departmentStores.some(d => name.includes(d));
+    const famousMalls = ['逢甲夜市', '一中街商圈', '逢甲', '一中'];
+    const isFamousMall = name => famousMalls.some(m => name.includes(m));
+    const isMall = name => /商圈|夜市/.test(name);
+
+    const kw_schools = keywordLandmarks.filter(isSchool);
+    const kw_depts = keywordLandmarks.filter(isDeptStore).slice(0, 1);
+    const kw_famousMalls = keywordLandmarks.filter(isFamousMall);
+    const kw_malls = keywordLandmarks.filter(lm => isMall(lm) && !isFamousMall(lm));
+    const kw_others = keywordLandmarks.filter(lm => !isSchool(lm) && !isDeptStore(lm) && !isFamousMall(lm) && !isMall(lm));
+
+    [...kw_schools, ...kw_depts, ...kw_famousMalls, ...kw_malls, ...kw_others].forEach(name => {
+      if (result.length < 5) add(name);
+    });
+  }
+
+  // Step 3：行政區補滿至 5 個 - 優先級最低
+  if (result.length < 5) {
+    const districtList = DISTRICT_LANDMARKS[district] || [];
+    for (const name of districtList) {
+      if (result.length >= 5) break;
+      add(name);
+    }
   }
 
   return result.slice(0, 5).join('、');
