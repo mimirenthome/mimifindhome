@@ -288,7 +288,7 @@ function renderAdminProps() {
         p.highlights || '',
         p.pros || '',
         p.cons || '',
-        (p.landmarks || []).join(' ') || ''
+        (p.nearbyLandmarks || '').split(',').join(' ') || ''
       ].map(f => (f || '').toLowerCase()).join(' ');
       if (!searchFields.includes(search)) return false;
     }
@@ -3007,7 +3007,7 @@ function renderEditApptSlots() {
       }
 
       const filtered = (allProps || []).filter(p => {
-        const searchStr = `${p.address || ''} ${p.title || ''} ${p.district || ''} ${p.propertyCode || ''} ${p.highlights || ''} ${p.pros || ''} ${p.cons || ''} ${(p.landmarks || []).join(' ') || ''}`.toLowerCase();
+        const searchStr = `${p.address || ''} ${p.title || ''} ${p.district || ''} ${p.propertyCode || ''} ${p.highlights || ''} ${p.pros || ''} ${p.cons || ''} ${(p.nearbyLandmarks || '').split(',').join(' ') || ''}`.toLowerCase();
         return searchStr.includes(keyword);
       });
 
