@@ -855,7 +855,7 @@ function switchDetailImg(el, src, type = 'image') {
   } else {
     // 換成照片
     if (mainImg.tagName === 'VIDEO') {
-      const imgHtml = `<img class="detail-main-img" id="detail-main-img" src="${src}" style="cursor:zoom-in;" />`;
+      const imgHtml = `<img class="detail-main-img" id="detail-main-img" src="${compressImageUrl(src)}" style="cursor:zoom-in;" />`;
       gallery.innerHTML = imgHtml + gallery.innerHTML.substring(gallery.innerHTML.indexOf('<div class="detail-thumbnails">'));
 
       // 為新的圖片元素添加點擊事件
@@ -928,7 +928,7 @@ function renderMediaLightbox() {
 
   if (item.type === 'image') {
     const img = document.getElementById('media-lightbox-img');
-    img.src = item.src;
+    img.src = compressImageUrl(item.src);
     img.classList.remove('hidden');
   } else if (item.type === 'video') {
     const videoWrapper = document.getElementById('media-lightbox-video-wrapper');
@@ -1166,7 +1166,7 @@ function openCompareModal() {
         { label:'⚠️ 注意', val:bulletLines(p.cons), isHtml:true, cls:'cg-cons' },
       ];
       return `<div class="cmp-card">
-        ${img ? `<img class="cmp-card-img" src="${img}" alt="" />` : `<div class="cmp-card-no-img">🏠</div>`}
+        ${img ? `<img class="cmp-card-img" src="${compressImageUrl(img)}" alt="" />` : `<div class="cmp-card-no-img">🏠</div>`}
         <div class="cmp-card-title">${isRentWinner ? '👑 ' : ''}${escHtml(p.title)}</div>
         <div class="cmp-card-rent">${isRentWinner ? '👑 ' : ''}NT$ ${p.rent.toLocaleString()} / 月</div>
         <div class="cmp-card-fields">
@@ -1198,7 +1198,7 @@ function openCompareModal() {
     const imagesJson = JSON.stringify(p.images || []);
     return `<div class="cg-header-card${isLast ? ' cg-last' : ''}">
       ${img
-        ? `<img class="cg-header-img" src="${img}" alt="" style="cursor:zoom-in" data-images='${imagesJson}' />`
+        ? `<img class="cg-header-img" src="${compressImageUrl(img)}" alt="" style="cursor:zoom-in" data-images='${imagesJson}' />`
         : `<div class="cg-header-no-img">🏠</div>`}
       <div class="cg-header-info">
         <div class="cg-header-title">${escHtml(p.title)}</div>
