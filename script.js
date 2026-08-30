@@ -860,7 +860,7 @@ function switchDetailImg(el, src, type = 'image') {
 
       // 為新的圖片元素添加點擊事件
     } else {
-      mainImg.src = src;
+      mainImg.src = compressImageUrl(src);
     }
   }
 
