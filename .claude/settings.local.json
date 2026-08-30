@@ -35,7 +35,9 @@
       "Bash(git commit -m 'Fix: Remove compression parameters from uploadImageToStorage *)",
       "Bash(git commit -m 'Fix: Add compressImageUrl wrapper to remaining src assignment *)",
       "Bash(curl -I \"https://avrpxknjthaglcswtagw.supabase.co/storage/v1/object/public/property-images/prop_1788076327849/1788076327849-0.jpg?width=1920&quality=70\")",
-      "Bash(git commit -m 'Add compressImageUrl\\(\\) to admin.js image loading *)"
+      "Bash(git commit -m 'Add compressImageUrl\\(\\) to admin.js image loading *)",
+      "Bash(git commit -m 'Fix: Expose compressImageUrl to global window object *)",
+      "Bash(git commit -m 'Update script version numbers to force browser reload *)"
     ]
   }
 }
