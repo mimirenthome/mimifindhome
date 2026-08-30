@@ -7,6 +7,16 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+// 圖片 URL 壓縮輔助函數（Supabase Image Transformation）
+function compressImageUrl(url) {
+  if (!url || typeof url !== 'string') return url;
+  if (url.includes('supabase.co/storage')) {
+    // 只對 Supabase Storage 的圖片添加參數
+    return url.includes('?') ? url + '&width=1920&quality=70' : url + '?width=1920&quality=70';
+  }
+  return url;
+}
+
 // 從 layout 和 type 推導 layoutCategory（舊資料 fallback 用）
 // 分類規則：1房 → 套房；1＋1房 → 2房
 function deriveLayoutCategory(layout, type) {

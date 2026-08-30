@@ -599,7 +599,7 @@ function toggleDesktopExpand() {
 function renderPropertyCard(p) {
   const coverImg = getCoverImage(p);
   const imgHtml = coverImg
-    ? `<img src="${coverImg}" alt="${escHtml(p.title)}" loading="lazy" />`
+    ? `<img src="${compressImageUrl(coverImg)}" alt="${escHtml(p.title)}" loading="lazy" />`
     : `<div class="property-img-placeholder"><div class="icon">🏠</div><div>暫無照片</div></div>`;
 
   const inCompare = compareList.some(c => c.id === p.id);
@@ -643,7 +643,7 @@ function renderPropertyCard(p) {
 function renderPropertyCardMobile(p) {
   const coverImg = getCoverImage(p);
   const imgHtml = coverImg
-    ? `<img src="${coverImg}" alt="${escHtml(p.title)}" loading="lazy" />`
+    ? `<img src="${compressImageUrl(coverImg)}" alt="${escHtml(p.title)}" loading="lazy" />`
     : `<div class="property-img-placeholder-mobile"><div class="icon">🏠</div></div>`;
 
   const inCompare = compareList.some(c => c.id === p.id);
@@ -704,7 +704,7 @@ function openDetailModal(id) {
   // 準備主顯示內容（照片或影片）
   let mainDisplayHtml = '';
   if (imgs.length > 0) {
-    mainDisplayHtml = `<img class="detail-main-img" id="detail-main-img" src="${imgs[Math.min(p.coverIndex||0, imgs.length-1)]}" alt="${escHtml(p.title)}" style="cursor:zoom-in;" onclick="openMediaLightbox(allProperties.find(x => x.id === '${id}'))" />`;
+    mainDisplayHtml = `<img class="detail-main-img" id="detail-main-img" src="${compressImageUrl(imgs[Math.min(p.coverIndex||0, imgs.length-1)])}" alt="${escHtml(p.title)}" style="cursor:zoom-in;" onclick="openMediaLightbox(allProperties.find(x => x.id === '${id}'))" />`;
   } else if (hasVideo) {
     mainDisplayHtml = `<video id="detail-main-img" width="100%" height="300" controls style="display:block;width:100%;background:#000;"><source src="${p.video}" />你的瀏覽器不支援影片播放</video>`;
   } else {
@@ -718,7 +718,7 @@ function openDetailModal(id) {
 
     // 加入照片
     imgs.forEach((img, i) => {
-      allItems.push(`<img class="detail-thumb" src="${img}" onclick="openMediaLightbox(allProperties.find(x => x.id === '${id}'), ${i})" />`);
+      allItems.push(`<img class="detail-thumb" src="${compressImageUrl(img)}" onclick="openMediaLightbox(allProperties.find(x => x.id === '${id}'), ${i})" />`);
     });
 
     // 加入影片
