@@ -10,7 +10,29 @@
       "Bash(git pull *)",
       "Bash(git rebase *)",
       "Bash(git restore *)",
-      "Bash(git commit -m 'Update calendar layout, appointment features, and styling *)"
+      "Bash(git commit -m 'Update calendar layout, appointment features, and styling *)",
+      "Bash(awk '/@media.*max-width: 768px/,/^}/' /Users/toast/Desktop/mimi/style.css)",
+      "Bash(git commit -m 'Fix mobile appointment calendar layout - desktop unchanged *)",
+      "Bash(git commit -m 'Fix: Remove undefined initLightbox\\(\\) call that caused data loading failure *)",
+      "Bash(git commit -m 'Remove sample property data - use only real Supabase data *)",
+      "Bash(git commit -m 'Add resolve button to ghost appointment report *)",
+      "Bash(git commit -m 'Add phone number search to appointment data page *)",
+      "Bash(git commit -m 'Change locked time label from '\\\\''已鎖定'\\\\'' to '\\\\''未開放'\\\\'' in appointment form *)",
+      "mcp__visualize__read_me",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(chmod +x start_server.sh)",
+      "mcp__visualize__show_widget",
+      "Bash(kill 70671)",
+      "Bash(kill 44201)",
+      "Bash(node -c /Users/toast/Desktop/mimi/script.js)",
+      "Bash(timeout 5 python3 -m http.server 3000)",
+      "Bash(python3 -m http.server 3001)",
+      "Bash(curl -s http://localhost:3001/index.html)",
+      "Bash(pkill -f \"python3 -m http.server\")",
+      "Bash(git reset *)",
+      "Bash(git stash *)",
+      "Bash(git clean *)",
+      "Bash(git commit -m 'Fix: Remove compression parameters from uploadImageToStorage *)"
     ]
   }
 }
