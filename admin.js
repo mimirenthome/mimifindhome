@@ -623,7 +623,7 @@ function openAdminImages(propId) {
 function renderAdminLightbox() {
   const imgEl = document.getElementById('admin-lightbox-img');
   const counter = document.getElementById('admin-lightbox-counter');
-  if (imgEl) imgEl.src = adminLightboxImages[adminLightboxIndex] || '';
+  if (imgEl) imgEl.src = compressImageUrl(adminLightboxImages[adminLightboxIndex] || '');
   if (counter) counter.textContent = adminLightboxImages.length > 1
     ? `${adminLightboxIndex + 1} / ${adminLightboxImages.length}` : '';
   const multi = adminLightboxImages.length > 1;
@@ -926,7 +926,7 @@ function compressImage(src, maxW, quality, cb) {
     canvas.getContext('2d').drawImage(img, 0, 0, w, h);
     cb(canvas.toDataURL('image/jpeg', quality));
   };
-  img.src = src;
+  img.src = compressImageUrl(src);
 }
 
 function renderPhotoPreview() {
