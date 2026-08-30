@@ -11,6 +11,8 @@ const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 window.compressImageUrl = function compressImageUrl(url) {
   if (!url || typeof url !== 'string') return url;
   if (url.includes('supabase.co/storage')) {
+    // 如果已經有width參數，不要重複添加
+    if (url.includes('width=')) return url;
     // 只對 Supabase Storage 的圖片添加參數
     return url.includes('?') ? url + '&width=1920&quality=70' : url + '?width=1920&quality=70';
   }
