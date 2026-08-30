@@ -186,8 +186,8 @@ async function uploadImageToStorage(dataUrl, propId, index) {
   const { data: { publicUrl } } = db.storage
     .from('property-images')
     .getPublicUrl(filename);
-  // 圖片壓縮參數由 compressImageUrl() 在顯示時添加
-  return publicUrl;
+  // 為了確保壓縮生效，直接在上傳時添加參數
+  return `${publicUrl}?width=1920&quality=70`;
 }
 
 async function uploadVideoToStorage(dataUrl, propId) {
