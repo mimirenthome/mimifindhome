@@ -164,10 +164,63 @@ function dataUrlToBlob(dataUrl) {
   return new Blob([u8arr], { type: mime });
 }
 
+// 壓縮圖片（使用Canvas降低品質和尺寸）
+function compressImage(dataUrl) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    let resolved = false;
+
+    const resolveWithFallback = (result) => {
+      if (!resolved) {
+        resolved = true;
+        resolve(result);
+      }
+    };
+
+    // 如果1秒內沒加載，直接用原始圖片
+    const timeout = setTimeout(() => resolveWithFallback(dataUrl), 1000);
+
+    img.onload = () => {
+      clearTimeout(timeout);
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+
+      // 限制最大寬度1920px，品質70%
+      const maxWidth = 1920;
+      let { width, height } = img;
+      if (width > maxWidth) {
+        height = (height * maxWidth) / width;
+        width = maxWidth;
+      }
+
+      canvas.width = width;
+      canvas.height = height;
+      ctx.drawImage(img, 0, 0, width, height);
+
+      try {
+        const compressed = canvas.toDataURL('image/jpeg', 0.7);
+        resolveWithFallback(compressed);
+      } catch (e) {
+        resolveWithFallback(dataUrl);
+      }
+    };
+
+    img.onerror = () => {
+      clearTimeout(timeout);
+      resolveWithFallback(dataUrl);
+    };
+
+    img.src = dataUrl;
+  });
+}
+
 // Upload image blob to Supabase Storage, return public URL
 async function uploadImageToStorage(dataUrl, propId, index) {
+  // 壓縮圖片
+  const compressedUrl = await compressImage(dataUrl);
+
   const filename = `${propId}/${Date.now()}-${index}.jpg`;
-  const blob = dataUrlToBlob(dataUrl);
+  const blob = dataUrlToBlob(compressedUrl);
   const { error } = await db.storage
     .from('property-images')
     .upload(filename, blob, { contentType: 'image/jpeg', upsert: true });
