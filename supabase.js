@@ -153,46 +153,6 @@ function apptFromDb(row) {
   };
 }
 
-// 壓縮圖片（降低檔案大小）
-async function compressImage(dataUrl, quality = 0.7, maxWidth = 1920, maxHeight = 1440) {
-  return new Promise((resolve, reject) => {
-    try {
-      const img = new Image();
-      img.onload = () => {
-        try {
-          const canvas = document.createElement('canvas');
-          let width = img.width;
-          let height = img.height;
-
-          // 等比例縮放
-          if (width > maxWidth) {
-            height = (height * maxWidth) / width;
-            width = maxWidth;
-          }
-          if (height > maxHeight) {
-            width = (width * maxHeight) / height;
-            height = maxHeight;
-          }
-
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, width, height);
-
-          // 輸出為 JPEG（自動壓縮）
-          resolve(canvas.toDataURL('image/jpeg', quality));
-        } catch (e) {
-          resolve(dataUrl); // 如果壓縮失敗，使用原始圖片
-        }
-      };
-      img.onerror = () => resolve(dataUrl); // 如果圖片加載失敗，使用原始圖片
-      img.src = dataUrl;
-    } catch (e) {
-      resolve(dataUrl); // 如果發生任何錯誤，使用原始圖片
-    }
-  });
-}
-
 // Convert base64 dataUrl to Blob for Storage upload
 function dataUrlToBlob(dataUrl) {
   const arr = dataUrl.split(',');
@@ -206,11 +166,8 @@ function dataUrlToBlob(dataUrl) {
 
 // Upload image blob to Supabase Storage, return public URL
 async function uploadImageToStorage(dataUrl, propId, index) {
-  // 自動壓縮圖片（品質 70%、最大寬 1920）
-  const compressedDataUrl = await compressImage(dataUrl, 0.7, 1920, 1440);
-
   const filename = `${propId}/${Date.now()}-${index}.jpg`;
-  const blob = dataUrlToBlob(compressedDataUrl);
+  const blob = dataUrlToBlob(dataUrl);
   const { error } = await db.storage
     .from('property-images')
     .upload(filename, blob, { contentType: 'image/jpeg', upsert: true });
