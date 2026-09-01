@@ -27,8 +27,11 @@ let currentGalleryImages = [];
 // ===== INIT =====
 document.addEventListener('DOMContentLoaded', async () => {
   initFilters();
-  initAppointmentForm();
-  setMinDate();
+  // Only initialize appointment form if it exists
+  if (document.getElementById('appt-form')) {
+    initAppointmentForm();
+    setMinDate();
+  }
   await initData();
   renderProperties();
 
