@@ -37,7 +37,16 @@
       "Bash(curl -I \"https://avrpxknjthaglcswtagw.supabase.co/storage/v1/object/public/property-images/prop_1788076327849/1788076327849-0.jpg?width=1920&quality=70\")",
       "Bash(git commit -m 'Add compressImageUrl\\(\\) to admin.js image loading *)",
       "Bash(git commit -m 'Fix: Expose compressImageUrl to global window object *)",
-      "Bash(git commit -m 'Update script version numbers to force browser reload *)"
+      "Bash(git commit -m 'Update script version numbers to force browser reload *)",
+      "Bash(curl -s http://localhost:3000)",
+      "Bash(git commit -m 'Simplify: Return compressed URL directly from uploadImageToStorage *)",
+      "Bash(git commit -m 'Update admin panel script versions to 20260830a *)",
+      "Bash(git commit -m 'Fix: Prevent duplicate compression parameters in URLs *)",
+      "Bash(git commit -m 'Remove appointment booking section from homepage *)",
+      "Bash(git commit -m 'Fix: Only initialize appointment form if it exists *)",
+      "Bash(git commit -m 'Remove appointment booking buttons from property cards *)",
+      "Bash(git commit -m 'Update LINE button text to indicate appointment inquiry *)",
+      "Bash(git commit -m 'Remove appointment booking button from property detail modal *)"
     ]
   }
 }

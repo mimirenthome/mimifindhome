@@ -818,11 +818,6 @@ function openDetailModal(id) {
     compareBtn.textContent = nowIn ? '✓ 已加入比較' : '加入比較';
   };
 
-  document.getElementById('detail-appt-btn').onclick = () => {
-    closeDetailModal();
-    goToAppt(p.propertyCode);
-  };
-
   document.getElementById('detail-modal').classList.remove('hidden');
   document.body.style.overflow = 'hidden';
 }
