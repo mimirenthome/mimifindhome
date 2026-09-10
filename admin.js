@@ -1815,9 +1815,10 @@ function parsePropertyText(text) {
   // ===== TAGS =====
   const tags = [];
 
-  // 可租補 / 可雙租補（精確規則：只要出現以下文字就要勾選）
-  const hasDouble = /雙租補|可雙補|雙補/.test(text) && !/不可租補/.test(text);
-  const hasSingle = /可租補|租補|可補助|補助|可租屋補助|可申請補助/.test(text) && !/不可租補|不可申請租補|無法租補|租補不可/.test(text);
+  // 可租補 / 可雙租補（精確規則：必須有明確的「可」或「✅」等正面詞）
+  const rentalSubsidyNeg = /不可租補|不可申請租補|無法租補|租補不可|不符合|不適用|無法申請|不適合|不符|不提供|不支持|不能申請|禁止申請/.test(text);
+  const hasDouble = /雙租補|可雙補|雙補/.test(text) && !rentalSubsidyNeg;
+  const hasSingle = /✅可租補|可租補|✅租補|可租屋補助|可申請租屋補助|✅補助/.test(text) && !rentalSubsidyNeg;
   if (hasDouble || hasSingle) tags.push('可租補');
   if (hasDouble) tags.push('可雙租補');
 
