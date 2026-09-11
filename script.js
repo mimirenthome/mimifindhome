@@ -244,7 +244,6 @@ function initFilters() {
     const ms = document.getElementById('district-ms');
     if (ms && !ms.contains(e.target)) closeDistrictDropdown();
   });
-  document.getElementById('filter-layout').addEventListener('change', applyFilters);
   document.getElementById('filter-rent-min').addEventListener('input', debounce(applyFilters, 400));
   document.getElementById('filter-rent-max').addEventListener('input', debounce(applyFilters, 400));
 }
@@ -323,6 +322,7 @@ function updateDistrictTrigger() {
 
 // ===== 類型 Dropdown 函數（同地區邏輯）=====
 let selectedTypes = [];
+let selectedLayouts = [];
 
 function toggleTypeDropdown(e) {
   e.stopPropagation();
@@ -383,8 +383,67 @@ function removeType(name) {
   filterProperties();
 }
 
+// ===== 格局 Dropdown 函數（同類型邏輯）=====
+function toggleLayoutDropdown(e) {
+  e.stopPropagation();
+  const dropdown = document.getElementById('layout-dropdown');
+  const arrow = document.getElementById('layout-arrow');
+  const isOpen = dropdown.style.display === 'block';
+  dropdown.style.display = isOpen ? 'none' : 'block';
+  arrow.classList.toggle('open');
+  if (!isOpen) {
+    document.addEventListener('click', closeLayoutDropdown);
+  } else {
+    document.removeEventListener('click', closeLayoutDropdown);
+  }
+}
+
+function closeLayoutDropdown() {
+  document.getElementById('layout-dropdown').style.display = 'none';
+  document.getElementById('layout-arrow').classList.remove('open');
+}
+
+function onLayoutChange() {
+  const allBoxes = document.querySelectorAll('.filter-layout-checkbox');
+  selectedLayouts = [...new Set([...allBoxes].filter(b => b.checked).map(b => b.value))];
+  updateLayoutTrigger();
+  filterProperties();
+}
+
+function clearLayoutFilter() {
+  selectedLayouts = [];
+  document.querySelectorAll('.filter-layout-checkbox').forEach(b => b.checked = false);
+  updateLayoutTrigger();
+  filterProperties();
+}
+
+function updateLayoutTrigger() {
+  const trigger = document.getElementById('layout-trigger');
+  const triggerText = document.getElementById('layout-trigger-text');
+  const tagsEl = document.getElementById('layout-tags');
+  const n = selectedLayouts.length;
+  if (n === 0) {
+    triggerText.textContent = '全部格局';
+    trigger.classList.remove('active');
+    tagsEl.innerHTML = '';
+  } else {
+    triggerText.textContent = n <= 3 ? selectedLayouts.join('、') : `已選 ${n} 種`;
+    trigger.classList.add('active');
+    tagsEl.innerHTML = selectedLayouts.map(l =>
+      `<span class="district-tag">${l}<span class="district-tag-remove" onclick="removeLayout('${l}')">×</span></span>`
+    ).join('');
+  }
+}
+
+function removeLayout(name) {
+  selectedLayouts = selectedLayouts.filter(l => l !== name);
+  document.querySelectorAll('.filter-layout-checkbox')
+    .forEach(b => { if (b.value === name) b.checked = false; });
+  updateLayoutTrigger();
+  filterProperties();
+}
+
 function applyFilters() {
-  const layout = document.getElementById('filter-layout').value;
   const rentMin = parseInt(document.getElementById('filter-rent-min').value) || 0;
   const rentMax = parseInt(document.getElementById('filter-rent-max').value) || Infinity;
 
@@ -392,10 +451,10 @@ function applyFilters() {
 
   filteredProperties = allProperties.filter(p => {
     if (selectedDistricts.length > 0 && !selectedDistricts.includes(p.district)) return false;
-    if (layout) {
+    // 檢查格局：支援多選
+    if (selectedLayouts.length > 0) {
       const cat = p.layoutCategory || deriveLayoutCategory(p.layout || '', p.type || '');
-      if (layout === '5房以上') { if (cat !== '5房以上') return false; }
-      else if (cat !== layout) return false;
+      if (!selectedLayouts.includes(cat)) return false;
     }
     // 檢查類型：物件可能有多個類型（用「、」分隔），需要檢查是否有任何一個被選中
     if (selectedTypes.length > 0) {
@@ -431,7 +490,9 @@ function clearFilters() {
   updateDistrictTrigger();
 
   // 清除格局
-  document.getElementById('filter-layout').value = '';
+  selectedLayouts = [];
+  document.querySelectorAll('.filter-layout-checkbox').forEach(b => b.checked = false);
+  updateLayoutTrigger();
 
   // 清除類型
   selectedTypes = [];
@@ -501,10 +562,9 @@ function updateFilterHint(layout, rentMin, rentMax) {
   if (!hint) return;
   const parts = [];
   if (selectedDistricts.length > 0) parts.push(selectedDistricts.join('、'));
-  layout = layout ?? document.getElementById('filter-layout')?.value ?? '';
+  if (selectedLayouts.length > 0) parts.push(selectedLayouts.join('、'));
   rentMin = rentMin ?? (parseInt(document.getElementById('filter-rent-min')?.value) || 0);
   rentMax = rentMax ?? (parseInt(document.getElementById('filter-rent-max')?.value) || Infinity);
-  if (layout) parts.push(layout);
   if (selectedTypes.length > 0) parts.push(selectedTypes.join('、'));
   if (rentMin > 0) parts.push(`租金 $${rentMin.toLocaleString()}+`);
   if (rentMax < Infinity) parts.push(`租金 ≤ $${rentMax.toLocaleString()}`);
@@ -1507,10 +1567,9 @@ function toggleMobileFilter() {
 function getActiveFilterCount() {
   let n = 0;
   if (selectedDistricts.length > 0) n++;
-  const layout  = document.getElementById('filter-layout');
+  if (selectedLayouts.length > 0) n++;
   const rentMin = document.getElementById('filter-rent-min');
   const rentMax = document.getElementById('filter-rent-max');
-  if (layout  && layout.value)  n++;
   if (rentMin && rentMin.value) n++;
   if (rentMax && rentMax.value) n++;
   n += document.querySelectorAll('.filter-tag-btn.active').length;

@@ -199,11 +199,24 @@
       <!-- 格局 -->
       <div class="filter-group">
         <div class="filter-label">格局</div>
-        <select class="filter-select" id="filter-layout">
-          <option value="">全部格局</option>
-          <option>套房</option><option>1房</option><option>2房</option>
-          <option>3房</option><option>4房</option><option>5房以上</option>
-        </select>
+        <div class="district-ms" id="layout-ms">
+          <button class="filter-select district-trigger" id="layout-trigger" type="button" onclick="toggleLayoutDropdown(event)">
+            <span id="layout-trigger-text">全部格局</span>
+            <span class="district-arrow" id="layout-arrow">▾</span>
+          </button>
+          <div class="district-dropdown" id="layout-dropdown">
+            <div class="district-clear-row" onclick="clearLayoutFilter()">全部格局 ／ 清除選擇</div>
+            <div class="district-grid">
+              <label class="district-opt"><input type="checkbox" class="filter-layout-checkbox" value="套房" onchange="onLayoutChange()"><span>套房</span></label>
+              <label class="district-opt"><input type="checkbox" class="filter-layout-checkbox" value="1房" onchange="onLayoutChange()"><span>1房</span></label>
+              <label class="district-opt"><input type="checkbox" class="filter-layout-checkbox" value="2房" onchange="onLayoutChange()"><span>2房</span></label>
+              <label class="district-opt"><input type="checkbox" class="filter-layout-checkbox" value="3房" onchange="onLayoutChange()"><span>3房</span></label>
+              <label class="district-opt"><input type="checkbox" class="filter-layout-checkbox" value="4房" onchange="onLayoutChange()"><span>4房</span></label>
+              <label class="district-opt"><input type="checkbox" class="filter-layout-checkbox" value="5房以上" onchange="onLayoutChange()"><span>5房以上</span></label>
+            </div>
+          </div>
+        </div>
+        <div class="district-tags" id="layout-tags"></div>
       </div>
       <!-- 類型 -->
       <div class="filter-group">
