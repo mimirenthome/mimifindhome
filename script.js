@@ -885,8 +885,7 @@ function openDetailModal(id) {
 function shareProperty() {
   const p = allProperties.find(x => x.id === currentDetailId);
   if (!p) return;
-  // Use API route for proper Open Graph meta tags when sharing
-  const shareUrl = `${location.origin}/api/og?prop=${p.id}`;
+  const shareUrl = `${location.origin}${location.pathname}?prop=${p.id}`;
   if (navigator.share) {
     navigator.share({ title: p.title, text: `NT$${p.rent.toLocaleString()}/月｜${p.district}`, url: shareUrl });
   } else {
