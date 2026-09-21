@@ -3404,8 +3404,8 @@ input[type="datetime-local"].form-input {
 }
 
 .media-lightbox-content {
-  max-width: 95vw;
-  max-height: 90vh;
+  max-width: 98vw;
+  max-height: 95vh;
   object-fit: contain;
 }
 
