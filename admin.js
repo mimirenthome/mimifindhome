@@ -4984,11 +4984,13 @@ function updateDistrictFilter(districts) {
       if (this.checked) {
         label.style.borderColor = 'var(--color-primary-button)';
         label.style.borderWidth = '3px';
-        label.style.boxShadow = '0 0 0 3px rgba(125, 138, 114, 0.2)';
+        label.style.boxShadow = 'inset 0 0 0 2px var(--color-primary-button), 0 0 0 4px rgba(125, 138, 114, 0.15)';
+        label.style.fontWeight = '600';
       } else {
         label.style.borderColor = '#999';
         label.style.borderWidth = '2px';
         label.style.boxShadow = 'none';
+        label.style.fontWeight = 'normal';
       }
     });
   });
