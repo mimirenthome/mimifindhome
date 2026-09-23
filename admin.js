@@ -4745,6 +4745,36 @@ function updateAddressMap() {
 let propertyQueryMap = null;
 let propertyMarkers = [];
 let propertyLocationMap = {}; // 用地址分組物件
+let selectedDistricts = new Set(); // 選中的區域
+
+// 台中市行政區顏色對應
+const districtColors = {
+  '中區': '#FFF4E6',
+  '東區': '#FFF0F5',
+  '西區': '#F0F8FF',
+  '南區': '#F5F5DC',
+  '北區': '#F0FFF0',
+  '北屯區': '#FFE4E1',
+  '西屯區': '#FFF8DC',
+  '南屯區': '#F0FFFF',
+  '豐原區': '#FFFACD',
+  '霧峰區': '#FFE4B5',
+  '烏日區': '#FFF5EE',
+  '大里區': '#F5FFFA',
+  '太平區': '#FFFAF0',
+  '石岡區': '#FFEFD5',
+  '東勢區': '#F0F0F0',
+  '和平區': '#E0FFFF',
+  '神岡區': '#FFDAB9',
+  '后里區': '#E6E6FA',
+  '外埔區': '#F5F0FF',
+  '大甲區': '#FFF0F5',
+  '清水區': '#F0FFFF',
+  '梧棲區': '#FFFACD',
+  '沙鹿區': '#FFE4E1',
+  '龍井區': '#F0FFF0',
+  '大肚區': '#FFFAF0'
+};
 
 async function initPropertyMap() {
   const mapContainer = document.getElementById('map-container');
@@ -4813,27 +4843,47 @@ async function loadPropertiesOnMap() {
   }
 }
 
+function extractDistrict(address) {
+  // 從地址中提取區域
+  const districtMatch = address.match(/(中區|東區|西區|南區|北區|北屯區|西屯區|南屯區|豐原區|霧峰區|烏日區|大里區|太平區|石岡區|東勢區|和平區|神岡區|后里區|外埔區|大甲區|清水區|梧棲區|沙鹿區|龍井區|大肚區)/);
+  return districtMatch ? districtMatch[1] : '其他';
+}
+
 function addMarkersForLocations() {
+  const displayedDistricts = new Set();
+
   Object.values(propertyLocationMap).forEach(({ location, properties }) => {
-    // 根據物件數量決定marker樣式
+    // 檢查是否要顯示此位置
+    const district = extractDistrict(properties[0].address);
+    displayedDistricts.add(district);
+
+    // 如果有區域篩選且此區域未被選中，則隱藏
+    if (selectedDistricts.size > 0 && !selectedDistricts.has(district)) {
+      return;
+    }
+
     const count = properties.length;
     const markerLabel = count > 1 ? count.toString() : '';
+    const markerColor = districtColors[district] || '#E8E8E8';
+
+    // 根據背景顏色選擇深色或淺色文字
+    const isLightBg = ['#FFF4E6', '#FFF0F5', '#F0F8FF', '#F5F5DC', '#F0FFF0', '#FFE4E1', '#FFF8DC', '#F0FFFF', '#FFFACD', '#FFE4B5', '#FFF5EE', '#F5FFFA', '#FFFAF0', '#FFEFD5', '#E0FFFF', '#FFDAB9', '#E6E6FA', '#F5F0FF', '#FFF0F5'].includes(markerColor);
 
     const marker = new google.maps.Marker({
       map: propertyQueryMap,
       position: location,
       label: markerLabel ? {
         text: markerLabel,
-        color: '#fff',
+        color: isLightBg ? '#000' : '#fff',
         fontSize: '14px',
         fontWeight: 'bold'
       } : undefined,
       icon: {
         path: google.maps.SymbolPath.CIRCLE,
         scale: 12,
-        fillColor: '#7d8a72',
-        fillOpacity: 0.85,
-        strokeColor: '#fff',
+        fillColor: markerColor,
+        fillOpacity: 0.7,
+        strokeColor: '#666',
         strokeWeight: 2
       }
     });
@@ -4844,6 +4894,9 @@ function addMarkersForLocations() {
 
     propertyMarkers.push(marker);
   });
+
+  // 更新篩選按鈕
+  updateDistrictFilter(Array.from(displayedDistricts).sort());
 }
 
 function showPropertiesInfoWindow(marker, properties, map) {
@@ -4873,4 +4926,55 @@ function showPropertiesInfoWindow(marker, properties, map) {
   });
 
   infoWindow.open(map, marker);
+}
+
+function updateDistrictFilter(districts) {
+  const container = document.getElementById('district-filter-container');
+  if (!container) return;
+
+  let filterHtml = '<div style="padding: 10px; background: #f5f5f5; border-radius: 6px; margin-bottom: 10px;"><strong>區域篩選:</strong><br>';
+
+  filterHtml += `<label style="display: inline-block; margin-right: 10px; cursor: pointer; padding: 4px 0;">
+    <input type="checkbox" id="select-all-districts" onchange="toggleAllDistricts()" style="margin-right: 4px;">
+    全選
+  </label><br>`;
+
+  districts.forEach(district => {
+    const bgColor = districtColors[district] || '#E8E8E8';
+    filterHtml += `
+      <label style="display: inline-block; margin-right: 10px; margin-top: 6px; cursor: pointer; padding: 6px 8px; background: ${bgColor}; border-radius: 4px; border: 1px solid #ddd;">
+        <input type="checkbox" value="${district}" onchange="onDistrictChange()" style="margin-right: 4px;">
+        ${district}
+      </label>
+    `;
+  });
+
+  filterHtml += '</div>';
+  container.innerHTML = filterHtml;
+}
+
+function onDistrictChange() {
+  selectedDistricts.clear();
+  document.querySelectorAll('#district-filter-container input[type="checkbox"]:not(#select-all-districts):checked').forEach(cb => {
+    selectedDistricts.add(cb.value);
+  });
+  addMarkersForLocations();
+}
+
+function toggleAllDistricts() {
+  const allCheckbox = document.getElementById('select-all-districts');
+  const isChecked = allCheckbox.checked;
+
+  selectedDistricts.clear();
+  if (isChecked) {
+    document.querySelectorAll('#district-filter-container input[type="checkbox"]:not(#select-all-districts)').forEach(cb => {
+      cb.checked = true;
+      selectedDistricts.add(cb.value);
+    });
+  } else {
+    document.querySelectorAll('#district-filter-container input[type="checkbox"]:not(#select-all-districts)').forEach(cb => {
+      cb.checked = false;
+    });
+  }
+  addMarkersForLocations();
 }
