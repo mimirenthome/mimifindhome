@@ -4991,35 +4991,66 @@ function updateDistrictFilter(districts) {
 
   // 添加複選框點擊事件
   container.querySelectorAll('label.district-label').forEach(label => {
-    label.addEventListener('click', function() {
+    label.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+
       const checkbox = this.querySelector('input[type="checkbox"]');
       const customCheckbox = this.querySelector('.checkbox-custom');
 
+      // 切換複選框狀態
       checkbox.checked = !checkbox.checked;
 
-      if (checkbox.checked) {
-        customCheckbox.style.background = 'var(--color-primary-button)';
-        customCheckbox.style.borderColor = 'var(--color-primary-button)';
-        customCheckbox.style.color = 'white';
-        this.style.borderColor = 'var(--color-primary-button)';
-        this.style.borderWidth = '3px';
-        this.style.fontWeight = '600';
-      } else {
-        customCheckbox.style.background = 'white';
-        customCheckbox.style.borderColor = '#666';
-        customCheckbox.style.color = 'var(--color-primary-button)';
-        this.style.borderColor = '#999';
-        this.style.borderWidth = '3px';
-        this.style.fontWeight = 'normal';
-      }
+      // 更新視覺樣式
+      updateDistrictLabelStyle(this, customCheckbox, checkbox.checked);
 
+      // 觸發對應的函數
       if (checkbox.id === 'select-all-districts') {
-        toggleAllDistricts();
+        // 立即觸發"全選"邏輯
+        const allCheckbox = checkbox;
+        selectedDistricts.clear();
+        if (allCheckbox.checked) {
+          document.querySelectorAll('#district-filter-container input[type="checkbox"]:not(#select-all-districts)').forEach(cb => {
+            cb.checked = true;
+            selectedDistricts.add(cb.value);
+            // 更新其他label的樣式
+            const otherLabel = cb.closest('label.district-label');
+            const otherCustom = otherLabel.querySelector('.checkbox-custom');
+            updateDistrictLabelStyle(otherLabel, otherCustom, true);
+          });
+        } else {
+          document.querySelectorAll('#district-filter-container input[type="checkbox"]:not(#select-all-districts)').forEach(cb => {
+            cb.checked = false;
+            // 更新其他label的樣式
+            const otherLabel = cb.closest('label.district-label');
+            const otherCustom = otherLabel.querySelector('.checkbox-custom');
+            updateDistrictLabelStyle(otherLabel, otherCustom, false);
+          });
+        }
+        addMarkersForLocations();
       } else {
         onDistrictChange();
       }
     });
   });
+}
+
+function updateDistrictLabelStyle(label, customCheckbox, isChecked) {
+  if (isChecked) {
+    customCheckbox.style.background = 'var(--color-primary-button)';
+    customCheckbox.style.borderColor = 'var(--color-primary-button)';
+    customCheckbox.style.color = 'white';
+    label.style.borderColor = 'var(--color-primary-button)';
+    label.style.borderWidth = '3px';
+    label.style.fontWeight = '600';
+  } else {
+    customCheckbox.style.background = 'white';
+    customCheckbox.style.borderColor = '#666';
+    customCheckbox.style.color = 'var(--color-primary-button)';
+    label.style.borderColor = '#999';
+    label.style.borderWidth = '3px';
+    label.style.fontWeight = 'normal';
+  }
 }
 
 function onDistrictChange() {
