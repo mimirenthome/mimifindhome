@@ -243,6 +243,9 @@ async function showSection(name) {
     renderAppts();
   }
   if (name === 'feedback') loadFeedbackSection();
+  if (name === 'map') {
+    setTimeout(() => initPropertyMap(), 100);
+  }
   if (name === 'pw') updateKeyStatus();
   if (name === 'add') {
     if (!editingId) {
@@ -4736,4 +4739,80 @@ function updateAddressMap() {
       });
     }
   });
+}
+
+// ===== 物件地圖查詢 =====
+let propertyQueryMap = null;
+let propertyMarkers = [];
+
+async function initPropertyMap() {
+  const mapContainer = document.getElementById('map-container');
+  if (!mapContainer) return;
+
+  propertyQueryMap = new google.maps.Map(mapContainer, {
+    zoom: 13,
+    center: { lat: 24.1477, lng: 120.6736 }, // 台中市中心
+    mapTypeControl: true,
+    fullscreenControl: true,
+    zoomControl: true,
+    streetViewControl: false
+  });
+
+  await loadPropertiesOnMap();
+}
+
+async function loadPropertiesOnMap() {
+  if (!propertyQueryMap) return;
+
+  // 清除舊markers
+  propertyMarkers.forEach(marker => marker.setMap(null));
+  propertyMarkers = [];
+
+  try {
+    // 載入所有物件
+    const { data, error } = await db.from('properties').select('*');
+    if (error) throw error;
+
+    const props = (data || []).map(propFromDb).filter(p => p.isActive && p.address);
+
+    const geocoder = new google.maps.Geocoder();
+
+    for (const prop of props) {
+      geocoder.geocode({ address: prop.address }, (results, status) => {
+        if (status === 'OK' && results.length > 0) {
+          const location = results[0].geometry.location;
+
+          const marker = new google.maps.Marker({
+            map: propertyQueryMap,
+            position: location,
+            title: prop.title,
+            icon: {
+              path: google.maps.SymbolPath.CIRCLE,
+              scale: 8,
+              fillColor: '#7d8a72',
+              fillOpacity: 0.8,
+              strokeColor: '#fff',
+              strokeWeight: 2
+            }
+          });
+
+          marker.addListener('click', () => {
+            const infoWindow = new google.maps.InfoWindow({
+              content: `<div style="padding:8px;font-size:13px;max-width:250px;">
+                <div style="font-weight:600;margin-bottom:4px;">${prop.title}</div>
+                <div>💰 NT$${prop.rent.toLocaleString()}/月</div>
+                <div>📍 ${prop.address}</div>
+                <div>📐 ${prop.layout || '—'} | ${prop.size || 0}坪</div>
+              </div>`
+            });
+            infoWindow.open(propertyQueryMap, marker);
+          });
+
+          propertyMarkers.push(marker);
+        }
+      });
+    }
+  } catch (err) {
+    console.error('地圖載入失敗:', err);
+  }
 }
