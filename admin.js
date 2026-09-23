@@ -4905,7 +4905,11 @@ function showPropertiesInfoWindow(marker, properties, map) {
 
   properties.forEach((prop, idx) => {
     const imageUrl = prop.images && prop.images.length > 0 ? prop.images[0] : '';
-    const imgHtml = imageUrl ? `<img src="${imageUrl}" style="width: 100%; height: 180px; object-fit: cover; border-radius: 6px; margin-bottom: 8px;">` : '';
+    const imgHtml = imageUrl ? `
+      <a href="../index.html?prop=${prop.id}" target="_blank" style="display: block; cursor: pointer; text-decoration: none;">
+        <img src="${imageUrl}" style="width: 100%; height: 180px; object-fit: cover; border-radius: 6px; margin-bottom: 8px; border: 2px solid transparent; transition: all 0.3s;" onmouseover="this.style.borderColor='#7d8a72'; this.style.transform='scale(1.02)';" onmouseout="this.style.borderColor='transparent'; this.style.transform='scale(1)';">
+      </a>
+    ` : '';
 
     content += `
       <div style="padding: 12px; border: 1px solid #e0e0e0; border-radius: 8px; margin-bottom: 8px; background: #f9f9f9;">
@@ -4914,6 +4918,11 @@ function showPropertiesInfoWindow(marker, properties, map) {
         <div style="font-size: 13px; margin-bottom: 3px;">💰 <span style="color: #d97706; font-weight: 600;">NT$${prop.rent.toLocaleString()}/月</span></div>
         <div style="font-size: 13px; margin-bottom: 3px;">📍 ${prop.address}</div>
         <div style="font-size: 13px; color: #666;">📐 ${prop.layout || '—'} | ${prop.size || 0}坪</div>
+        <div style="margin-top: 8px;">
+          <a href="../index.html?prop=${prop.id}" target="_blank" style="display: inline-block; padding: 6px 12px; background: #7d8a72; color: #fff; border-radius: 4px; text-decoration: none; font-size: 12px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#6b7860';" onmouseout="this.style.background='#7d8a72';">
+            查看詳情 →
+          </a>
+        </div>
       </div>
     `;
   });
