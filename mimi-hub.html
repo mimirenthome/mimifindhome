@@ -61,7 +61,7 @@
   <nav class="admin-nav" id="admin-nav">
     <button class="admin-nav-link active" onclick="showSection('props')">📦 物件管理</button>
     <button class="admin-nav-link" onclick="showSection('add')">➕ 新增物件</button>
-    <button class="admin-nav-link" onclick="showSection('appts')">📅 預約資料</button>
+    <button class="admin-nav-link" onclick="showSection('appts')" hidden>📅 預約資料</button>
     <button class="admin-nav-link" onclick="showSection('pw')">⚙️ 帳號設定</button>
     <button class="admin-nav-link" onclick="showSection('feedback')">💌 回饋中心</button>
   </nav>
@@ -74,7 +74,7 @@
 <nav class="admin-mobile-nav" id="admin-mobile-nav">
   <button class="admin-nav-link" onclick="showSection('props');closeAdminMobileNav()">📦 物件管理</button>
   <button class="admin-nav-link" onclick="showSection('add');closeAdminMobileNav()">➕ 新增物件</button>
-  <button class="admin-nav-link" onclick="showSection('appts');closeAdminMobileNav()">📅 預約資料</button>
+  <button class="admin-nav-link" onclick="showSection('appts');closeAdminMobileNav()" hidden>📅 預約資料</button>
   <button class="admin-nav-link" onclick="showSection('pw');closeAdminMobileNav()">⚙️ 帳號設定</button>
   <button class="admin-nav-link" onclick="showSection('feedback');closeAdminMobileNav()">💌 回饋中心</button>
   <div style="border-top:1px solid rgba(255,255,255,0.12);margin:4px 0;"></div>
@@ -364,7 +364,7 @@
   </div>
 
   <!-- ===== APPOINTMENTS ===== -->
-  <div class="admin-section" id="section-appts">
+  <div class="admin-section" id="section-appts" hidden>
     <div class="admin-section-title">預約資料</div>
     <div class="admin-section-sub">查看前台送出的預約看屋表單，可標記處理狀態。</div>
 
