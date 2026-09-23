@@ -4957,19 +4957,21 @@ function updateDistrictFilter(districts) {
   if (!container) return;
 
   let filterHtml = `<div style="padding: 12px; background: var(--color-soft-green); border-radius: 6px; margin-bottom: 16px;">
-    <div style="font-weight: 600; color: var(--color-text); margin-bottom: 8px;">📍 區域篩選</div>
-    <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-    <label class="district-label" style="display: inline-flex; align-items: center; cursor: pointer; padding: 8px 12px; background: var(--color-beige); border-radius: 4px; border: 2px solid var(--color-border); transition: all 0.2s;">
-      <input type="checkbox" id="select-all-districts" onchange="toggleAllDistricts()" style="margin-right: 6px; cursor: pointer; width: 18px; height: 18px; accent-color: var(--color-primary-button);">
-      全選
+    <div style="font-weight: 600; color: var(--color-text); margin-bottom: 12px;">📍 區域篩選</div>
+    <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+    <label class="district-label" style="display: inline-flex; align-items: center; cursor: pointer; padding: 10px 14px; background: var(--color-beige); border-radius: 6px; border: 3px solid var(--color-border); transition: all 0.2s; user-select: none;">
+      <input type="checkbox" id="select-all-districts" onchange="toggleAllDistricts()" style="display: none;">
+      <span class="checkbox-custom" style="display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; background: white; border: 2px solid var(--color-border); border-radius: 4px; margin-right: 8px; flex-shrink: 0; transition: all 0.2s; font-size: 16px; font-weight: bold; color: var(--color-primary-button);">✓</span>
+      <span>全選</span>
     </label>`;
 
   districts.forEach(district => {
     const bgColor = districtColors[district] || '#E8E8E8';
     filterHtml += `
-      <label class="district-label" style="display: inline-flex; align-items: center; cursor: pointer; padding: 8px 12px; background: ${bgColor}; border-radius: 4px; border: 2px solid #999; transition: all 0.2s;">
-        <input type="checkbox" value="${district}" onchange="onDistrictChange()" style="margin-right: 6px; cursor: pointer; width: 18px; height: 18px; accent-color: var(--color-primary-button);">
-        ${district}
+      <label class="district-label" style="display: inline-flex; align-items: center; cursor: pointer; padding: 10px 14px; background: ${bgColor}; border-radius: 6px; border: 3px solid #999; transition: all 0.2s; user-select: none;">
+        <input type="checkbox" value="${district}" onchange="onDistrictChange()" style="display: none;">
+        <span class="checkbox-custom" style="display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; background: white; border: 2px solid #666; border-radius: 4px; margin-right: 8px; flex-shrink: 0; transition: all 0.2s; font-size: 16px; font-weight: bold; color: var(--color-primary-button);">✓</span>
+        <span>${district}</span>
       </label>
     `;
   });
@@ -4977,20 +4979,34 @@ function updateDistrictFilter(districts) {
   filterHtml += '</div></div>';
   container.innerHTML = filterHtml;
 
-  // 添加選中狀態的樣式反饋
-  container.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-    checkbox.addEventListener('change', function() {
-      const label = this.closest('label');
-      if (this.checked) {
-        label.style.borderColor = 'var(--color-primary-button)';
-        label.style.borderWidth = '3px';
-        label.style.boxShadow = 'inset 0 0 0 2px var(--color-primary-button), 0 0 0 4px rgba(125, 138, 114, 0.15)';
-        label.style.fontWeight = '600';
+  // 添加複選框點擊事件
+  container.querySelectorAll('label.district-label').forEach(label => {
+    label.addEventListener('click', function() {
+      const checkbox = this.querySelector('input[type="checkbox"]');
+      const customCheckbox = this.querySelector('.checkbox-custom');
+
+      checkbox.checked = !checkbox.checked;
+
+      if (checkbox.checked) {
+        customCheckbox.style.background = 'var(--color-primary-button)';
+        customCheckbox.style.borderColor = 'var(--color-primary-button)';
+        customCheckbox.style.color = 'white';
+        this.style.borderColor = 'var(--color-primary-button)';
+        this.style.borderWidth = '3px';
+        this.style.fontWeight = '600';
       } else {
-        label.style.borderColor = '#999';
-        label.style.borderWidth = '2px';
-        label.style.boxShadow = 'none';
-        label.style.fontWeight = 'normal';
+        customCheckbox.style.background = 'white';
+        customCheckbox.style.borderColor = '#666';
+        customCheckbox.style.color = 'var(--color-primary-button)';
+        this.style.borderColor = '#999';
+        this.style.borderWidth = '3px';
+        this.style.fontWeight = 'normal';
+      }
+
+      if (checkbox.id === 'select-all-districts') {
+        toggleAllDistricts();
+      } else {
+        onDistrictChange();
       }
     });
   });
