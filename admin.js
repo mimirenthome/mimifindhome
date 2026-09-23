@@ -4969,11 +4969,19 @@ function updateDistrictFilter(districts) {
   let filterHtml = `<div style="padding: 12px; background: var(--color-soft-green); border-radius: 6px; margin-bottom: 16px;">
     <div style="font-weight: 600; color: var(--color-text); margin-bottom: 12px;">📍 區域篩選</div>
     <div style="display: flex; flex-wrap: wrap; gap: 10px;">
-    <button class="district-btn" data-district="all" style="padding: 10px 14px; background: var(--color-beige); border: 2px solid var(--color-border); border-radius: 6px; cursor: pointer; transition: all 0.2s; font-weight: normal; color: var(--color-text);">全選</button>`;
+    <button class="district-btn" data-district="all" style="padding: 8px 12px; background: var(--color-beige); border: 2px solid var(--color-border); border-radius: 6px; cursor: pointer; transition: all 0.2s; font-weight: normal; color: var(--color-text); display: flex; align-items: center; gap: 6px;">
+      <span class="check-mark" style="font-size: 14px; font-weight: bold; color: var(--color-primary-button); min-width: 16px; text-align: center;"></span>
+      <span>全選</span>
+    </button>`;
 
   districts.forEach(district => {
     const bgColor = districtColors[district] || '#E8E8E8';
-    filterHtml += `<button class="district-btn" data-district="${district}" style="padding: 10px 14px; background: ${bgColor}; border: 2px solid #999; border-radius: 6px; cursor: pointer; transition: all 0.2s; font-weight: normal; color: var(--color-text);">${district}</button>`;
+    filterHtml += `
+      <button class="district-btn" data-district="${district}" style="padding: 8px 12px; background: ${bgColor}; border: 2px solid #999; border-radius: 6px; cursor: pointer; transition: all 0.2s; font-weight: normal; color: var(--color-text); display: flex; align-items: center; gap: 6px;">
+        <span class="check-mark" style="font-size: 14px; font-weight: bold; color: var(--color-primary-button); min-width: 16px; text-align: center;"></span>
+        <span>${district}</span>
+      </button>
+    `;
   });
 
   filterHtml += '</div></div>';
@@ -4983,6 +4991,7 @@ function updateDistrictFilter(districts) {
   container.querySelectorAll('.district-btn').forEach(btn => {
     btn.addEventListener('click', function() {
       const district = this.getAttribute('data-district');
+      const checkMark = this.querySelector('.check-mark');
       const allButtons = container.querySelectorAll('.district-btn');
       
       if (district === 'all') {
@@ -4994,17 +5003,14 @@ function updateDistrictFilter(districts) {
         
         selectedDistricts.clear();
         allButtons.forEach((btn, idx) => {
+          const mark = btn.querySelector('.check-mark');
           if (allSelected) {
             // 取消全選
-            btn.style.background = idx === 0 ? 'var(--color-beige)' : (districtColors[btn.getAttribute('data-district')] || '#E8E8E8');
-            btn.style.borderColor = '#999';
-            btn.style.color = 'var(--color-text)';
+            mark.textContent = '';
             btn.style.fontWeight = 'normal';
           } else {
             // 全選所有區域
-            btn.style.background = 'var(--color-primary-button)';
-            btn.style.borderColor = 'var(--color-primary-button)';
-            btn.style.color = 'white';
+            mark.textContent = '✓';
             btn.style.fontWeight = '600';
             if (idx > 0) selectedDistricts.add(btn.getAttribute('data-district'));
           }
@@ -5013,15 +5019,11 @@ function updateDistrictFilter(districts) {
         // 切換單個區域
         if (selectedDistricts.has(district)) {
           selectedDistricts.delete(district);
-          this.style.background = districtColors[district] || '#E8E8E8';
-          this.style.borderColor = '#999';
-          this.style.color = 'var(--color-text)';
+          checkMark.textContent = '';
           this.style.fontWeight = 'normal';
         } else {
           selectedDistricts.add(district);
-          this.style.background = 'var(--color-primary-button)';
-          this.style.borderColor = 'var(--color-primary-button)';
-          this.style.color = 'white';
+          checkMark.textContent = '✓';
           this.style.fontWeight = '600';
         }
       }
@@ -5030,7 +5032,6 @@ function updateDistrictFilter(districts) {
     });
   });
 }
-
 
 
 function onDistrictChange() {
