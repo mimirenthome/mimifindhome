@@ -4936,18 +4936,19 @@ function updateDistrictFilter(districts) {
   const container = document.getElementById('district-filter-container');
   if (!container) return;
 
-  let filterHtml = '<div style="padding: 12px; background: var(--color-soft-green); border-radius: 6px; margin-bottom: 16px;"><div style="font-weight: 600; color: var(--color-text); margin-bottom: 8px;">📍 區域篩選</div><div style="display: flex; flex-wrap: wrap; gap: 8px;">';
-
-  filterHtml += `<label style="display: inline-flex; align-items: center; cursor: pointer; padding: 6px 10px; background: var(--color-beige); border-radius: 4px; border: 1px solid var(--color-border);">
-    <input type="checkbox" id="select-all-districts" onchange="toggleAllDistricts()" style="margin-right: 6px; cursor: pointer;">
-    全選
-  </label>`;
+  let filterHtml = `<div style="padding: 12px; background: var(--color-soft-green); border-radius: 6px; margin-bottom: 16px;">
+    <div style="font-weight: 600; color: var(--color-text); margin-bottom: 8px;">📍 區域篩選</div>
+    <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+    <label class="district-label" style="display: inline-flex; align-items: center; cursor: pointer; padding: 8px 12px; background: var(--color-beige); border-radius: 4px; border: 2px solid var(--color-border); transition: all 0.2s;">
+      <input type="checkbox" id="select-all-districts" onchange="toggleAllDistricts()" style="margin-right: 6px; cursor: pointer; width: 18px; height: 18px; accent-color: var(--color-primary-button);">
+      全選
+    </label>`;
 
   districts.forEach(district => {
     const bgColor = districtColors[district] || '#E8E8E8';
     filterHtml += `
-      <label style="display: inline-flex; align-items: center; cursor: pointer; padding: 6px 10px; background: ${bgColor}; border-radius: 4px; border: 1px solid #999;">
-        <input type="checkbox" value="${district}" onchange="onDistrictChange()" style="margin-right: 6px; cursor: pointer;">
+      <label class="district-label" style="display: inline-flex; align-items: center; cursor: pointer; padding: 8px 12px; background: ${bgColor}; border-radius: 4px; border: 2px solid #999; transition: all 0.2s;">
+        <input type="checkbox" value="${district}" onchange="onDistrictChange()" style="margin-right: 6px; cursor: pointer; width: 18px; height: 18px; accent-color: var(--color-primary-button);">
         ${district}
       </label>
     `;
@@ -4955,6 +4956,22 @@ function updateDistrictFilter(districts) {
 
   filterHtml += '</div></div>';
   container.innerHTML = filterHtml;
+
+  // 添加選中狀態的樣式反饋
+  container.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+    checkbox.addEventListener('change', function() {
+      const label = this.closest('label');
+      if (this.checked) {
+        label.style.borderColor = 'var(--color-primary-button)';
+        label.style.borderWidth = '3px';
+        label.style.boxShadow = '0 0 0 3px rgba(125, 138, 114, 0.2)';
+      } else {
+        label.style.borderColor = '#999';
+        label.style.borderWidth = '2px';
+        label.style.boxShadow = 'none';
+      }
+    });
+  });
 }
 
 function onDistrictChange() {
