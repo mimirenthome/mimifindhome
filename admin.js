@@ -4816,13 +4816,19 @@ function extractDistrict(address) {
 function addMarkersForLocations() {
   const displayedDistricts = new Set();
 
+  // 先清除所有舊markers
+  propertyMarkers.forEach(marker => marker.setMap(null));
+  propertyMarkers = [];
+
   Object.values(propertyLocationMap).forEach(({ location, properties }) => {
     // 檢查是否要顯示此位置
     const district = extractDistrict(properties[0].address);
     displayedDistricts.add(district);
 
-    // 如果有區域篩選且此區域未被選中，則隱藏
-    if (selectedDistricts.size > 0 && !selectedDistricts.has(district)) {
+    // 如果有區域篩選，檢查此區域是否被選中
+    // 如果沒有區域篩選（selectedDistricts 為空），則顯示所有區域
+    const hasDistrictFilter = selectedDistricts.size > 0;
+    if (hasDistrictFilter && !selectedDistricts.has(district)) {
       return;
     }
 
