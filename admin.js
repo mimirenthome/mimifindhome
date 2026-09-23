@@ -4747,33 +4747,33 @@ let propertyMarkers = [];
 let propertyLocationMap = {}; // 用地址分組物件
 let selectedDistricts = new Set(); // 選中的區域
 
-// 台中市行政區顏色對應
+// 台中市行政區顏色對應（更明顯的顏色）
 const districtColors = {
-  '中區': '#FFF4E6',
-  '東區': '#FFF0F5',
-  '西區': '#F0F8FF',
-  '南區': '#F5F5DC',
-  '北區': '#F0FFF0',
-  '北屯區': '#FFE4E1',
-  '西屯區': '#FFF8DC',
-  '南屯區': '#F0FFFF',
-  '豐原區': '#FFFACD',
-  '霧峰區': '#FFE4B5',
-  '烏日區': '#FFF5EE',
-  '大里區': '#F5FFFA',
-  '太平區': '#FFFAF0',
-  '石岡區': '#FFEFD5',
-  '東勢區': '#F0F0F0',
-  '和平區': '#E0FFFF',
-  '神岡區': '#FFDAB9',
-  '后里區': '#E6E6FA',
-  '外埔區': '#F5F0FF',
-  '大甲區': '#FFF0F5',
-  '清水區': '#F0FFFF',
-  '梧棲區': '#FFFACD',
-  '沙鹿區': '#FFE4E1',
-  '龍井區': '#F0FFF0',
-  '大肚區': '#FFFAF0'
+  '中區': '#FFCC99',
+  '東區': '#FFB3D9',
+  '西區': '#99CCFF',
+  '南區': '#FFFF99',
+  '北區': '#99FF99',
+  '北屯區': '#FF99CC',
+  '西屯區': '#FFDD99',
+  '南屯區': '#99FFFF',
+  '豐原區': '#FFFF99',
+  '霧峰區': '#FFCC99',
+  '烏日區': '#FFE6CC',
+  '大里區': '#CCFFCC',
+  '太平區': '#FFFFCC',
+  '石岡區': '#FFDDBB',
+  '東勢區': '#DDDDDD',
+  '和平區': '#CCFFFF',
+  '神岡區': '#FFCC99',
+  '后里區': '#DDCCFF',
+  '外埔區': '#FFCCFF',
+  '大甲區': '#FFB3D9',
+  '清水區': '#99FFFF',
+  '梧棲區': '#FFFF99',
+  '沙鹿區': '#FF99CC',
+  '龍井區': '#99FF99',
+  '大肚區': '#FFFFCC'
 };
 
 async function initPropertyMap() {
@@ -4867,7 +4867,8 @@ function addMarkersForLocations() {
     const markerColor = districtColors[district] || '#E8E8E8';
 
     // 根據背景顏色選擇深色或淺色文字
-    const isLightBg = ['#FFF4E6', '#FFF0F5', '#F0F8FF', '#F5F5DC', '#F0FFF0', '#FFE4E1', '#FFF8DC', '#F0FFFF', '#FFFACD', '#FFE4B5', '#FFF5EE', '#F5FFFA', '#FFFAF0', '#FFEFD5', '#E0FFFF', '#FFDAB9', '#E6E6FA', '#F5F0FF', '#FFF0F5'].includes(markerColor);
+    const lightColors = ['#FFCC99', '#FFB3D9', '#99CCFF', '#FFFF99', '#99FF99', '#FF99CC', '#FFDD99', '#99FFFF', '#FFE6CC', '#CCFFCC', '#FFFFCC', '#FFDDBB', '#DDDDDD', '#CCFFFF', '#DDCCFF', '#FFCCFF'];
+    const isLightBg = lightColors.includes(markerColor);
 
     const marker = new google.maps.Marker({
       map: propertyQueryMap,
