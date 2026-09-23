@@ -4744,6 +4744,7 @@ function updateAddressMap() {
 // ===== 物件地圖查詢 =====
 let propertyQueryMap = null;
 let propertyMarkers = [];
+let propertyLocationMap = {}; // 用地址分組物件
 
 async function initPropertyMap() {
   const mapContainer = document.getElementById('map-container');
@@ -4767,6 +4768,7 @@ async function loadPropertiesOnMap() {
   // 清除舊markers
   propertyMarkers.forEach(marker => marker.setMap(null));
   propertyMarkers = [];
+  propertyLocationMap = {};
 
   try {
     // 載入所有物件
@@ -4776,43 +4778,99 @@ async function loadPropertiesOnMap() {
     const props = (data || []).map(propFromDb).filter(p => p.isActive && p.address);
 
     const geocoder = new google.maps.Geocoder();
+    let processedCount = 0;
 
     for (const prop of props) {
       geocoder.geocode({ address: prop.address }, (results, status) => {
         if (status === 'OK' && results.length > 0) {
           const location = results[0].geometry.location;
+          const locationKey = `${location.lat()},${location.lng()}`;
 
-          const marker = new google.maps.Marker({
-            map: propertyQueryMap,
-            position: location,
-            title: prop.title,
-            icon: {
-              path: google.maps.SymbolPath.CIRCLE,
-              scale: 8,
-              fillColor: '#7d8a72',
-              fillOpacity: 0.8,
-              strokeColor: '#fff',
-              strokeWeight: 2
-            }
-          });
+          // 分組同一位置的物件
+          if (!propertyLocationMap[locationKey]) {
+            propertyLocationMap[locationKey] = {
+              location: location,
+              properties: []
+            };
+          }
+          propertyLocationMap[locationKey].properties.push(prop);
+        }
 
-          marker.addListener('click', () => {
-            const infoWindow = new google.maps.InfoWindow({
-              content: `<div style="padding:8px;font-size:13px;max-width:250px;">
-                <div style="font-weight:600;margin-bottom:4px;">${prop.title}</div>
-                <div>💰 NT$${prop.rent.toLocaleString()}/月</div>
-                <div>📍 ${prop.address}</div>
-                <div>📐 ${prop.layout || '—'} | ${prop.size || 0}坪</div>
-              </div>`
-            });
-            infoWindow.open(propertyQueryMap, marker);
-          });
-
-          propertyMarkers.push(marker);
+        processedCount++;
+        if (processedCount === props.length) {
+          // 所有地理編碼完成後，添加markers
+          addMarkersForLocations();
         }
       });
+    }
+
+    // 如果沒有物件，直接完成
+    if (props.length === 0) {
+      addMarkersForLocations();
     }
   } catch (err) {
     console.error('地圖載入失敗:', err);
   }
+}
+
+function addMarkersForLocations() {
+  Object.values(propertyLocationMap).forEach(({ location, properties }) => {
+    // 根據物件數量決定marker樣式
+    const count = properties.length;
+    const markerLabel = count > 1 ? count.toString() : '';
+
+    const marker = new google.maps.Marker({
+      map: propertyQueryMap,
+      position: location,
+      label: markerLabel ? {
+        text: markerLabel,
+        color: '#fff',
+        fontSize: '14px',
+        fontWeight: 'bold'
+      } : undefined,
+      icon: {
+        path: google.maps.SymbolPath.CIRCLE,
+        scale: 12,
+        fillColor: '#7d8a72',
+        fillOpacity: 0.85,
+        strokeColor: '#fff',
+        strokeWeight: 2
+      }
+    });
+
+    marker.addListener('click', () => {
+      showPropertiesInfoWindow(marker, properties, propertyQueryMap);
+    });
+
+    propertyMarkers.push(marker);
+  });
+}
+
+function showPropertiesInfoWindow(marker, properties, map) {
+  // 構建物件卡片HTML
+  let content = '<div style="max-width: 400px; max-height: 500px; overflow-y: auto; font-family: sans-serif;">';
+
+  properties.forEach((prop, idx) => {
+    const imageUrl = prop.images && prop.images.length > 0 ? prop.images[0] : '';
+    const imgHtml = imageUrl ? `<img src="${imageUrl}" style="width: 100%; height: 180px; object-fit: cover; border-radius: 6px; margin-bottom: 8px;">` : '';
+
+    content += `
+      <div style="padding: 12px; border: 1px solid #e0e0e0; border-radius: 8px; margin-bottom: 8px; background: #f9f9f9;">
+        ${imgHtml}
+        <div style="font-size: 14px; font-weight: 600; margin-bottom: 6px; color: #333;">${prop.title}</div>
+        <div style="font-size: 13px; margin-bottom: 3px;">💰 <span style="color: #d97706; font-weight: 600;">NT$${prop.rent.toLocaleString()}/月</span></div>
+        <div style="font-size: 13px; margin-bottom: 3px;">📍 ${prop.address}</div>
+        <div style="font-size: 13px; color: #666;">📐 ${prop.layout || '—'} | ${prop.size || 0}坪</div>
+      </div>
+    `;
+  });
+
+  content += '</div>';
+
+  const infoWindow = new google.maps.InfoWindow({
+    content: content,
+    maxWidth: 420
+  });
+
+  infoWindow.open(map, marker);
 }
