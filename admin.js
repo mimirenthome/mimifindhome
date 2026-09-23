@@ -4709,6 +4709,7 @@ let propertyQueryMap = null;
 let propertyMarkers = [];
 let propertyLocationMap = {}; // 用地址分組物件
 let selectedDistricts = new Set(); // 選中的區域
+let selectedMapTags = new Set(); // 地圖選中的標籤
 
 // 台中市行政區顏色對應（更明顯的顏色）
 const districtColors = {
@@ -4823,6 +4824,15 @@ function addMarkersForLocations() {
     // 如果有區域篩選且此區域未被選中，則隱藏
     if (selectedDistricts.size > 0 && !selectedDistricts.has(district)) {
       return;
+    }
+
+    // 如果有標籤篩選，檢查是否至少有一個物件符合所有篩選的標籤
+    if (selectedMapTags.size > 0) {
+      const hasMatchingProperty = properties.some(prop => {
+        const propTags = prop.tags || [];
+        return Array.from(selectedMapTags).every(tag => propTags.includes(tag));
+      });
+      if (!hasMatchingProperty) return;
     }
 
     const count = properties.length;
@@ -4949,5 +4959,15 @@ function toggleAllDistricts() {
       cb.checked = false;
     });
   }
+  addMarkersForLocations();
+}
+
+function onMapTagChange() {
+  selectedMapTags.clear();
+  document.querySelectorAll('#section-map input[type="checkbox"]:checked').forEach(cb => {
+    if (!cb.parentElement.querySelector('#select-all-districts')) { // 排除區域篩選的全選框
+      selectedMapTags.add(cb.value);
+    }
+  });
   addMarkersForLocations();
 }
