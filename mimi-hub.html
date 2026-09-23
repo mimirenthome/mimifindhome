@@ -438,20 +438,47 @@
       <!-- 區域篩選 -->
       <div id="district-filter-container" style="margin-bottom: 16px;"></div>
 
-      <!-- 租金篩選 -->
+      <!-- 租金、格局、類型篩選 -->
       <div style="padding: 12px; background: var(--color-soft-green); border-radius: 6px; margin-bottom: 16px;">
-        <div style="font-weight: 600; color: var(--color-text); margin-bottom: 8px;">💰 租金篩選</div>
-        <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
-          <div>
-            <label style="display: block; font-size: 12px; color: var(--color-text-muted); margin-bottom: 4px;">最低租金</label>
-            <input type="number" id="min-rent-filter" placeholder="0" min="0" onchange="onMapRentChange()" class="form-input" style="width: 100px;" />
+        <!-- 租金篩選 -->
+        <div style="margin-bottom: 12px;">
+          <div style="font-weight: 600; color: var(--color-text); margin-bottom: 8px;">💰 租金篩選</div>
+          <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+            <div>
+              <label style="display: block; font-size: 12px; color: var(--color-text-muted); margin-bottom: 4px;">最低</label>
+              <input type="number" id="min-rent-filter" placeholder="0" min="0" onchange="onMapRentChange()" class="form-input" style="width: 80px;" />
+            </div>
+            <div style="color: var(--color-text-muted);">～</div>
+            <div>
+              <label style="display: block; font-size: 12px; color: var(--color-text-muted); margin-bottom: 4px;">最高</label>
+              <input type="number" id="max-rent-filter" placeholder="不限" min="0" onchange="onMapRentChange()" class="form-input" style="width: 80px;" />
+            </div>
+            <div style="color: var(--color-text-muted); margin-top: 20px;">元</div>
           </div>
-          <div style="color: var(--color-text-muted);">～</div>
-          <div>
-            <label style="display: block; font-size: 12px; color: var(--color-text-muted); margin-bottom: 4px;">最高租金</label>
-            <input type="number" id="max-rent-filter" placeholder="不限" min="0" onchange="onMapRentChange()" class="form-input" style="width: 100px;" />
+        </div>
+
+        <!-- 格局篩選 -->
+        <div style="margin-bottom: 12px;">
+          <div style="font-weight: 600; color: var(--color-text); margin-bottom: 8px;">🏠 格局</div>
+          <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+            <label style="cursor: pointer;"><input type="checkbox" value="套房" onchange="onMapLayoutTypeChange()" /> 套房</label>
+            <label style="cursor: pointer;"><input type="checkbox" value="1房" onchange="onMapLayoutTypeChange()" /> 1房</label>
+            <label style="cursor: pointer;"><input type="checkbox" value="2房" onchange="onMapLayoutTypeChange()" /> 2房</label>
+            <label style="cursor: pointer;"><input type="checkbox" value="3房" onchange="onMapLayoutTypeChange()" /> 3房</label>
+            <label style="cursor: pointer;"><input type="checkbox" value="4房" onchange="onMapLayoutTypeChange()" /> 4房</label>
+            <label style="cursor: pointer;"><input type="checkbox" value="5房以上" onchange="onMapLayoutTypeChange()" /> 5房以上</label>
           </div>
-          <div style="color: var(--color-text-muted); margin-top: 20px;">元</div>
+        </div>
+
+        <!-- 類型篩選 -->
+        <div>
+          <div style="font-weight: 600; color: var(--color-text); margin-bottom: 8px;">🏢 類型</div>
+          <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+            <label style="cursor: pointer;"><input type="checkbox" value="公寓" onchange="onMapLayoutTypeChange()" /> 公寓</label>
+            <label style="cursor: pointer;"><input type="checkbox" value="電梯大樓" onchange="onMapLayoutTypeChange()" /> 電梯大樓</label>
+            <label style="cursor: pointer;"><input type="checkbox" value="電梯透天" onchange="onMapLayoutTypeChange()" /> 電梯透天</label>
+            <label style="cursor: pointer;"><input type="checkbox" value="透天" onchange="onMapLayoutTypeChange()" /> 透天</label>
+          </div>
         </div>
       </div>
 

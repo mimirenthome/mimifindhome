@@ -4712,6 +4712,8 @@ let selectedDistricts = new Set(); // 選中的區域
 let selectedMapTags = new Set(); // 地圖選中的標籤
 let minRentFilter = null; // 最低租金
 let maxRentFilter = null; // 最高租金
+let selectedMapLayouts = new Set(); // 地圖選中的格局
+let selectedMapTypes = new Set(); // 地圖選中的類型
 
 // 台中市行政區顏色對應（更明顯的顏色）
 const districtColors = {
@@ -4854,6 +4856,24 @@ function addMarkersForLocations() {
         return true;
       });
       if (!hasMatchingRent) return;
+    }
+
+    // 如果有格局篩選，檢查是否至少有一個物件符合
+    if (selectedMapLayouts.size > 0) {
+      const hasMatchingLayout = properties.some(prop => {
+        const propLayout = prop.layout || '';
+        return Array.from(selectedMapLayouts).some(layout => propLayout.includes(layout));
+      });
+      if (!hasMatchingLayout) return;
+    }
+
+    // 如果有類型篩選，檢查是否至少有一個物件符合
+    if (selectedMapTypes.size > 0) {
+      const hasMatchingType = properties.some(prop => {
+        const propType = prop.type || '';
+        return Array.from(selectedMapTypes).some(type => propType.includes(type));
+      });
+      if (!hasMatchingType) return;
     }
 
     const count = properties.length;
@@ -5016,6 +5036,28 @@ function onMapRentChange() {
 
   minRentFilter = minInput.value ? parseInt(minInput.value) : null;
   maxRentFilter = maxInput.value ? parseInt(maxInput.value) : null;
+
+  addMarkersForLocations();
+}
+
+function onMapLayoutTypeChange() {
+  selectedMapLayouts.clear();
+  selectedMapTypes.clear();
+
+  // 收集格局和類型
+  const layoutTypeInputs = document.querySelectorAll('#section-map input[type="checkbox"]');
+  const layouts = ['套房', '1房', '2房', '3房', '4房', '5房以上'];
+  const types = ['公寓', '電梯大樓', '電梯透天', '透天'];
+
+  layoutTypeInputs.forEach(cb => {
+    if (cb.checked) {
+      if (layouts.includes(cb.value)) {
+        selectedMapLayouts.add(cb.value);
+      } else if (types.includes(cb.value)) {
+        selectedMapTypes.add(cb.value);
+      }
+    }
+  });
 
   addMarkersForLocations();
 }
