@@ -4910,8 +4910,18 @@ function addMarkersForLocations() {
     propertyMarkers.push(marker);
   });
 
-  // 更新篩選按鈕
-  updateDistrictFilter(Array.from(displayedDistricts).sort());
+  // 按前台順序排序地區
+  const districtOrder = [
+    '西屯區', '北屯區', '南屯區', '西區', '北區', '南區', '東區', '中區',
+    '大雅區', '龍井區', '沙鹿區', '太平區', '大里區', '霧峰區', '烏日區',
+    '豐原區', '潭子區', '清水區', '梧棲區', '大肚區', '大甲區', '后里區'
+  ];
+
+  const sortedDistricts = Array.from(displayedDistricts).sort((a, b) => {
+    return districtOrder.indexOf(a) - districtOrder.indexOf(b);
+  });
+
+  updateDistrictFilter(sortedDistricts);
 }
 
 function showPropertiesInfoWindow(marker, properties, map) {
