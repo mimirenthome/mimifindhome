@@ -434,6 +434,15 @@
     <div class="admin-section-sub">在地圖上查看所有物件的地理分佈</div>
     <div id="district-filter-container" style="margin-top:12px;"></div>
 
+    <!-- 租金篩選 -->
+    <div style="padding: 10px; background: #f5f5f5; border-radius: 6px; margin-top: 12px;">
+      <strong>租金篩選:</strong><br>
+      <div style="margin-top: 8px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+        <label>最低租金: <input type="number" id="min-rent-filter" placeholder="0" min="0" onchange="onMapRentChange()" style="width: 80px; padding: 4px;" /> 元</label>
+        <label>最高租金: <input type="number" id="max-rent-filter" placeholder="不限" min="0" onchange="onMapRentChange()" style="width: 80px; padding: 4px;" /> 元</label>
+      </div>
+    </div>
+
     <!-- 標籤篩選 -->
     <div style="padding: 10px; background: #f5f5f5; border-radius: 6px; margin-top: 12px;">
       <strong>特色標籤篩選（可多選）:</strong><br>

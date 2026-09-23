@@ -4710,6 +4710,8 @@ let propertyMarkers = [];
 let propertyLocationMap = {}; // 用地址分組物件
 let selectedDistricts = new Set(); // 選中的區域
 let selectedMapTags = new Set(); // 地圖選中的標籤
+let minRentFilter = null; // 最低租金
+let maxRentFilter = null; // 最高租金
 
 // 台中市行政區顏色對應（更明顯的顏色）
 const districtColors = {
@@ -4841,6 +4843,17 @@ function addMarkersForLocations() {
         return Array.from(selectedMapTags).every(tag => propTags.includes(tag));
       });
       if (!hasMatchingProperty) return;
+    }
+
+    // 如果有租金篩選，檢查是否至少有一個物件在租金範圍內
+    if (minRentFilter !== null || maxRentFilter !== null) {
+      const hasMatchingRent = properties.some(prop => {
+        const propRent = prop.rent || 0;
+        if (minRentFilter !== null && propRent < minRentFilter) return false;
+        if (maxRentFilter !== null && propRent > maxRentFilter) return false;
+        return true;
+      });
+      if (!hasMatchingRent) return;
     }
 
     const count = properties.length;
@@ -4977,5 +4990,15 @@ function onMapTagChange() {
       selectedMapTags.add(cb.value);
     }
   });
+  addMarkersForLocations();
+}
+
+function onMapRentChange() {
+  const minInput = document.getElementById('min-rent-filter');
+  const maxInput = document.getElementById('max-rent-filter');
+
+  minRentFilter = minInput.value ? parseInt(minInput.value) : null;
+  maxRentFilter = maxInput.value ? parseInt(maxInput.value) : null;
+
   addMarkersForLocations();
 }
