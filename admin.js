@@ -4704,43 +4704,6 @@ const ALL_TAGS = ['可租補', '可狗', '可貓', '陽台', '獨洗曬', '可�
 // ===== 地圖函數 =====
 let addressMap = null;
 
-function initAddressMap() {
-  const mapContainer = document.getElementById('address-map');
-  if (!mapContainer || addressMap) return;
-
-  addressMap = new google.maps.Map(mapContainer, {
-    zoom: 15,
-    center: { lat: 24.1477, lng: 120.6736 }, // 台中市中心
-    mapTypeControl: false,
-    fullscreenControl: false
-  });
-}
-
-function updateAddressMap() {
-  const address = document.getElementById('f-address').value.trim();
-  if (!address) return;
-
-  if (!addressMap) initAddressMap();
-
-  const geocoder = new google.maps.Geocoder();
-  geocoder.geocode({ address: address }, (results, status) => {
-    if (status === 'OK' && results.length > 0) {
-      const location = results[0].geometry.location;
-      addressMap.setCenter(location);
-
-      // 清除舊marker
-      if (window.addressMarker) window.addressMarker.setMap(null);
-
-      // 新增marker
-      window.addressMarker = new google.maps.Marker({
-        map: addressMap,
-        position: location,
-        title: address
-      });
-    }
-  });
-}
-
 // ===== 物件地圖查詢 =====
 let propertyQueryMap = null;
 let propertyMarkers = [];
