@@ -4936,24 +4936,24 @@ function updateDistrictFilter(districts) {
   const container = document.getElementById('district-filter-container');
   if (!container) return;
 
-  let filterHtml = '<div style="padding: 10px; background: #f5f5f5; border-radius: 6px; margin-bottom: 10px;"><strong>區域篩選:</strong><br>';
+  let filterHtml = '<div style="padding: 12px; background: var(--color-soft-green); border-radius: 6px; margin-bottom: 16px;"><div style="font-weight: 600; color: var(--color-text); margin-bottom: 8px;">📍 區域篩選</div><div style="display: flex; flex-wrap: wrap; gap: 8px;">';
 
-  filterHtml += `<label style="display: inline-block; margin-right: 10px; cursor: pointer; padding: 4px 0;">
-    <input type="checkbox" id="select-all-districts" onchange="toggleAllDistricts()" style="margin-right: 4px;">
+  filterHtml += `<label style="display: inline-flex; align-items: center; cursor: pointer; padding: 6px 10px; background: var(--color-beige); border-radius: 4px; border: 1px solid var(--color-border);">
+    <input type="checkbox" id="select-all-districts" onchange="toggleAllDistricts()" style="margin-right: 6px; cursor: pointer;">
     全選
-  </label><br>`;
+  </label>`;
 
   districts.forEach(district => {
     const bgColor = districtColors[district] || '#E8E8E8';
     filterHtml += `
-      <label style="display: inline-block; margin-right: 10px; margin-top: 6px; cursor: pointer; padding: 6px 8px; background: ${bgColor}; border-radius: 4px; border: 1px solid #ddd;">
-        <input type="checkbox" value="${district}" onchange="onDistrictChange()" style="margin-right: 4px;">
+      <label style="display: inline-flex; align-items: center; cursor: pointer; padding: 6px 10px; background: ${bgColor}; border-radius: 4px; border: 1px solid #999;">
+        <input type="checkbox" value="${district}" onchange="onDistrictChange()" style="margin-right: 6px; cursor: pointer;">
         ${district}
       </label>
     `;
   });
 
-  filterHtml += '</div>';
+  filterHtml += '</div></div>';
   container.innerHTML = filterHtml;
 }
 
