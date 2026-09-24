@@ -738,7 +738,6 @@ function renderPropertyCardMobile(p) {
           <div class="property-meta-mobile">📍 ${escHtml(p.district)} · ${escHtml(p.layout)} · ${p.size} 坪</div>
         </div>
         <div class="property-highlight-mobile">${escHtml((p.highlights || '').slice(0, 40))}${(p.highlights || '').length > 40 ? '...' : ''}</div>
-        <div class="property-tags-mobile">${tagsDisplay}</div>
         <div class="property-actions-mobile">
           <button class="btn-mobile-action" onclick="openDetailModal('${p.id}')">查看</button>
           <button class="btn-mobile-action compare-btn-${p.id}" onclick="toggleCompare('${p.id}')">${inCompare ? '✓' : '比較'}</button>
