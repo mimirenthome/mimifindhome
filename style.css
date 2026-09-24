@@ -3408,7 +3408,7 @@ input[type="datetime-local"].form-input {
   max-height: 95vh;
   width: 100%;
   height: auto;
-  aspect-ratio: 16 / 9;
+  aspect-ratio: 4 / 3;
   object-fit: cover;
 }
 
