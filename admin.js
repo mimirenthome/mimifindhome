@@ -4970,14 +4970,14 @@ function updateDistrictFilter(districts) {
     <div style="font-weight: 600; color: var(--color-text); margin-bottom: 12px;">📍 區域篩選</div>
     <div style="display: flex; flex-wrap: wrap; gap: 8px;">
     <label style="cursor: pointer; display: flex; align-items: center; gap: 6px;">
-      <input type="checkbox" id="select-all-districts" onchange="toggleAllDistricts()" style="cursor: pointer; width: 18px; height: 18px;">
+      <input type="checkbox" id="select-all-districts" onchange="toggleAllDistricts()" style="cursor: pointer; width: 18px; height: 18px; accent-color: var(--color-primary-button);">
       <span>全選</span>
     </label>`;
 
   districts.forEach(district => {
     filterHtml += `
       <label style="cursor: pointer; display: flex; align-items: center; gap: 6px;">
-        <input type="checkbox" value="${district}" onchange="onDistrictChange()" style="cursor: pointer; width: 18px; height: 18px;">
+        <input type="checkbox" value="${district}" onchange="onDistrictChange()" style="cursor: pointer; width: 18px; height: 18px; accent-color: var(--color-primary-button);">
         <span>${district}</span>
       </label>
     `;
