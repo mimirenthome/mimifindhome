@@ -4968,79 +4968,23 @@ function updateDistrictFilter(districts) {
 
   let filterHtml = `<div style="padding: 12px; background: var(--color-soft-green); border-radius: 6px; margin-bottom: 16px;">
     <div style="font-weight: 600; color: var(--color-text); margin-bottom: 12px;">📍 區域篩選</div>
-    <div style="display: flex; flex-wrap: wrap; gap: 10px;">
-    <button class="district-btn" data-district="all" style="padding: 8px 12px; background: var(--color-beige); border: 2px solid var(--color-border); border-radius: 6px; cursor: pointer; transition: all 0.2s; font-weight: normal; color: var(--color-text); display: flex; align-items: center; gap: 6px;">
-      <span class="check-mark" style="font-size: 16px; font-weight: bold; color: var(--color-primary-button); min-width: 18px; text-align: center; line-height: 1;">✓</span>
+    <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+    <label style="cursor: pointer; display: flex; align-items: center; gap: 6px;">
+      <input type="checkbox" id="select-all-districts" onchange="toggleAllDistricts()" style="cursor: pointer; width: 18px; height: 18px;">
       <span>全選</span>
-    </button>`;
+    </label>`;
 
   districts.forEach(district => {
-    const bgColor = districtColors[district] || '#E8E8E8';
     filterHtml += `
-      <button class="district-btn" data-district="${district}" style="padding: 8px 12px; background: ${bgColor}; border: 2px solid #999; border-radius: 6px; cursor: pointer; transition: all 0.2s; font-weight: normal; color: var(--color-text); display: flex; align-items: center; gap: 6px;">
-        <span class="check-mark" style="font-size: 16px; font-weight: bold; color: var(--color-primary-button); min-width: 18px; text-align: center; line-height: 1;">✓</span>
+      <label style="cursor: pointer; display: flex; align-items: center; gap: 6px;">
+        <input type="checkbox" value="${district}" onchange="onDistrictChange()" style="cursor: pointer; width: 18px; height: 18px;">
         <span>${district}</span>
-      </button>
+      </label>
     `;
   });
 
   filterHtml += '</div></div>';
   container.innerHTML = filterHtml;
-
-  // 添加按鈕點擊事件
-  container.querySelectorAll('.district-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-      const district = this.getAttribute('data-district');
-      const checkMark = this.querySelector('.check-mark');
-      const allButtons = container.querySelectorAll('.district-btn');
-      
-      if (district === 'all') {
-        // 檢查是否所有區域都已選中
-        const allSelected = Array.from(allButtons).slice(1).every(b => {
-          const d = b.getAttribute('data-district');
-          return selectedDistricts.has(d);
-        });
-        
-        selectedDistricts.clear();
-        allButtons.forEach((btn, idx) => {
-          const mark = btn.querySelector('.check-mark');
-          if (allSelected) {
-            // 取消全選
-            mark.innerHTML = '';
-            mark.style.background = 'transparent';
-            btn.style.fontWeight = 'normal';
-          } else {
-            // 全選所有區域
-            mark.innerHTML = '✓';
-            mark.style.background = 'var(--color-primary-button)';
-            mark.style.color = 'white';
-            mark.style.borderRadius = '3px';
-            mark.style.padding = '2px 4px';
-            btn.style.fontWeight = '600';
-            if (idx > 0) selectedDistricts.add(btn.getAttribute('data-district'));
-          }
-        });
-      } else {
-        // 切換單個區域
-        if (selectedDistricts.has(district)) {
-          selectedDistricts.delete(district);
-          checkMark.innerHTML = '';
-          checkMark.style.background = 'transparent';
-          this.style.fontWeight = 'normal';
-        } else {
-          selectedDistricts.add(district);
-          checkMark.innerHTML = '✓';
-          checkMark.style.background = 'var(--color-primary-button)';
-          checkMark.style.color = 'white';
-          checkMark.style.borderRadius = '3px';
-          checkMark.style.padding = '2px 4px';
-          this.style.fontWeight = '600';
-        }
-      }
-      
-      addMarkersForLocations();
-    });
-  });
 }
 
 
