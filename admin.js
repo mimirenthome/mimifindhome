@@ -4970,7 +4970,7 @@ function updateDistrictFilter(districts) {
     <div style="font-weight: 600; color: var(--color-text); margin-bottom: 12px;">📍 區域篩選</div>
     <div style="display: flex; flex-wrap: wrap; gap: 10px;">
     <button class="district-btn" data-district="all" style="padding: 8px 12px; background: var(--color-beige); border: 2px solid var(--color-border); border-radius: 6px; cursor: pointer; transition: all 0.2s; font-weight: normal; color: var(--color-text); display: flex; align-items: center; gap: 6px;">
-      <span class="check-mark" style="font-size: 14px; font-weight: bold; color: var(--color-primary-button); min-width: 16px; text-align: center;"></span>
+      <span class="check-mark" style="font-size: 16px; font-weight: bold; color: var(--color-primary-button); min-width: 18px; text-align: center; line-height: 1;">✓</span>
       <span>全選</span>
     </button>`;
 
@@ -4978,7 +4978,7 @@ function updateDistrictFilter(districts) {
     const bgColor = districtColors[district] || '#E8E8E8';
     filterHtml += `
       <button class="district-btn" data-district="${district}" style="padding: 8px 12px; background: ${bgColor}; border: 2px solid #999; border-radius: 6px; cursor: pointer; transition: all 0.2s; font-weight: normal; color: var(--color-text); display: flex; align-items: center; gap: 6px;">
-        <span class="check-mark" style="font-size: 14px; font-weight: bold; color: var(--color-primary-button); min-width: 16px; text-align: center;"></span>
+        <span class="check-mark" style="font-size: 16px; font-weight: bold; color: var(--color-primary-button); min-width: 18px; text-align: center; line-height: 1;">✓</span>
         <span>${district}</span>
       </button>
     `;
@@ -5006,11 +5006,16 @@ function updateDistrictFilter(districts) {
           const mark = btn.querySelector('.check-mark');
           if (allSelected) {
             // 取消全選
-            mark.textContent = '';
+            mark.innerHTML = '';
+            mark.style.background = 'transparent';
             btn.style.fontWeight = 'normal';
           } else {
             // 全選所有區域
-            mark.textContent = '✓';
+            mark.innerHTML = '✓';
+            mark.style.background = 'var(--color-primary-button)';
+            mark.style.color = 'white';
+            mark.style.borderRadius = '3px';
+            mark.style.padding = '2px 4px';
             btn.style.fontWeight = '600';
             if (idx > 0) selectedDistricts.add(btn.getAttribute('data-district'));
           }
@@ -5019,11 +5024,16 @@ function updateDistrictFilter(districts) {
         // 切換單個區域
         if (selectedDistricts.has(district)) {
           selectedDistricts.delete(district);
-          checkMark.textContent = '';
+          checkMark.innerHTML = '';
+          checkMark.style.background = 'transparent';
           this.style.fontWeight = 'normal';
         } else {
           selectedDistricts.add(district);
-          checkMark.textContent = '✓';
+          checkMark.innerHTML = '✓';
+          checkMark.style.background = 'var(--color-primary-button)';
+          checkMark.style.color = 'white';
+          checkMark.style.borderRadius = '3px';
+          checkMark.style.padding = '2px 4px';
           this.style.fontWeight = '600';
         }
       }
