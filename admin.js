@@ -4976,10 +4976,11 @@ function updateDistrictFilter(districts) {
 
   districts.forEach(district => {
     const isChecked = selectedDistricts.has(district) ? 'checked' : '';
+    const bgColor = districtColors[district] || '#E8E8E8';
     filterHtml += `
-      <label style="cursor: pointer; display: flex; align-items: center; gap: 6px;">
-        <input type="checkbox" value="${district}" onchange="onDistrictChange()" ${isChecked} style="cursor: pointer; width: 18px; height: 18px; accent-color: var(--color-primary-button);">
-        <span>${district}</span>
+      <label style="cursor: pointer; display: flex; align-items: center; gap: 6px; padding: 6px 12px; background-color: ${bgColor}; border-radius: 4px; transition: all 0.2s;" onmouseover="this.style.opacity='0.7';" onmouseout="this.style.opacity='1';">
+        <input type="checkbox" value="${district}" onchange="onDistrictChange()" ${isChecked} style="cursor: pointer; width: 18px; height: 18px; accent-color: #333;">
+        <span style="font-size: 14px; font-weight: 500;">${district}</span>
       </label>
     `;
   });
