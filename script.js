@@ -614,6 +614,9 @@ function renderProperties() {
       ? filteredProperties.slice(0, MOBILE_INITIAL_COUNT)
       : filteredProperties;
     grid.innerHTML = visible.map(p => renderPropertyCardMobile(p)).join('');
+    grid.style.display = 'grid';
+    grid.style.gridTemplateColumns = 'repeat(2, 1fr)';
+    grid.style.gap = '12px';
     if (needsToggle) {
       const btn = document.createElement('div');
       btn.id = 'mobile-expand-btn';

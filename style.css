@@ -799,8 +799,8 @@ input[type="datetime-local"].form-input {
 }
 .properties-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
 }
 .property-card {
   background: #fff;
@@ -2245,7 +2245,7 @@ input[type="datetime-local"].form-input {
     gap: 8px;
   }
   .filter-action-btn { flex: 1; }
-  .properties-grid { grid-template-columns: 1fr; }
+  .properties-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
 
   /* Mobile expand/collapse button */
   #mobile-expand-btn {
