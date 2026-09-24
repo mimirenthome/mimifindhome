@@ -4975,9 +4975,10 @@ function updateDistrictFilter(districts) {
     </label>`;
 
   districts.forEach(district => {
+    const isChecked = selectedDistricts.has(district) ? 'checked' : '';
     filterHtml += `
       <label style="cursor: pointer; display: flex; align-items: center; gap: 6px;">
-        <input type="checkbox" value="${district}" onchange="onDistrictChange()" style="cursor: pointer; width: 18px; height: 18px; accent-color: var(--color-primary-button);">
+        <input type="checkbox" value="${district}" onchange="onDistrictChange()" ${isChecked} style="cursor: pointer; width: 18px; height: 18px; accent-color: var(--color-primary-button);">
         <span>${district}</span>
       </label>
     `;
@@ -4985,6 +4986,15 @@ function updateDistrictFilter(districts) {
 
   filterHtml += '</div></div>';
   container.innerHTML = filterHtml;
+
+  // 更新全選按鈕狀態
+  const allCheckbox = document.getElementById('select-all-districts');
+  if (allCheckbox) {
+    const allDistricts = districts.length;
+    const selectedCount = selectedDistricts.size;
+    allCheckbox.checked = selectedCount > 0 && selectedCount === allDistricts;
+    allCheckbox.indeterminate = selectedCount > 0 && selectedCount < allDistricts;
+  }
 }
 
 
