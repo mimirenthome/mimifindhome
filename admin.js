@@ -5000,8 +5000,10 @@ function updateDistrictFilter(districts) {
 
 function onDistrictChange() {
   selectedDistricts.clear();
-  document.querySelectorAll('#district-filter-container input[type="checkbox"]:not(#select-all-districts):checked').forEach(cb => {
-    selectedDistricts.add(cb.value);
+  document.querySelectorAll('#district-filter-container input[type="checkbox"]:checked').forEach(cb => {
+    if (cb.id !== 'select-all-districts') {
+      selectedDistricts.add(cb.value);
+    }
   });
   addMarkersForLocations();
 }
@@ -5011,16 +5013,14 @@ function toggleAllDistricts() {
   const isChecked = allCheckbox.checked;
 
   selectedDistricts.clear();
-  if (isChecked) {
-    document.querySelectorAll('#district-filter-container input[type="checkbox"]:not(#select-all-districts)').forEach(cb => {
-      cb.checked = true;
-      selectedDistricts.add(cb.value);
-    });
-  } else {
-    document.querySelectorAll('#district-filter-container input[type="checkbox"]:not(#select-all-districts)').forEach(cb => {
-      cb.checked = false;
-    });
-  }
+  document.querySelectorAll('#district-filter-container input[type="checkbox"]').forEach(cb => {
+    if (cb.id !== 'select-all-districts') {
+      cb.checked = isChecked;
+      if (isChecked) {
+        selectedDistricts.add(cb.value);
+      }
+    }
+  });
   addMarkersForLocations();
 }
 
