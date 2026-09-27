@@ -5148,3 +5148,37 @@ function onMapQueryClick() {
   // 重新加載地圖
   addMarkersForLocations();
 }
+
+function onMapClearClick() {
+  // 清除所有區域選擇
+  selectedDistricts.clear();
+  document.querySelectorAll('#district-filter-container input[type="checkbox"]').forEach(cb => {
+    cb.checked = false;
+  });
+  const allCheckbox = document.getElementById('select-all-districts');
+  if (allCheckbox) {
+    allCheckbox.checked = false;
+    allCheckbox.indeterminate = false;
+  }
+
+  // 清除所有標籤選擇
+  selectedMapTags.clear();
+
+  // 清除租金篩選
+  const minInput = document.getElementById('min-rent-filter');
+  const maxInput = document.getElementById('max-rent-filter');
+  if (minInput) minInput.value = '';
+  if (maxInput) maxInput.value = '';
+  minRentFilter = null;
+  maxRentFilter = null;
+
+  // 清除格局和類型選擇
+  selectedMapLayouts.clear();
+  selectedMapTypes.clear();
+  document.querySelectorAll('#section-map input[type="checkbox"]').forEach(cb => {
+    cb.checked = false;
+  });
+
+  // 重新加載地圖顯示所有物件
+  addMarkersForLocations();
+}
