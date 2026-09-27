@@ -757,11 +757,11 @@ function initPropForm() {
 
   document.getElementById('prop-form').addEventListener('submit', saveProp);
 
-  // 初始化並更新地圖
-  setTimeout(() => {
-    initAddressMap();
-    updateAddressMap();
-  }, 100);
+  // 初始化並更新地圖（暫時禁用）
+  // setTimeout(() => {
+  //   initAddressMap();
+  //   updateAddressMap();
+  // }, 100);
 }
 
 async function saveProp(e) {
@@ -4779,37 +4779,78 @@ async function loadPropertiesOnMap() {
 
     const geocoder = new google.maps.Geocoder();
     let processedCount = 0;
+    const totalProps = props.length;
+
+    // 設定超時：如果30秒後還沒有完成，強制添加markers
+    const geocodeTimeout = setTimeout(() => {
+      console.warn('地理編碼超時，顯示已有的標記');
+      if (processedCount < totalProps) {
+        addMarkersForLocations();
+      }
+    }, 30000);
 
     for (const prop of props) {
-      geocoder.geocode({ address: prop.address }, (results, status) => {
-        if (status === 'OK' && results.length > 0) {
-          const location = results[0].geometry.location;
-          const locationKey = `${location.lat()},${location.lng()}`;
+      // 檢查物件是否有預存的緯度/經度
+      if (prop.latitude && prop.longitude) {
+        const location = new google.maps.LatLng(parseFloat(prop.latitude), parseFloat(prop.longitude));
+        const locationKey = `${location.lat()},${location.lng()}`;
 
-          // 分組同一位置的物件
-          if (!propertyLocationMap[locationKey]) {
-            propertyLocationMap[locationKey] = {
-              location: location,
-              properties: []
-            };
-          }
-          propertyLocationMap[locationKey].properties.push(prop);
+        if (!propertyLocationMap[locationKey]) {
+          propertyLocationMap[locationKey] = {
+            location: location,
+            properties: []
+          };
         }
-
+        propertyLocationMap[locationKey].properties.push(prop);
         processedCount++;
-        if (processedCount === props.length) {
-          // 所有地理編碼完成後，添加markers
-          addMarkersForLocations();
-        }
-      });
+      } else {
+        // 使用 geocoder 獲取坐標
+        geocoder.geocode({ address: prop.address }, (results, status) => {
+          if (status === 'OK' && results.length > 0) {
+            const location = results[0].geometry.location;
+            const locationKey = `${location.lat()},${location.lng()}`;
+
+            if (!propertyLocationMap[locationKey]) {
+              propertyLocationMap[locationKey] = {
+                location: location,
+                properties: []
+              };
+            }
+            propertyLocationMap[locationKey].properties.push(prop);
+          } else {
+            // Geocoding 失敗，使用台中市中心作為備用
+            console.warn(`地理編碼失敗: ${prop.address} (Status: ${status})`);
+            const fallbackLocation = new google.maps.LatLng(24.1477, 120.6736);
+            const locationKey = `${fallbackLocation.lat()},${fallbackLocation.lng()}`;
+
+            if (!propertyLocationMap[locationKey]) {
+              propertyLocationMap[locationKey] = {
+                location: fallbackLocation,
+                properties: []
+              };
+            }
+            propertyLocationMap[locationKey].properties.push(prop);
+          }
+
+          processedCount++;
+          if (processedCount === totalProps) {
+            clearTimeout(geocodeTimeout);
+            // 所有地理編碼完成後，添加markers
+            addMarkersForLocations();
+          }
+        });
+      }
     }
 
     // 如果沒有物件，直接完成
-    if (props.length === 0) {
+    if (totalProps === 0) {
+      clearTimeout(geocodeTimeout);
       addMarkersForLocations();
     }
   } catch (err) {
     console.error('地圖載入失敗:', err);
+    // 即使失敗也嘗試顯示markers
+    addMarkersForLocations();
   }
 }
 
@@ -5064,5 +5105,46 @@ function onMapLayoutTypeChange() {
     }
   });
 
+  addMarkersForLocations();
+}
+
+function onMapQueryClick() {
+  // 收集所有篩選條件
+  selectedDistricts.clear();
+  document.querySelectorAll('#district-filter-container input[type="checkbox"]:checked').forEach(cb => {
+    if (cb.id !== 'select-all-districts') {
+      selectedDistricts.add(cb.value);
+    }
+  });
+
+  selectedMapTags.clear();
+  document.querySelectorAll('#section-map input[type="checkbox"]:checked').forEach(cb => {
+    if (!cb.parentElement.querySelector('#select-all-districts')) {
+      selectedMapTags.add(cb.value);
+    }
+  });
+
+  const minInput = document.getElementById('min-rent-filter');
+  const maxInput = document.getElementById('max-rent-filter');
+  minRentFilter = minInput.value ? parseInt(minInput.value) : null;
+  maxRentFilter = maxInput.value ? parseInt(maxInput.value) : null;
+
+  selectedMapLayouts.clear();
+  selectedMapTypes.clear();
+  const layoutTypeInputs = document.querySelectorAll('#section-map input[type="checkbox"]');
+  const layouts = ['套房', '1房', '2房', '3房', '4房', '5房以上'];
+  const types = ['公寓', '電梯大樓', '電梯透天', '透天'];
+
+  layoutTypeInputs.forEach(cb => {
+    if (cb.checked) {
+      if (layouts.includes(cb.value)) {
+        selectedMapLayouts.add(cb.value);
+      } else if (types.includes(cb.value)) {
+        selectedMapTypes.add(cb.value);
+      }
+    }
+  });
+
+  // 重新加載地圖
   addMarkersForLocations();
 }
