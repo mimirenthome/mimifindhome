@@ -5263,13 +5263,22 @@ GRANT USAGE ON SEQUENCE public.commercial_properties_id_seq TO authenticated;
 }
 
 async function initCommercialModule() {
-  // 初始化區域篩選器
-  const districts = [...new Set(commercialProperties.map(p => p.district))].sort();
+  // 初始化區域篩選器（所有台中區域）
+  const taichungDistricts = [
+    '中區', '東區', '南區', '西區', '北區',
+    '北屯區', '西屯區', '南屯區',
+    '太平區', '大里區', '霧峰區', '烏日區',
+    '豐原區', '潭子區', '大雅區',
+    '沙鹿區', '清水區', '梧棲區',
+    '龍井區', '大肚區', '大甲區', '后里區',
+    '其他'
+  ];
+
   const container = document.getElementById('commercial-district-filter-container');
   if (container) {
     let filterHtml = '<div style="font-weight:600;margin-bottom:8px;">📍 區域篩選</div><div style="display:flex;flex-wrap:wrap;gap:8px;">';
     filterHtml += '<label><input type="checkbox" id="c-select-all-districts" onchange="toggleAllCommercialDistricts()" /> 全選</label>';
-    districts.forEach(d => {
+    taichungDistricts.forEach(d => {
       filterHtml += `<label><input type="checkbox" name="c-district-filter" value="${d}" onchange="onCommercialDistrictChange()" /> ${d}</label>`;
     });
     filterHtml += '</div>';
