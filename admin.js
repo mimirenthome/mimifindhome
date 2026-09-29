@@ -5605,13 +5605,15 @@ function updateDistrictSelects(districts) {
   const select = document.getElementById('c-district');
   if (select) {
     select.innerHTML = '<option value="">-- 選擇區域 --</option>' +
-      districts.map(d => `<option value="${d}">${d}</option>`).join('');
+      districts.map(d => `<option value="${d}">${d}</option>`).join('') +
+      '<option value="其他">其他</option>';
   }
 
   const filterSelect = document.getElementById('commercial-filter-district');
   if (filterSelect) {
     filterSelect.innerHTML = '<option value="">全部地區</option>' +
-      districts.map(d => `<option value="${d}">${d}</option>`).join('');
+      districts.map(d => `<option value="${d}">${d}</option>`).join('') +
+      '<option value="其他">其他</option>';
   }
 }
 
