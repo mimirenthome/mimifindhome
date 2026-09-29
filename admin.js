@@ -5711,8 +5711,29 @@ async function aiParseAndFill() {
     const address = extractField(/地址[：:]\s*([^\n]+)/);
     const rentStr = extractField(/租金[：:]\s*(\d+)/);
     const areaStr = extractField(/坪數[：:]\s*(\d+)/);
+
+    // 提取室內坪數（從括號內提取，如：120坪（室內106））
+    let indoorAreaStr = '';
+    const indoorMatch = pasteData.match(/坪數[：:][^（]*（室內(\d+(?:\.\d+)?)）/);
+    if (indoorMatch) indoorAreaStr = indoorMatch[1];
+
     const floorStr = extractField(/樓層[：:]\s*([^\n]+)/);
     const typeStr = extractField(/類型[：:]\s*([^\n]+)/);
+
+    // 提取寬/深（如：寬17.7深21.6）
+    let widthDepthStr = '';
+    const widthDepthMatch = pasteData.match(/寬\/深[：:]\s*([^\n]+)/);
+    if (widthDepthMatch) widthDepthStr = widthDepthMatch[1].trim();
+
+    // 提取滴水高度（如：滴水6.3最高8.1）
+    let eaveHeightStr = '';
+    const eaveMatch = pasteData.match(/滴水高度[：:]\s*([^\n]+)/);
+    if (eaveMatch) eaveHeightStr = eaveMatch[1].trim();
+
+    // 提取鐵門高度（如：鐵門高度：3 或 鐵門高度：3米）
+    let doorHeightStr = '';
+    const doorMatch = pasteData.match(/鐵門高度[：:]\s*([^\n]+)/);
+    if (doorMatch) doorHeightStr = doorMatch[1].trim();
     
     // 提取特色（只在是「可」的狀態時才打勾）
     const features = [];
@@ -5744,7 +5765,11 @@ async function aiParseAndFill() {
     if (address) document.getElementById('c-address').value = address;
     if (rentStr) document.getElementById('c-rent').value = rentStr;
     if (areaStr) document.getElementById('c-usable-area').value = areaStr;
+    if (indoorAreaStr) document.getElementById('c-indoor-area').value = indoorAreaStr;
     if (floorStr) document.getElementById('c-floor').value = floorStr;
+    if (widthDepthStr) document.getElementById('c-width-depth').value = widthDepthStr;
+    if (eaveHeightStr) document.getElementById('c-eave-height').value = eaveHeightStr;
+    if (doorHeightStr) document.getElementById('c-door-height').value = doorHeightStr;
 
     // 從地址中提取區域
     const taichungDistricts = [
