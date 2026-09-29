@@ -5703,11 +5703,11 @@ async function aiParseAndFill() {
     const floorStr = extractField(/樓層[：:]\s*([^\n]+)/);
     const typeStr = extractField(/類型[：:]\s*([^\n]+)/);
     
-    // 提取特色
+    // 提取特色（只在是「可」的狀態時才打勾）
     const features = [];
-    if (pasteData.includes('廠登') || pasteData.includes('廠登')) features.push('廠登');
-    if (pasteData.includes('營登')) features.push('營登');
-    if (pasteData.includes('報稅')) features.push('報稅');
+    if (pasteData.includes('可廠登')) features.push('廠登');
+    if (pasteData.includes('可營登')) features.push('營登');
+    if (pasteData.includes('可報稅')) features.push('報稅');
     if (pasteData.includes('靠近馬路')) features.push('靠近馬路');
     if (pasteData.includes('挑高')) features.push('挑高');
     if (pasteData.includes('可分割')) features.push('可分割');
