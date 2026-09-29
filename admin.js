@@ -5726,7 +5726,21 @@ async function aiParseAndFill() {
     
     // 提取各個字段
     const address = extractField(/地址[：:]\s*([^\n]+)/);
-    const rentStr = extractField(/租金[：:]\s*(\d+)/);
+
+    // 提取租金（支持萬/万的轉換）
+    let rentStr = extractField(/租金[：:]\s*([^\n]+)/);
+    if (rentStr) {
+      // 移除所有非數字字符（除了小數點）
+      const rentMatch = rentStr.match(/(\d+(?:\.\d+)?)\s*([萬万])?/);
+      if (rentMatch) {
+        let rentNum = parseFloat(rentMatch[1]);
+        // 如果有「萬」或「万」字，乘以10000
+        if (rentMatch[2] && (rentMatch[2] === '萬' || rentMatch[2] === '万')) {
+          rentNum = Math.round(rentNum * 10000);
+        }
+        rentStr = rentNum.toString();
+      }
+    }
     const areaStr = extractField(/坪數[：:]\s*(\d+)/);
 
     // 提取室內坪數（從括號內提取，如：120坪（室內106））
