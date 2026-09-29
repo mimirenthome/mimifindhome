@@ -5309,25 +5309,23 @@ function displayCommercialProperties() {
   let filtered = commercialProperties.filter(p => {
     if (statusFilter && p.status?.toString() !== statusFilter) return false;
     if (districtFilter && p.district !== districtFilter) return false;
-    if (searchText && !p.name?.toLowerCase().includes(searchText)) return false;
+    if (searchText && !p.address?.toLowerCase().includes(searchText)) return false;
     return true;
   });
 
   if (filtered.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;padding:20px;">無符合條件的物件</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:20px;">無符合條件的物件</td></tr>';
     return;
   }
 
   tbody.innerHTML = filtered.map(p => `
     <tr>
       <td style="text-align:center;color:#999;">─</td>
-      <td>${p.name || '─'}</td>
       <td>${p.address || '─'}</td>
       <td>${p.district || '─'}</td>
       <td>${p.rent ? p.rent.toLocaleString() : '─'}</td>
       <td>${p.area ? p.area + '坪' : '─'}</td>
       <td>${p.floor || '─'}</td>
-      <td>${p.age || '─'}</td>
       <td>${p.usage_type || '─'}</td>
       <td><span style="background:${p.status ? '#4CAF50' : '#ccc'};color:#fff;padding:4px 8px;border-radius:4px;font-size:12px;">${p.status ? '上架' : '下架'}</span></td>
       <td style="text-align:center;">
@@ -5343,13 +5341,11 @@ function editCommercialProperty(id) {
   const prop = commercialProperties.find(p => p.id === id);
   if (!prop) return;
 
-  document.getElementById('c-name').value = prop.name || '';
   document.getElementById('c-address').value = prop.address || '';
   document.getElementById('c-district').value = prop.district || '';
   document.getElementById('c-rent').value = prop.rent || '';
   document.getElementById('c-area').value = prop.area || '';
   document.getElementById('c-floor').value = prop.floor || '';
-  document.getElementById('c-age').value = prop.age || '';
 
   document.querySelectorAll('input[name="c-type"]').forEach(r => {
     r.checked = r.value === prop.usage_type;
@@ -5376,13 +5372,13 @@ async function saveCommercialProperty(event) {
   const features = Array.from(document.querySelectorAll('input[name="c-feature"]:checked')).map(cb => cb.value).join(',');
 
   const data = {
-    name: document.getElementById('c-name').value,
+    name: document.getElementById('c-address').value,
     address: document.getElementById('c-address').value,
     district: document.getElementById('c-district').value,
     rent: parseInt(document.getElementById('c-rent').value) || 0,
     area: parseFloat(document.getElementById('c-area').value) || null,
     floor: document.getElementById('c-floor').value,
-    age: parseInt(document.getElementById('c-age').value) || null,
+    age: null,
     usage_type: document.querySelector('input[name="c-type"]:checked')?.value || '',
     features: features,
     notes: document.getElementById('c-notes').value,
@@ -5595,5 +5591,68 @@ async function initCommercialDistrictSelect() {
   if (filterSelect) {
     filterSelect.innerHTML = '<option value="">全部地區</option>' +
       districts.map(d => `<option value="${d}">${d}</option>`).join('');
+  }
+}
+
+// AI 智能填充：從地址自動提取區域
+async function aiSmartFill() {
+  const address = document.getElementById('c-address').value.trim();
+  
+  if (!address) {
+    showToast('❌ 請先輸入地址', 'error');
+    return;
+  }
+  
+  try {
+    showToast('🤖 AI 正在分析地址...', 'info');
+    
+    const geocoder = new google.maps.Geocoder();
+    const result = await new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => reject(new Error('Geocoding timeout')), 10000);
+      geocoder.geocode({ address: address }, (results, status) => {
+        clearTimeout(timeout);
+        if (status === 'OK' && results.length > 0) {
+          resolve(results[0]);
+        } else {
+          reject(new Error('無法解析地址'));
+        }
+      });
+    });
+    
+    let district = '';
+    const addressComponents = result.address_components;
+    
+    for (let component of addressComponents) {
+      if (component.types.includes('administrative_area_level_3')) {
+        district = component.long_name;
+        break;
+      }
+    }
+    
+    if (!district) {
+      for (let component of addressComponents) {
+        if (component.types.includes('administrative_area_level_2')) {
+          district = component.long_name;
+          break;
+        }
+      }
+    }
+    
+    if (district) {
+      const districtSelect = document.getElementById('c-district');
+      const option = Array.from(districtSelect.options).find(opt => opt.text.includes(district));
+      if (option) {
+        districtSelect.value = option.value;
+        showToast('✅ 自動填充區域：' + district, 'success');
+      } else {
+        showToast('⚠️ 未找到對應區域，請手動選擇', 'warning');
+      }
+    } else {
+      showToast('⚠️ 無法自動識別區域，請手動選擇', 'warning');
+    }
+    
+  } catch (error) {
+    console.error('AI 填充錯誤:', error);
+    showToast('❌ AI 填充失敗：' + error.message, 'error');
   }
 }

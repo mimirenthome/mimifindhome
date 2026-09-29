@@ -537,7 +537,7 @@
     <div id="commercial-props-table-wrap" style="overflow-x:auto;">
       <table class="admin-table" id="commercial-props-table">
         <thead>
-          <tr><th>圖片</th><th>名稱</th><th>地址</th><th>區域</th><th>租金</th><th>面積</th><th>樓層</th><th>屋齡</th><th>用途</th><th>狀態</th><th>操作</th></tr>
+          <tr><th>圖片</th><th>地址</th><th>區域</th><th>租金</th><th>面積</th><th>樓層</th><th>用途</th><th>狀態</th><th>操作</th></tr>
         </thead>
         <tbody id="commercial-props-tbody">
           <tr><td colspan="11" style="text-align:center;padding:32px;">載入中...</td></tr>
@@ -555,9 +555,11 @@
     <button onclick="showSection('commercial')" style="margin-bottom:16px;font-size:13px;color:var(--color-text-muted);background:none;border:none;cursor:pointer;">← 返回列表</button>
 
     <form id="commercial-form" onsubmit="saveCommercialProperty(event)" style="display:grid;gap:20px;">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-        <div><label class="form-label">物件名稱</label><input type="text" id="c-name" class="form-input" placeholder="例：中山商辦" required /></div>
-        <div><label class="form-label">地址</label><input type="text" id="c-address" class="form-input" placeholder="例：台中市北屯區..." required /></div>
+      <div><label class="form-label">地址</label>
+        <div style="display:flex;gap:8px;">
+          <input type="text" id="c-address" class="form-input" placeholder="例：台中市北屯區中山路..." required style="flex:1;" />
+          <button type="button" onclick="aiSmartFill()" style="padding:12px 16px;background:#4CAF50;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;white-space:nowrap;">🤖 AI智能填充</button>
+        </div>
       </div>
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
@@ -565,10 +567,9 @@
         <div><label class="form-label">租金（元/月）</label><input type="number" id="c-rent" class="form-input" placeholder="例：50000" required /></div>
       </div>
 
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
         <div><label class="form-label">樓面積（坪）</label><input type="number" id="c-area" class="form-input" placeholder="例：100" step="0.1" /></div>
         <div><label class="form-label">樓層</label><input type="text" id="c-floor" class="form-input" placeholder="例：3或地下1樓" /></div>
-        <div><label class="form-label">屋齡（年）</label><input type="number" id="c-age" class="form-input" placeholder="例：5" /></div>
       </div>
 
       <div><label class="form-label">用途</label>
