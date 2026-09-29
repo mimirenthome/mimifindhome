@@ -5743,7 +5743,7 @@ async function aiParseAndFill() {
     // 填充表單
     if (address) document.getElementById('c-address').value = address;
     if (rentStr) document.getElementById('c-rent').value = rentStr;
-    if (areaStr) document.getElementById('c-area').value = areaStr;
+    if (areaStr) document.getElementById('c-usable-area').value = areaStr;
     if (floorStr) document.getElementById('c-floor').value = floorStr;
 
     // 從地址中提取區域
