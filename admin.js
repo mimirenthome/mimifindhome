@@ -5773,7 +5773,7 @@ async function aiParseAndFill() {
     if (floorStr) document.getElementById('c-floor').value = floorStr;
     if (widthDepthStr) document.getElementById('c-width-depth').value = widthDepthStr;
     if (eaveHeightStr) document.getElementById('c-eave-height').value = eaveHeightStr;
-    if (doorHeightStr) document.getElementById('c-door-height').value = doorHeightStr;
+    if (doorHeightStr && doorHeightStr.trim()) document.getElementById('c-door-height').value = doorHeightStr;
 
     // 從地址中提取區域
     const taichungDistricts = [
