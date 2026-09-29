@@ -5324,7 +5324,8 @@ function displayCommercialProperties() {
       <td>${p.address || '─'}</td>
       <td>${p.district || '─'}</td>
       <td>${p.rent ? p.rent.toLocaleString() : '─'}</td>
-      <td>${p.area ? p.area + '坪' : '─'}</td>
+      <td>${p.usable_area ? p.usable_area + '坪' : '─'}</td>
+      <td>${p.indoor_area ? p.indoor_area + '坪' : '─'}</td>
       <td>${p.floor || '─'}</td>
       <td>${p.usage_type || '─'}</td>
       <td><span style="background:${p.status ? '#4CAF50' : '#ccc'};color:#fff;padding:4px 8px;border-radius:4px;font-size:12px;">${p.status ? '上架' : '下架'}</span></td>
@@ -5344,7 +5345,8 @@ function editCommercialProperty(id) {
   document.getElementById('c-address').value = prop.address || '';
   document.getElementById('c-district').value = prop.district || '';
   document.getElementById('c-rent').value = prop.rent || '';
-  document.getElementById('c-area').value = prop.area || '';
+  document.getElementById('c-usable-area').value = prop.usable_area || '';
+  document.getElementById('c-indoor-area').value = prop.indoor_area || '';
   document.getElementById('c-floor').value = prop.floor || '';
   document.getElementById('c-width-depth').value = prop.width_depth || '';
   document.getElementById('c-eave-height').value = prop.eave_height || '';
@@ -5379,7 +5381,8 @@ async function saveCommercialProperty(event) {
     address: document.getElementById('c-address').value,
     district: document.getElementById('c-district').value,
     rent: parseInt(document.getElementById('c-rent').value) || 0,
-    area: parseFloat(document.getElementById('c-area').value) || null,
+    usable_area: parseFloat(document.getElementById('c-usable-area').value) || null,
+    indoor_area: parseFloat(document.getElementById('c-indoor-area').value) || null,
     floor: document.getElementById('c-floor').value,
     age: null,
     usage_type: document.querySelector('input[name="c-type"]:checked')?.value || '',
@@ -5514,8 +5517,8 @@ async function addCommercialMarkersToMap() {
     if (commercialSelectedTypes.size > 0 && !commercialSelectedTypes.has(prop.usage_type)) continue;
     if (commercialMinRent !== null && prop.rent < commercialMinRent) continue;
     if (commercialMaxRent !== null && prop.rent > commercialMaxRent) continue;
-    if (commercialMinArea !== null && prop.area && prop.area < commercialMinArea) continue;
-    if (commercialMaxArea !== null && prop.area && prop.area > commercialMaxArea) continue;
+    if (commercialMinArea !== null && prop.usable_area && prop.usable_area < commercialMinArea) continue;
+    if (commercialMaxArea !== null && prop.usable_area && prop.usable_area > commercialMaxArea) continue;
 
     if (commercialSelectedFeatures.size > 0) {
       const propFeatures = prop.features ? prop.features.split(',') : [];

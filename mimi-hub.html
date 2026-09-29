@@ -535,7 +535,7 @@
     <div id="commercial-props-table-wrap" style="overflow-x:auto;">
       <table class="admin-table" id="commercial-props-table">
         <thead>
-          <tr><th>圖片</th><th>地址</th><th>區域</th><th>租金</th><th>面積</th><th>樓層</th><th>用途</th><th>狀態</th><th>操作</th></tr>
+          <tr><th>圖片</th><th>地址</th><th>區域</th><th>租金</th><th>使用坪數</th><th>室內坪數</th><th>樓層</th><th>用途</th><th>狀態</th><th>操作</th></tr>
         </thead>
         <tbody id="commercial-props-tbody">
           <tr><td colspan="11" style="text-align:center;padding:32px;">載入中...</td></tr>
@@ -573,7 +573,11 @@
       </div>
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-        <div><label class="form-label">樓面積（坪）</label><input type="number" id="c-area" class="form-input" placeholder="例：100" step="0.1" /></div>
+        <div><label class="form-label">使用坪數</label><input type="number" id="c-usable-area" class="form-input" placeholder="例：100" step="0.1" /></div>
+        <div><label class="form-label">室內坪數</label><input type="number" id="c-indoor-area" class="form-input" placeholder="例：80" step="0.1" /></div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr;gap:16px;">
         <div><label class="form-label">樓層</label><input type="text" id="c-floor" class="form-input" placeholder="例：3或地下1樓" /></div>
       </div>
 
