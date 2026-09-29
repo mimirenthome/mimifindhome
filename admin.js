@@ -5818,7 +5818,16 @@ async function aiParseAndFill() {
     
     // 清空粘貼區域
     document.getElementById('c-paste-data').value = '';
-    
+
+    // 顯示完成提示
+    const hintEl = document.getElementById('c-ai-hint');
+    if (hintEl) {
+      hintEl.style.display = 'block';
+      setTimeout(() => {
+        hintEl.style.display = 'none';
+      }, 3000);
+    }
+
     showToast('✅ 數據分類完成！請檢查並補充未識別的欄位', 'success');
     
   } catch (error) {

@@ -553,10 +553,15 @@
     <button onclick="showSection('commercial')" style="margin-bottom:16px;font-size:13px;color:var(--color-text-muted);background:none;border:none;cursor:pointer;">← 返回列表</button>
 
     <!-- 快速導入 -->
-    <div style="background:#f0f0f0;border-radius:8px;padding:16px;margin-bottom:20px;">
-      <div style="font-weight:600;margin-bottom:8px;">📋 快速導入（粘貼數據自動分類）</div>
-      <textarea id="c-paste-data" placeholder="粘貼您的物件信息（例如：地址：...，租金：...，面積：...等）" style="width:100%;height:120px;padding:12px;border:1px solid #ddd;border-radius:6px;font-family:monospace;font-size:12px;margin-bottom:8px;resize:vertical;"></textarea>
-      <button type="button" onclick="aiParseAndFill()" style="padding:10px 16px;background:#2196F3;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;">🤖 AI智能分類</button>
+    <div class="ai-section">
+      <div class="ai-section-title">📋 快速導入（粘貼數據自動分類）</div>
+      <div class="ai-section-desc">將您的物件資料貼入下方，點擊「AI 智能分類」後自動填入欄位。</div>
+      <textarea class="ai-textarea" id="c-paste-data" placeholder="請貼上物件資料，例如：&#10;地址：霧峰區新豐路132號&#10;租金：45800&#10;坪數：120坪（室內106）&#10;樓層：1&#10;類型：廠房&#10;廠登：不可廠登&#10;營登報稅：可營登&#10;寬/深：寬17.7深21.6"></textarea>
+      <div class="ai-btn-row">
+        <button type="button" class="btn btn-primary btn-sm" onclick="aiParseAndFill()">🤖 AI 智能分類</button>
+        <button type="button" class="btn btn-ghost btn-sm" onclick="document.getElementById('c-paste-data').value=''">清除</button>
+      </div>
+      <div class="ai-result-hint" id="c-ai-hint" style="display:none;">✅ AI 分類完成，請確認並補充欄位後再儲存。</div>
     </div>
 
     <form id="commercial-form" onsubmit="saveCommercialProperty(event)" style="display:grid;gap:20px;">
