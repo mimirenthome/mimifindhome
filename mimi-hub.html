@@ -62,6 +62,8 @@
     <button class="admin-nav-link active" onclick="showSection('props')">📦 物件管理</button>
     <button class="admin-nav-link" onclick="showSection('add')">➕ 新增物件</button>
     <button class="admin-nav-link" onclick="showSection('map')">📍 地圖查詢</button>
+    <button class="admin-nav-link" onclick="showSection('commercial')">🏢 商業物件</button>
+    <button class="admin-nav-link" onclick="showSection('commercial-map')">🗺️ 商業地圖</button>
     <button class="admin-nav-link" onclick="showSection('appts')" hidden>📅 預約資料</button>
     <button class="admin-nav-link" onclick="showSection('pw')">⚙️ 帳號設定</button>
     <button class="admin-nav-link" onclick="showSection('feedback')">💌 回饋中心</button>
@@ -76,6 +78,8 @@
   <button class="admin-nav-link" onclick="showSection('props');closeAdminMobileNav()">📦 物件管理</button>
   <button class="admin-nav-link" onclick="showSection('add');closeAdminMobileNav()">➕ 新增物件</button>
   <button class="admin-nav-link" onclick="showSection('map');closeAdminMobileNav()">📍 地圖查詢</button>
+  <button class="admin-nav-link" onclick="showSection('commercial');closeAdminMobileNav()">🏢 商業物件</button>
+  <button class="admin-nav-link" onclick="showSection('commercial-map');closeAdminMobileNav()">🗺️ 商業地圖</button>
   <button class="admin-nav-link" onclick="showSection('appts');closeAdminMobileNav()" hidden>📅 預約資料</button>
   <button class="admin-nav-link" onclick="showSection('pw');closeAdminMobileNav()">⚙️ 帳號設定</button>
   <button class="admin-nav-link" onclick="showSection('feedback');closeAdminMobileNav()">💌 回饋中心</button>
@@ -513,6 +517,146 @@
     </div>
 
     <div id="map-container" style="width:100%;height:600px;border-radius:8px;border:3px solid var(--color-primary-button);margin-top:12px;"></div>
+  </div>
+
+  <!-- ===== 商業物件管理 ===== -->
+  <div class="admin-section" id="section-commercial">
+    <div class="admin-section-title">🏢 商業物件管理</div>
+    <div class="admin-section-sub">管理所有商業物件，可新增、編輯、刪除、上下架。</div>
+
+    <!-- 篩選 -->
+    <div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
+      <select id="commercial-filter-status" class="form-input" style="flex:1;min-width:120px;"><option value="">全部</option><option value="1">上架中</option><option value="0">已下架</option></select>
+      <select id="commercial-filter-district" class="form-input" style="flex:1;min-width:120px;"><option value="">全部地區</option></select>
+      <input type="text" id="commercial-search" class="form-input" placeholder="名稱關鍵字" style="flex:1;min-width:120px;" />
+      <button onclick="loadCommercialProperties()" class="btn btn-secondary">🔍 搜尋</button>
+      <button onclick="showSection('commercial-add')" class="btn btn-primary">➕ 新增物件</button>
+    </div>
+
+    <!-- 表格 -->
+    <div id="commercial-props-table-wrap" style="overflow-x:auto;">
+      <table class="admin-table" id="commercial-props-table">
+        <thead>
+          <tr><th>圖片</th><th>名稱</th><th>地址</th><th>區域</th><th>租金</th><th>面積</th><th>樓層</th><th>屋齡</th><th>用途</th><th>狀態</th><th>操作</th></tr>
+        </thead>
+        <tbody id="commercial-props-tbody">
+          <tr><td colspan="11" style="text-align:center;padding:32px;">載入中...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 卡片視圖（行動版） -->
+    <div id="commercial-props-cards" style="display:none;"></div>
+  </div>
+
+  <!-- ===== 商業物件新增/編輯 ===== -->
+  <div class="admin-section" id="section-commercial-add">
+    <div class="admin-section-title">🏢 新增商業物件</div>
+    <button onclick="showSection('commercial')" style="margin-bottom:16px;font-size:13px;color:var(--color-text-muted);background:none;border:none;cursor:pointer;">← 返回列表</button>
+
+    <form id="commercial-form" onsubmit="saveCommercialProperty(event)" style="display:grid;gap:20px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div><label class="form-label">物件名稱</label><input type="text" id="c-name" class="form-input" placeholder="例：中山商辦" required /></div>
+        <div><label class="form-label">地址</label><input type="text" id="c-address" class="form-input" placeholder="例：台中市北屯區..." required /></div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div><label class="form-label">區域</label><select id="c-district" class="form-input" required></select></div>
+        <div><label class="form-label">租金（元/月）</label><input type="number" id="c-rent" class="form-input" placeholder="例：50000" required /></div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;">
+        <div><label class="form-label">樓面積（坪）</label><input type="number" id="c-area" class="form-input" placeholder="例：100" step="0.1" /></div>
+        <div><label class="form-label">樓層</label><input type="text" id="c-floor" class="form-input" placeholder="例：3或地下1樓" /></div>
+        <div><label class="form-label">屋齡（年）</label><input type="number" id="c-age" class="form-input" placeholder="例：5" /></div>
+      </div>
+
+      <div><label class="form-label">用途</label>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;">
+          <label><input type="radio" name="c-type" value="店面" /> 店面</label>
+          <label><input type="radio" name="c-type" value="廠房" /> 廠房</label>
+          <label><input type="radio" name="c-type" value="辦公室" /> 辦公室</label>
+          <label><input type="radio" name="c-type" value="倉庫" /> 倉庫</label>
+          <label><input type="radio" name="c-type" value="其他" /> 其他</label>
+        </div>
+      </div>
+
+      <div><label class="form-label">特色（可複選）</label>
+        <div style="display:flex;flex-wrap:wrap;gap:12px;">
+          <label><input type="checkbox" name="c-feature" value="停車位" /> 停車位</label>
+          <label><input type="checkbox" name="c-feature" value="近捷運" /> 近捷運</label>
+          <label><input type="checkbox" name="c-feature" value="靠近馬路" /> 靠近馬路</label>
+          <label><input type="checkbox" name="c-feature" value="挑高" /> 挑高</label>
+          <label><input type="checkbox" name="c-feature" value="可分割" /> 可分割</label>
+          <label><input type="checkbox" name="c-feature" value="有廣告牆" /> 有廣告牆</label>
+        </div>
+      </div>
+
+      <div><label class="form-label">備註</label><textarea id="c-notes" class="form-input" placeholder="其他說明..." style="min-height:80px;"></textarea></div>
+
+      <div><label class="form-label">上架狀態</label>
+        <label><input type="radio" name="c-status" value="1" checked /> 上架</label>
+        <label><input type="radio" name="c-status" value="0" /> 下架</label>
+      </div>
+
+      <div style="display:flex;gap:12px;">
+        <button type="submit" class="btn btn-primary">💾 儲存物件</button>
+        <button type="button" onclick="showSection('commercial')" class="btn btn-secondary">取消</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- ===== 商業物件地圖查詢 ===== -->
+  <div class="admin-section" id="section-commercial-map">
+    <div class="admin-section-title">🗺️ 商業物件地圖查詢</div>
+    <div class="admin-section-sub">在地圖上查看所有商業物件的地理分佈</div>
+
+    <div style="background: var(--color-cream); border: 2px solid var(--color-border); border-radius: 8px; padding: 16px; margin-top: 12px;">
+      <!-- 區域篩選 -->
+      <div id="commercial-district-filter-container" style="margin-bottom: 16px;"></div>
+
+      <!-- 租金、樓層、屋齡篩選 -->
+      <div style="padding: 12px; background: var(--color-soft-green); border-radius: 6px; margin-bottom: 16px;">
+        <div style="margin-bottom: 12px;">
+          <div style="font-weight: 600; color: var(--color-text); margin-bottom: 8px;">💰 租金篩選</div>
+          <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+            <div><label style="display: block; font-size: 12px; color: var(--color-text-muted); margin-bottom: 4px;">最低</label><input type="number" id="c-min-rent" placeholder="0" class="form-input" style="width: 120px;" /></div>
+            <div style="color: var(--color-text-muted);">～</div>
+            <div><label style="display: block; font-size: 12px; color: var(--color-text-muted); margin-bottom: 4px;">最高</label><input type="number" id="c-max-rent" placeholder="不限" class="form-input" style="width: 120px;" /></div>
+            <div style="color: var(--color-text-muted); margin-top: 20px;">元</div>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 12px;">
+          <div style="font-weight: 600; color: var(--color-text); margin-bottom: 8px;">📐 面積篩選</div>
+          <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+            <div><label style="display: block; font-size: 12px; color: var(--color-text-muted); margin-bottom: 4px;">最小</label><input type="number" id="c-min-area" placeholder="0" class="form-input" style="width: 120px;" /></div>
+            <div style="color: var(--color-text-muted);">～</div>
+            <div><label style="display: block; font-size: 12px; color: var(--color-text-muted); margin-bottom: 4px;">最大</label><input type="number" id="c-max-area" placeholder="不限" class="form-input" style="width: 120px;" /></div>
+            <div style="color: var(--color-text-muted); margin-top: 20px;">坪</div>
+          </div>
+        </div>
+
+        <div>
+          <div style="font-weight: 600; color: var(--color-text); margin-bottom: 8px;">🏭 用途</div>
+          <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+            <label><input type="checkbox" name="c-map-type" value="店面" onchange="onCommercialMapFilter()" /> 店面</label>
+            <label><input type="checkbox" name="c-map-type" value="廠房" onchange="onCommercialMapFilter()" /> 廠房</label>
+            <label><input type="checkbox" name="c-map-type" value="辦公室" onchange="onCommercialMapFilter()" /> 辦公室</label>
+            <label><input type="checkbox" name="c-map-type" value="倉庫" onchange="onCommercialMapFilter()" /> 倉庫</label>
+            <label><input type="checkbox" name="c-map-type" value="其他" onchange="onCommercialMapFilter()" /> 其他</label>
+          </div>
+        </div>
+      </div>
+
+      <!-- 查詢和清除按鈕 -->
+      <div style="display:flex;gap:12px;margin-top:12px;">
+        <button onclick="onCommercialMapQueryClick()" style="flex:1;padding:12px;background:var(--color-primary-button);color:#fff;border:none;border-radius:6px;font-weight:600;font-size:16px;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.opacity='0.85';" onmouseout="this.style.opacity='1';">🔍 查詢地圖</button>
+        <button onclick="onCommercialMapClearClick()" style="flex:1;padding:12px;background:#999;color:#fff;border:none;border-radius:6px;font-weight:600;font-size:16px;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.opacity='0.85';" onmouseout="this.style.opacity='1';">🗑️ 清除條件</button>
+      </div>
+    </div>
+
+    <div id="commercial-map-container" style="width:100%;height:600px;border-radius:8px;border:3px solid var(--color-primary-button);margin-top:12px;"></div>
   </div>
 
   <!-- ===== 帳號設定（修改密碼 + Google Key）===== -->

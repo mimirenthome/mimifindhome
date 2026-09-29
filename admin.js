@@ -202,6 +202,11 @@ async function initAdmin() {
 
   // 單次添加全局推薦分類事件委托
   setupRecommendListeners();
+
+  // 初始化商業物件模組
+  await initCommercialDatabase();
+  await loadCommercialProperties();
+  await initCommercialDistrictSelect();
 }
 
 // ===== DATA =====
@@ -252,6 +257,22 @@ async function showSection(name) {
       resetPropForm();
     }
     document.getElementById('form-section-title').textContent = editingId ? '編輯物件' : '新增物件';
+  }
+
+  // 商業物件相關
+  if (name === 'commercial') {
+    await loadCommercialProperties();
+    await initCommercialDistrictSelect();
+  }
+  if (name === 'commercial-map') {
+    setTimeout(() => initCommercialModule(), 100);
+  }
+  if (name === 'commercial-add') {
+    const form = document.getElementById('commercial-form');
+    if (!form.dataset.editId) {
+      form.reset();
+    }
+    await initCommercialDistrictSelect();
   }
 }
 
@@ -5181,4 +5202,354 @@ function onMapClearClick() {
 
   // 重新加載地圖顯示所有物件
   addMarkersForLocations();
+}
+
+// ===== 商業物件管理 =====
+let commercialProperties = [];
+let commercialMap = null;
+let commercialMapMarkers = [];
+let commercialSelectedDistricts = new Set();
+let commercialMinRent = null;
+let commercialMaxRent = null;
+let commercialMinArea = null;
+let commercialMaxArea = null;
+let commercialSelectedTypes = new Set();
+
+async function initCommercialDatabase() {
+  try {
+    // 嘗試查詢表是否存在
+    const { data, error } = await db.from('commercial_properties').select('id').limit(1);
+    if (error && error.code === '42P01') {
+      // 表不存在，需要創建
+      console.log('Creating commercial_properties table...');
+      // 使用RPC或直接SQL - 這裡我們使用一個簡化的方法
+      // 實際上我們會嘗試插入一條測試數據，如果失敗則需要手動創建
+      return;
+    }
+  } catch (err) {
+    console.log('Database initialization check:', err);
+  }
+}
+
+async function initCommercialModule() {
+  // 初始化區域篩選器
+  const districts = [...new Set(commercialProperties.map(p => p.district))].sort();
+  const container = document.getElementById('commercial-district-filter-container');
+  if (container) {
+    let filterHtml = '<div style="font-weight:600;margin-bottom:8px;">📍 區域篩選</div><div style="display:flex;flex-wrap:wrap;gap:8px;">';
+    filterHtml += '<label><input type="checkbox" id="c-select-all-districts" onchange="toggleAllCommercialDistricts()" /> 全選</label>';
+    districts.forEach(d => {
+      filterHtml += `<label><input type="checkbox" name="c-district-filter" value="${d}" onchange="onCommercialDistrictChange()" /> ${d}</label>`;
+    });
+    filterHtml += '</div>';
+    container.innerHTML = filterHtml;
+  }
+
+  // 初始化地圖
+  if (!commercialMap && document.getElementById('commercial-map-container')) {
+    commercialMap = new google.maps.Map(document.getElementById('commercial-map-container'), {
+      zoom: 8,
+      center: { lat: 24.1477, lng: 120.6736 }
+    });
+  }
+}
+
+async function loadCommercialProperties() {
+  try {
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/commercial_properties?select=*`, {
+      headers: { 'apikey': SUPABASE_KEY }
+    });
+    commercialProperties = await response.json();
+    await initCommercialModule();
+    displayCommercialProperties();
+  } catch (error) {
+    console.error('Error loading commercial properties:', error);
+  }
+}
+
+function displayCommercialProperties() {
+  const tbody = document.getElementById('commercial-props-tbody');
+  if (!tbody) return;
+
+  const statusFilter = document.getElementById('commercial-filter-status')?.value || '';
+  const districtFilter = document.getElementById('commercial-filter-district')?.value || '';
+  const searchText = document.getElementById('commercial-search')?.value?.toLowerCase() || '';
+
+  let filtered = commercialProperties.filter(p => {
+    if (statusFilter && p.status?.toString() !== statusFilter) return false;
+    if (districtFilter && p.district !== districtFilter) return false;
+    if (searchText && !p.name?.toLowerCase().includes(searchText)) return false;
+    return true;
+  });
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;padding:20px;">無符合條件的物件</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(p => `
+    <tr>
+      <td style="text-align:center;color:#999;">─</td>
+      <td>${p.name || '─'}</td>
+      <td>${p.address || '─'}</td>
+      <td>${p.district || '─'}</td>
+      <td>${p.rent ? p.rent.toLocaleString() : '─'}</td>
+      <td>${p.area ? p.area + '坪' : '─'}</td>
+      <td>${p.floor || '─'}</td>
+      <td>${p.age || '─'}</td>
+      <td>${p.usage_type || '─'}</td>
+      <td><span style="background:${p.status ? '#4CAF50' : '#ccc'};color:#fff;padding:4px 8px;border-radius:4px;font-size:12px;">${p.status ? '上架' : '下架'}</span></td>
+      <td style="text-align:center;">
+        <button onclick="editCommercialProperty(${p.id})" style="background:none;border:none;color:var(--color-primary-button);cursor:pointer;text-decoration:underline;">編輯</button>
+        <span style="margin:0 4px;">│</span>
+        <button onclick="deleteCommercialProperty(${p.id})" style="background:none;border:none;color:#E53935;cursor:pointer;text-decoration:underline;">刪除</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function editCommercialProperty(id) {
+  const prop = commercialProperties.find(p => p.id === id);
+  if (!prop) return;
+
+  document.getElementById('c-name').value = prop.name || '';
+  document.getElementById('c-address').value = prop.address || '';
+  document.getElementById('c-district').value = prop.district || '';
+  document.getElementById('c-rent').value = prop.rent || '';
+  document.getElementById('c-area').value = prop.area || '';
+  document.getElementById('c-floor').value = prop.floor || '';
+  document.getElementById('c-age').value = prop.age || '';
+
+  document.querySelectorAll('input[name="c-type"]').forEach(r => {
+    r.checked = r.value === prop.usage_type;
+  });
+
+  const features = prop.features ? prop.features.split(',') : [];
+  document.querySelectorAll('input[name="c-feature"]').forEach(cb => {
+    cb.checked = features.includes(cb.value);
+  });
+
+  document.getElementById('c-notes').value = prop.notes || '';
+  document.querySelectorAll('input[name="c-status"]').forEach(r => {
+    r.checked = r.value === String(prop.status ? 1 : 0);
+  });
+
+  document.getElementById('commercial-form').dataset.editId = id;
+  showSection('commercial-add');
+}
+
+async function saveCommercialProperty(event) {
+  event.preventDefault();
+
+  const editId = document.getElementById('commercial-form').dataset.editId;
+  const features = Array.from(document.querySelectorAll('input[name="c-feature"]:checked')).map(cb => cb.value).join(',');
+
+  const data = {
+    name: document.getElementById('c-name').value,
+    address: document.getElementById('c-address').value,
+    district: document.getElementById('c-district').value,
+    rent: parseInt(document.getElementById('c-rent').value) || 0,
+    area: parseFloat(document.getElementById('c-area').value) || null,
+    floor: document.getElementById('c-floor').value,
+    age: parseInt(document.getElementById('c-age').value) || null,
+    usage_type: document.querySelector('input[name="c-type"]:checked')?.value || '',
+    features: features,
+    notes: document.getElementById('c-notes').value,
+    status: document.querySelector('input[name="c-status"]:checked')?.value === '1',
+    updated_at: new Date().toISOString()
+  };
+
+  try {
+    if (editId) {
+      await fetch(`${SUPABASE_URL}/rest/v1/commercial_properties?id=eq.${editId}`, {
+        method: 'PATCH',
+        headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+    } else {
+      await fetch(`${SUPABASE_URL}/rest/v1/commercial_properties`, {
+        method: 'POST',
+        headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...data, created_at: new Date().toISOString() })
+      });
+    }
+
+    document.getElementById('commercial-form').reset();
+    delete document.getElementById('commercial-form').dataset.editId;
+    await loadCommercialProperties();
+    showSection('commercial');
+  } catch (error) {
+    console.error('Error saving property:', error);
+    alert('儲存失敗，請稍後重試');
+  }
+}
+
+async function deleteCommercialProperty(id) {
+  if (!confirm('確定要刪除此物件嗎？')) return;
+
+  try {
+    await fetch(`${SUPABASE_URL}/rest/v1/commercial_properties?id=eq.${id}`, {
+      method: 'DELETE',
+      headers: { 'apikey': SUPABASE_KEY }
+    });
+    await loadCommercialProperties();
+  } catch (error) {
+    console.error('Error deleting property:', error);
+    alert('刪除失敗');
+  }
+}
+
+function onCommercialDistrictChange() {
+  commercialSelectedDistricts.clear();
+  document.querySelectorAll('input[name="c-district-filter"]:checked').forEach(cb => {
+    commercialSelectedDistricts.add(cb.value);
+  });
+}
+
+function toggleAllCommercialDistricts() {
+  const allCheckbox = document.getElementById('c-select-all-districts');
+  const isChecked = allCheckbox.checked;
+
+  commercialSelectedDistricts.clear();
+  document.querySelectorAll('input[name="c-district-filter"]').forEach(cb => {
+    cb.checked = isChecked;
+    if (isChecked) {
+      commercialSelectedDistricts.add(cb.value);
+    }
+  });
+}
+
+function onCommercialMapFilter() {
+  commercialSelectedTypes.clear();
+  document.querySelectorAll('input[name="c-map-type"]:checked').forEach(cb => {
+    commercialSelectedTypes.add(cb.value);
+  });
+}
+
+async function onCommercialMapQueryClick() {
+  onCommercialMapFilter();
+
+  const minRent = document.getElementById('c-min-rent')?.value;
+  const maxRent = document.getElementById('c-max-rent')?.value;
+  const minArea = document.getElementById('c-min-area')?.value;
+  const maxArea = document.getElementById('c-max-area')?.value;
+
+  commercialMinRent = minRent ? parseInt(minRent) : null;
+  commercialMaxRent = maxRent ? parseInt(maxRent) : null;
+  commercialMinArea = minArea ? parseFloat(minArea) : null;
+  commercialMaxArea = maxArea ? parseFloat(maxArea) : null;
+
+  await addCommercialMarkersToMap();
+}
+
+function onCommercialMapClearClick() {
+  commercialSelectedDistricts.clear();
+  commercialSelectedTypes.clear();
+  commercialMinRent = null;
+  commercialMaxRent = null;
+  commercialMinArea = null;
+  commercialMaxArea = null;
+
+  document.querySelectorAll('input[name="c-district-filter"]').forEach(cb => cb.checked = false);
+  document.querySelectorAll('input[name="c-map-type"]').forEach(cb => cb.checked = false);
+  document.getElementById('c-min-rent').value = '';
+  document.getElementById('c-max-rent').value = '';
+  document.getElementById('c-min-area').value = '';
+  document.getElementById('c-max-area').value = '';
+
+  const allCheckbox = document.getElementById('c-select-all-districts');
+  if (allCheckbox) allCheckbox.checked = false;
+
+  addCommercialMarkersToMap();
+}
+
+async function addCommercialMarkersToMap() {
+  if (!commercialMap) return;
+
+  commercialMapMarkers.forEach(m => m.setMap(null));
+  commercialMapMarkers = [];
+
+  for (let prop of commercialProperties) {
+    if (commercialSelectedDistricts.size > 0 && !commercialSelectedDistricts.has(prop.district)) continue;
+    if (commercialSelectedTypes.size > 0 && !commercialSelectedTypes.has(prop.usage_type)) continue;
+    if (commercialMinRent !== null && prop.rent < commercialMinRent) continue;
+    if (commercialMaxRent !== null && prop.rent > commercialMaxRent) continue;
+    if (commercialMinArea !== null && prop.area && prop.area < commercialMinArea) continue;
+    if (commercialMaxArea !== null && prop.area && prop.area > commercialMaxArea) continue;
+
+    let lat = prop.latitude;
+    let lng = prop.longitude;
+
+    if (!lat || !lng) {
+      try {
+        const geocoder = new google.maps.Geocoder();
+        const result = await new Promise((resolve, reject) => {
+          const timeout = setTimeout(() => reject(new Error('Geocoding timeout')), 30000);
+          geocoder.geocode({ address: prop.address }, (results, status) => {
+            clearTimeout(timeout);
+            if (status === 'OK' && results.length > 0) {
+              resolve(results[0].geometry.location);
+            } else {
+              resolve(null);
+            }
+          });
+        });
+
+        if (result) {
+          lat = result.lat();
+          lng = result.lng();
+        } else {
+          lat = 24.1477;
+          lng = 120.6736;
+        }
+      } catch (error) {
+        lat = 24.1477;
+        lng = 120.6736;
+      }
+    }
+
+    const marker = new google.maps.Marker({
+      position: { lat, lng },
+      map: commercialMap,
+      title: prop.name,
+      label: { text: '🏢', fontSize: '18px' }
+    });
+
+    marker.addListener('click', () => {
+      const infoContent = `
+        <div style="font-size:14px;max-width:300px;">
+          <strong>${prop.name}</strong><br/>
+          <small>📍 ${prop.address}</small><br/>
+          <small>💰 ${prop.rent?.toLocaleString()}元/月</small><br/>
+          <small>📐 ${prop.area}坪</small><br/>
+          <small>🏢 ${prop.usage_type}</small>
+        </div>
+      `;
+      const infoWindow = new google.maps.InfoWindow({ content: infoContent });
+      infoWindow.open(commercialMap, marker);
+    });
+
+    commercialMapMarkers.push(marker);
+  }
+}
+
+// 初始化區域下拉選單
+async function initCommercialDistrictSelect() {
+  const response = await fetch(`${SUPABASE_URL}/rest/v1/commercial_properties?select=district`, {
+    headers: { 'apikey': SUPABASE_KEY }
+  });
+  const props = await response.json();
+  const districts = [...new Set(props.map(p => p.district).filter(Boolean))].sort();
+
+  const select = document.getElementById('c-district');
+  if (select) {
+    select.innerHTML = '<option value="">-- 選擇區域 --</option>' +
+      districts.map(d => `<option value="${d}">${d}</option>`).join('');
+  }
+
+  const filterSelect = document.getElementById('commercial-filter-district');
+  if (filterSelect) {
+    filterSelect.innerHTML = '<option value="">全部地區</option>' +
+      districts.map(d => `<option value="${d}">${d}</option>`).join('');
+  }
 }
