@@ -5656,3 +5656,88 @@ async function aiSmartFill() {
     showToast('❌ AI 填充失敗：' + error.message, 'error');
   }
 }
+
+// AI 智能分類：解析粘貼的物件數據
+async function aiParseAndFill() {
+  const pasteData = document.getElementById('c-paste-data')?.value.trim();
+  
+  if (!pasteData) {
+    showToast('❌ 請先粘貼數據', 'error');
+    return;
+  }
+  
+  try {
+    showToast('🤖 AI 正在分類數據...', 'info');
+    
+    // 使用正則表達式和關鍵字提取數據
+    const extractField = (pattern, defaultValue = '') => {
+      const match = pasteData.match(pattern);
+      return match ? match[1].trim() : defaultValue;
+    };
+    
+    // 提取各個字段
+    const address = extractField(/地址[：:]\s*([^\n]+)/);
+    const rentStr = extractField(/租金[：:]\s*(\d+)/);
+    const areaStr = extractField(/坪數[：:]\s*(\d+)/);
+    const floorStr = extractField(/樓層[：:]\s*([^\n]+)/);
+    const typeStr = extractField(/類型[：:]\s*([^\n]+)/);
+    
+    // 提取特色
+    const features = [];
+    if (pasteData.includes('廠登') || pasteData.includes('廠登')) features.push('廠登');
+    if (pasteData.includes('營登')) features.push('營登');
+    if (pasteData.includes('報稅')) features.push('報稅');
+    if (pasteData.includes('靠近馬路')) features.push('靠近馬路');
+    if (pasteData.includes('挑高')) features.push('挑高');
+    if (pasteData.includes('可分割')) features.push('可分割');
+    
+    // 提取備註
+    let notes = '';
+    const remarkMatch = pasteData.match(/備註[：:]\s*([^\n]+)/);
+    if (remarkMatch) notes = remarkMatch[1].trim();
+    
+    // 提取限制信息
+    if (pasteData.includes('限制') || pasteData.includes('🈲️')) {
+      const limitMatch = pasteData.match(/限制[：:]\s*([^\n]+)/);
+      if (limitMatch) {
+        notes += (notes ? '\n' : '') + '限制: ' + limitMatch[1].trim();
+      }
+    }
+    
+    // 填充表單
+    if (address) document.getElementById('c-address').value = address;
+    if (rentStr) document.getElementById('c-rent').value = rentStr;
+    if (areaStr) document.getElementById('c-area').value = areaStr;
+    if (floorStr) document.getElementById('c-floor').value = floorStr;
+    
+    // 設置用途
+    if (typeStr) {
+      const typeSelect = document.querySelector('input[name="c-type"]');
+      if (typeSelect) {
+        const typeRadios = document.querySelectorAll('input[name="c-type"]');
+        typeRadios.forEach(r => {
+          if (typeStr.includes(r.value) || r.value.includes(typeStr.split(/[（(]/)[0])) {
+            r.checked = true;
+          }
+        });
+      }
+    }
+    
+    // 設置特色
+    document.querySelectorAll('input[name="c-feature"]').forEach(cb => {
+      cb.checked = features.includes(cb.value);
+    });
+    
+    // 填充備註
+    if (notes) document.getElementById('c-notes').value = notes;
+    
+    // 清空粘貼區域
+    document.getElementById('c-paste-data').value = '';
+    
+    showToast('✅ 數據分類完成！請檢查並補充未識別的欄位', 'success');
+    
+  } catch (error) {
+    console.error('AI 分類錯誤:', error);
+    showToast('❌ 分類失敗：' + error.message, 'error');
+  }
+}
