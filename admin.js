@@ -5707,9 +5707,15 @@ async function aiParseAndFill() {
     
     // 提取特色（只在是「可」的狀態時才打勾）
     const features = [];
+
+    // 廠登：檢查是否為「可廠登」
     if (pasteData.includes('可廠登')) features.push('廠登');
+
+    // 營登報稅：可能一起寫，需要分開檢查
     if (pasteData.includes('可營登')) features.push('營登');
-    if (pasteData.includes('可報稅')) features.push('報稅');
+    // 報稅：只在有「可報稅+數字%」時才打勾
+    if (/可報稅\+\d+%/.test(pasteData)) features.push('報稅');
+
     if (pasteData.includes('靠近馬路')) features.push('靠近馬路');
     if (pasteData.includes('挑高')) features.push('挑高');
     if (pasteData.includes('可分割')) features.push('可分割');
