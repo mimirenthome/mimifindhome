@@ -5329,7 +5329,6 @@ function displayCommercialProperties() {
 
   tbody.innerHTML = filtered.map(p => `
     <tr>
-      <td style="text-align:center;color:#999;">─</td>
       <td>${p.address || '─'}</td>
       <td>${p.district || '─'}</td>
       <td>${p.rent ? p.rent.toLocaleString() : '─'}</td>
