@@ -5716,9 +5716,7 @@ async function aiParseAndFill() {
     // 報稅：只在有「可報稅+數字%」時才打勾
     if (/可報稅\+\d+%/.test(pasteData)) features.push('報稅');
 
-    if (pasteData.includes('靠近馬路')) features.push('靠近馬路');
     if (pasteData.includes('挑高')) features.push('挑高');
-    if (pasteData.includes('可分割')) features.push('可分割');
     
     // 提取備註
     let notes = '';

@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>商業物件表初始化</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto;
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    h1 { color: #333; margin-top: 0; }
+    .input-group {
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #333;
+    }
+    input {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+    input:focus {
+      outline: none;
+      border-color: #7d8a72;
+      box-shadow: 0 0 0 3px rgba(125, 138, 114, 0.1);
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      background: #7d8a72;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    button:hover { background: #6a7761; }
+    button:disabled { background: #ccc; cursor: not-allowed; }
+    .message {
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 6px;
+      display: none;
+    }
+    .message.success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+      display: block;
+    }
+    .message.error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+      display: block;
+    }
+    .message.info {
+      background: #d1ecf1;
+      color: #0c5460;
+      border: 1px solid #bee5eb;
+      display: block;
+    }
+    .loading {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #7d8a72;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+<div class="card">
+  <h1>🏢 商業物件系統初始化</h1>
+  <p>此頁面會在您的 Supabase 數據庫中創建商業物件表</p>
+
+  <div class="input-group">
+    <label>Supabase URL</label>
+    <input type="text" id="url" placeholder="https://avrpxknjthaglcswtagw.supabase.co" value="https://avrpxknjthaglcswtagw.supabase.co">
+  </div>
+
+  <div class="input-group">
+    <label>Service Role Key</label>
+    <input type="password" id="key" placeholder="您的 service_role key">
+  </div>
+
+  <button onclick="initializeDatabase()">
+    <span id="btnText">⚙️ 初始化表</span>
+  </button>
+
+  <div class="message" id="message"></div>
+</div>
+
+<script>
+async function initializeDatabase() {
+  const url = document.getElementById('url').value;
+  const key = document.getElementById('key').value;
+  const btn = document.querySelector('button');
+  const msgDiv = document.getElementById('message');
+  const btnText = document.getElementById('btnText');
+
+  if (!url || !key) {
+    showMessage('請填寫所有欄位', 'error');
+    return;
+  }
+
+  btn.disabled = true;
+  btnText.innerHTML = '<span class="loading"></span> 初始化中...';
+
+  try {
+    // 創建 Supabase 客戶端
+    const supabase = window.supabase.createClient(url, key);
+
+    // 檢查表是否已存在
+    const { data: existing, error: checkError } = await supabase
+      .from('commercial_properties')
+      .select('id')
+      .limit(1);
+
+    if (!checkError) {
+      showMessage('✅ 表已存在！無需重新創建', 'success');
+      btn.disabled = false;
+      btnText.innerHTML = '⚙️ 初始化表';
+      return;
+    }
+
+    // 表不存在，嘗試創建它
+    if (checkError.message?.includes('does not exist') || checkError.message?.includes('relation')) {
+      showMessage('🔄 正在創建表...', 'info');
+
+      // 嘗試通過插入測試數據來創建表
+      // 首先嘗試通過 SQL RPC
+      const { data: rpcResult, error: rpcError } = await supabase.rpc('query', {
+        query: `
+          CREATE TABLE IF NOT EXISTS public.commercial_properties (
+            id BIGSERIAL PRIMARY KEY,
+            name TEXT NOT NULL,
+            address TEXT NOT NULL,
+            district TEXT NOT NULL,
+            rent INTEGER,
+            area NUMERIC(10,2),
+            floor TEXT,
+            age INTEGER,
+            usage_type TEXT,
+            features TEXT,
+            notes TEXT,
+            latitude NUMERIC(10,6),
+            longitude NUMERIC(10,6),
+            status BOOLEAN DEFAULT true,
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+            updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+          );
+          CREATE INDEX IF NOT EXISTS idx_commercial_district ON public.commercial_properties(district);
+          CREATE INDEX IF NOT EXISTS idx_commercial_status ON public.commercial_properties(status);
+          GRANT SELECT, INSERT, UPDATE, DELETE ON public.commercial_properties TO authenticated;
+          GRANT USAGE ON SEQUENCE public.commercial_properties_id_seq TO authenticated;
+        `
+      });
+
+      if (!rpcError) {
+        showMessage('✅ 商業物件表已成功創建！您現在可以開始使用商業物件系統', 'success');
+        btn.disabled = false;
+        btnText.innerHTML = '✅ 完成';
+        return;
+      }
+
+      // 如果 RPC 失敗，顯示手動操作說明
+      showMessage(
+        '❌ 無法自動創建表。請手動在 Supabase SQL 編輯器中執行以下 SQL：<br><br>' +
+        '<code style="background:#f0f0f0;padding:10px;border-radius:4px;display:block;margin-top:10px;white-space:pre-wrap;word-break:break-all;">' +
+        'CREATE TABLE IF NOT EXISTS public.commercial_properties (\n' +
+        '  id BIGSERIAL PRIMARY KEY,\n' +
+        '  name TEXT NOT NULL,\n' +
+        '  address TEXT NOT NULL,\n' +
+        '  district TEXT NOT NULL,\n' +
+        '  rent INTEGER,\n' +
+        '  area NUMERIC(10,2),\n' +
+        '  floor TEXT,\n' +
+        '  age INTEGER,\n' +
+        '  usage_type TEXT,\n' +
+        '  features TEXT,\n' +
+        '  notes TEXT,\n' +
+        '  latitude NUMERIC(10,6),\n' +
+        '  longitude NUMERIC(10,6),\n' +
+        '  status BOOLEAN DEFAULT true,\n' +
+        '  created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),\n' +
+        '  updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()\n' +
+        ');\n\n' +
+        'CREATE INDEX IF NOT EXISTS idx_commercial_district ON public.commercial_properties(district);\n' +
+        'CREATE INDEX IF NOT EXISTS idx_commercial_status ON public.commercial_properties(status);\n' +
+        'GRANT SELECT, INSERT, UPDATE, DELETE ON public.commercial_properties TO authenticated;\n' +
+        'GRANT USAGE ON SEQUENCE public.commercial_properties_id_seq TO authenticated;' +
+        '</code>',
+        'error'
+      );
+      btn.disabled = false;
+      btnText.innerHTML = '⚙️ 初始化表';
+    } else {
+      showMessage('❌ 錯誤: ' + checkError.message, 'error');
+      btn.disabled = false;
+      btnText.innerHTML = '⚙️ 初始化表';
+    }
+
+  } catch (error) {
+    showMessage('❌ 錯誤: ' + error.message, 'error');
+    btn.disabled = false;
+    btnText.innerHTML = '⚙️ 初始化表';
+  }
+}
+
+function showMessage(msg, type) {
+  const msgDiv = document.getElementById('message');
+  msgDiv.innerHTML = msg;
+  msgDiv.className = 'message ' + type;
+}
+
+// 自動填寫密鑰
+window.addEventListener('load', () => {
+  // 嘗試從 URL 參數中獲取密鑰
+  const params = new URLSearchParams(window.location.search);
+  const key = params.get('key');
+  if (key) {
+    document.getElementById('key').value = key;
+  }
+});
+</script>
+</body>
+</html>
