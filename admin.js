@@ -5738,22 +5738,26 @@ async function aiParseAndFill() {
     // 提取特色（只在是「可」的狀態時才打勾）
     const features = [];
 
-    // 廠登：檢查是否為「可廠登」
-    if (pasteData.includes('可廠登')) features.push('廠登');
+    // 廠登：只在有「可廠登」時才打勾，不可廠登不打勾
+    if (pasteData.includes('可廠登') && !pasteData.includes('不可廠登')) {
+      features.push('廠登');
+    }
 
     // 營登報稅：可能一起寫，需要分開檢查
-    if (pasteData.includes('可營登')) features.push('營登');
+    if (pasteData.includes('可營登') && !pasteData.includes('不可營登')) features.push('營登');
     // 報稅：只在有「可報稅+數字%」時才打勾
     if (/可報稅\+\d+%/.test(pasteData)) features.push('報稅');
 
     if (pasteData.includes('挑高')) features.push('挑高');
-    
-    // 提取備註
+
+    // 提取備註（包含多行）
     let notes = '';
-    const remarkMatch = pasteData.match(/備註[：:]\s*([^\n]+)/);
-    if (remarkMatch) notes = remarkMatch[1].trim();
-    
-    // 提取限制信息
+    const remarkMatch = pasteData.match(/備註[：:]\s*([\s\S]+)/);
+    if (remarkMatch) {
+      notes = remarkMatch[1].trim();
+    }
+
+    // 提取限制信息並加入備註
     if (pasteData.includes('限制') || pasteData.includes('🈲️')) {
       const limitMatch = pasteData.match(/限制[：:]\s*([^\n]+)/);
       if (limitMatch) {
