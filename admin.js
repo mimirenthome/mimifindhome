@@ -5405,27 +5405,36 @@ async function saveCommercialProperty(event) {
   };
 
   try {
+    let response;
     if (editId) {
-      await fetch(`${SUPABASE_URL}/rest/v1/commercial_properties?id=eq.${editId}`, {
+      response = await fetch(`${SUPABASE_URL}/rest/v1/commercial_properties?id=eq.${editId}`, {
         method: 'PATCH',
         headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
       });
     } else {
-      await fetch(`${SUPABASE_URL}/rest/v1/commercial_properties`, {
+      response = await fetch(`${SUPABASE_URL}/rest/v1/commercial_properties`, {
         method: 'POST',
         headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...data, created_at: new Date().toISOString() })
       });
     }
 
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('API Error:', response.status, errorText);
+      alert(`儲存失敗 (${response.status}): ${errorText}`);
+      return;
+    }
+
     document.getElementById('commercial-form').reset();
     delete document.getElementById('commercial-form').dataset.editId;
     await loadCommercialProperties();
     showSection('commercial');
+    showToast('✅ 物件儲存成功！', 'success');
   } catch (error) {
     console.error('Error saving property:', error);
-    alert('儲存失敗，請稍後重試');
+    alert('儲存失敗: ' + error.message);
   }
 }
 
