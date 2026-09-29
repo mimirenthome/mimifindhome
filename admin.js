@@ -5346,6 +5346,9 @@ function editCommercialProperty(id) {
   document.getElementById('c-rent').value = prop.rent || '';
   document.getElementById('c-area').value = prop.area || '';
   document.getElementById('c-floor').value = prop.floor || '';
+  document.getElementById('c-width-depth').value = prop.width_depth || '';
+  document.getElementById('c-eave-height').value = prop.eave_height || '';
+  document.getElementById('c-door-height').value = prop.door_height || '';
 
   document.querySelectorAll('input[name="c-type"]').forEach(r => {
     r.checked = r.value === prop.usage_type;
@@ -5382,6 +5385,9 @@ async function saveCommercialProperty(event) {
     usage_type: document.querySelector('input[name="c-type"]:checked')?.value || '',
     features: features,
     notes: document.getElementById('c-notes').value,
+    width_depth: document.getElementById('c-width-depth').value || null,
+    eave_height: document.getElementById('c-eave-height').value || null,
+    door_height: document.getElementById('c-door-height').value || null,
     status: document.querySelector('input[name="c-status"]:checked')?.value === '1',
     updated_at: new Date().toISOString()
   };
