@@ -5214,20 +5214,51 @@ let commercialMaxRent = null;
 let commercialMinArea = null;
 let commercialMaxArea = null;
 let commercialSelectedTypes = new Set();
+let commercialSelectedFeatures = new Set();
 
 async function initCommercialDatabase() {
   try {
     // 嘗試查詢表是否存在
     const { data, error } = await db.from('commercial_properties').select('id').limit(1);
-    if (error && error.code === '42P01') {
-      // 表不存在，需要創建
-      console.log('Creating commercial_properties table...');
-      // 使用RPC或直接SQL - 這裡我們使用一個簡化的方法
-      // 實際上我們會嘗試插入一條測試數據，如果失敗則需要手動創建
-      return;
+    if (error) {
+      if (error.message?.includes('relation') || error.message?.includes('does not exist')) {
+        console.warn('❌ 商業物件表不存在');
+        console.warn('🔧 請在 Supabase SQL 編輯器中執行以下 SQL：');
+        console.warn(`
+CREATE TABLE IF NOT EXISTS public.commercial_properties (
+  id BIGSERIAL PRIMARY KEY,
+  name TEXT NOT NULL,
+  address TEXT NOT NULL,
+  district TEXT NOT NULL,
+  rent INTEGER,
+  area NUMERIC(10,2),
+  floor TEXT,
+  age INTEGER,
+  usage_type TEXT,
+  features TEXT,
+  notes TEXT,
+  latitude NUMERIC(10,6),
+  longitude NUMERIC(10,6),
+  status BOOLEAN DEFAULT true,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_commercial_district ON public.commercial_properties(district);
+CREATE INDEX IF NOT EXISTS idx_commercial_status ON public.commercial_properties(status);
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.commercial_properties TO authenticated;
+GRANT USAGE ON SEQUENCE public.commercial_properties_id_seq TO authenticated;
+        `);
+        showToast('❌ 商業物件表未初始化，請見控制台訊息', 'error');
+      } else {
+        console.error('Database error:', error);
+      }
+      return false;
     }
+    console.log('✅ 商業物件表已存在');
+    return true;
   } catch (err) {
     console.log('Database initialization check:', err);
+    return false;
   }
 }
 
@@ -5424,6 +5455,11 @@ function onCommercialMapFilter() {
   document.querySelectorAll('input[name="c-map-type"]:checked').forEach(cb => {
     commercialSelectedTypes.add(cb.value);
   });
+
+  commercialSelectedFeatures.clear();
+  document.querySelectorAll('input[name="c-map-feature"]:checked').forEach(cb => {
+    commercialSelectedFeatures.add(cb.value);
+  });
 }
 
 async function onCommercialMapQueryClick() {
@@ -5445,6 +5481,7 @@ async function onCommercialMapQueryClick() {
 function onCommercialMapClearClick() {
   commercialSelectedDistricts.clear();
   commercialSelectedTypes.clear();
+  commercialSelectedFeatures.clear();
   commercialMinRent = null;
   commercialMaxRent = null;
   commercialMinArea = null;
@@ -5452,6 +5489,7 @@ function onCommercialMapClearClick() {
 
   document.querySelectorAll('input[name="c-district-filter"]').forEach(cb => cb.checked = false);
   document.querySelectorAll('input[name="c-map-type"]').forEach(cb => cb.checked = false);
+  document.querySelectorAll('input[name="c-map-feature"]').forEach(cb => cb.checked = false);
   document.getElementById('c-min-rent').value = '';
   document.getElementById('c-max-rent').value = '';
   document.getElementById('c-min-area').value = '';
@@ -5476,6 +5514,12 @@ async function addCommercialMarkersToMap() {
     if (commercialMaxRent !== null && prop.rent > commercialMaxRent) continue;
     if (commercialMinArea !== null && prop.area && prop.area < commercialMinArea) continue;
     if (commercialMaxArea !== null && prop.area && prop.area > commercialMaxArea) continue;
+
+    if (commercialSelectedFeatures.size > 0) {
+      const propFeatures = prop.features ? prop.features.split(',') : [];
+      const hasAnyFeature = Array.from(commercialSelectedFeatures).some(f => propFeatures.includes(f));
+      if (!hasAnyFeature) continue;
+    }
 
     let lat = prop.latitude;
     let lng = prop.longitude;
