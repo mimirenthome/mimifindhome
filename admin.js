@@ -5730,6 +5730,26 @@ async function aiParseAndFill() {
     if (rentStr) document.getElementById('c-rent').value = rentStr;
     if (areaStr) document.getElementById('c-area').value = areaStr;
     if (floorStr) document.getElementById('c-floor').value = floorStr;
+
+    // 從地址中提取區域
+    const taichungDistricts = [
+      '中區', '東區', '南區', '西區', '北區',
+      '北屯區', '西屯區', '南屯區',
+      '太平區', '大里區', '霧峰區', '烏日區',
+      '豐原區', '潭子區', '大雅區',
+      '沙鹿區', '清水區', '梧棲區',
+      '龍井區', '大肚區', '大甲區', '后里區'
+    ];
+
+    for (let district of taichungDistricts) {
+      if (address.includes(district)) {
+        const districtSelect = document.getElementById('c-district');
+        if (districtSelect) {
+          districtSelect.value = district;
+        }
+        break;
+      }
+    }
     
     // 設置用途
     if (typeStr) {
