@@ -5757,9 +5757,9 @@ async function aiParseAndFill() {
     }
     const areaStr = extractField(/坪數[：:]\s*(\d+)/);
 
-    // 提取室內坪數（從括號內提取，如：120坪（室內106））
+    // 提取室內坪數（從括號內提取，如：120坪（室內106）或 130坪(室內72坪)）
     let indoorAreaStr = '';
-    const indoorMatch = pasteData.match(/坪數[：:][^（]*（室內(\d+(?:\.\d+)?)）/);
+    const indoorMatch = pasteData.match(/坪數[：:][^（(]*[（(]室內(\d+(?:\.\d+)?)/);
     if (indoorMatch) indoorAreaStr = indoorMatch[1];
 
     const floorStr = extractField(/樓層[：:]\s*([^\n]+)/);
