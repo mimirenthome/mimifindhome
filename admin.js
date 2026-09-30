@@ -5756,10 +5756,17 @@ async function aiParseAndFill() {
     const widthDepthMatch = pasteData.match(/寬\/深[：:]\s*([^\n]+)/);
     if (widthDepthMatch) widthDepthStr = widthDepthMatch[1].trim();
 
-    // 提取滴水高度（如：滴水6.3最高8.1）
+    // 提取滴水高度（支持「滴水高度：」或「高度：滴水...」格式）
     let eaveHeightStr = '';
-    const eaveMatch = pasteData.match(/滴水高度[：:]\s*([^\n]+)/);
-    if (eaveMatch) eaveHeightStr = eaveMatch[1].trim();
+    // 先查找「滴水高度：」格式
+    let eaveMatch = pasteData.match(/滴水高度[：:]\s*([^\n]+)/);
+    if (eaveMatch) {
+      eaveHeightStr = eaveMatch[1].trim();
+    } else {
+      // 查找包含「滴水」的字段（如「高度：滴水6.2最高7.6」）
+      eaveMatch = pasteData.match(/高度[：:]\s*([^\n]*滴水[^\n]*)/);
+      if (eaveMatch) eaveHeightStr = eaveMatch[1].trim();
+    }
 
     // 提取鐵門高度（如：鐵門高度：3 或 鐵門高度：3米）
     let doorHeightStr = '';
