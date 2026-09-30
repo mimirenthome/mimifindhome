@@ -5824,10 +5824,9 @@ async function aiParseAndFill() {
                         (yingdengField.includes('可') && yingdengField.includes('營登') && !yingdengField.includes('不可'));
     if (hasYingdeng) features.push('營登');
 
-    // 檢查報稅（只在明確寫了「可報稅」或「營登報稅：可」或「營登報稅：可(稅另計)」時才打勾）
+    // 檢查報稅（只在明確寫了「可報稅」或「營登報稅」中包含「報稅」時才打勾）
     const hasBashuishui = (pasteData.includes('可報稅') && !pasteData.includes('不可報稅')) ||
-                          (yingdengField.startsWith('可') && !yingdengField.includes('不可')) ||
-                          (yingdengField.includes('可') && yingdengField.includes('報稅') && !yingdengField.includes('不可'));
+                          (yingdengField.includes('報稅') && yingdengField.includes('可') && !yingdengField.includes('不可'));
     if (hasBashuishui) features.push('報稅');
 
     if (pasteData.includes('挑高')) features.push('挑高');
