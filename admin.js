@@ -5765,32 +5765,42 @@ async function aiParseAndFill() {
     const floorStr = extractField(/樓層[：:]\s*([^\n]+)/);
     const typeStr = extractField(/類型[：:]\s*([^\n]+)/);
 
-    // 提取寬/深 - 只在同一行有實際內容時才填入
+    // 提取寬/深 - 只在同一行有實際內容，且不是欄位名稱時才填入
     let widthDepthStr = '';
     const widthDepthMatch = pasteData.match(/寬\/深[：:]\s*(\S.+?)$/m);
-    if (widthDepthMatch) widthDepthStr = widthDepthMatch[1].trim();
+    if (widthDepthMatch) {
+      const matched = widthDepthMatch[1].trim();
+      if (matched && !matched.includes('：') && !matched.match(/^[^0-9]*$/)) {
+        widthDepthStr = matched;
+      }
+    }
 
     // 提取滴水高度 - 只在同一行有實際內容時才填入
     let eaveHeightStr = '';
     let eaveMatch = pasteData.match(/滴水高度[：:]\s*(\S.+?)$/m);
     if (eaveMatch) {
-      eaveHeightStr = eaveMatch[1].trim();
+      const matched = eaveMatch[1].trim();
+      if (matched && !matched.includes('：')) {
+        eaveHeightStr = matched;
+      }
     } else if (pasteData.includes('滴水')) {
       eaveMatch = pasteData.match(/高度[：:]\s*(\S.+?)$/m);
       if (eaveMatch) {
         const matched = eaveMatch[1].trim();
-        if (matched && !matched.match(/^[^\d米]*$/)) {
+        if (matched && !matched.includes('：') && /[\d米]/.test(matched)) {
           eaveHeightStr = matched;
         }
       }
     }
 
-    // 提取鐵門高度 - 只在同一行有實際內容時才填入
+    // 提取鐵門高度 - 只在同一行有實際內容，且不是欄位名稱時才填入
     let doorHeightStr = '';
     const doorMatch = pasteData.match(/鐵門高度[：:]\s*(\S.+?)$/m);
     if (doorMatch) {
       const matched = doorMatch[1].trim();
-      if (matched) doorHeightStr = matched;
+      if (matched && !matched.includes('：') && /[\d米]/.test(matched)) {
+        doorHeightStr = matched;
+      }
     }
     
     // 提取特色（只在是「可」的狀態時才打勾）
