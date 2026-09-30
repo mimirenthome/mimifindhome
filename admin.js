@@ -5821,14 +5821,14 @@ async function aiParseAndFill() {
     // 檢查是否表示「可」（包含「可」、「🉑」等符號，但不包含「不可」）
     const isYingdengOk = /可|🉑|✅|✔/.test(yingdengField) && !yingdengField.includes('不可');
 
-    // 營登：如果整個欄位只是「可」(或符號)，或明確提到營登，就勾選
+    // 營登：只有在明確提到「營登」或整個字段只是「可」(不包含其他內容)時才勾選
     const hasYingdeng = (pasteData.includes('可營登') && !pasteData.includes('不可營登')) ||
-                        (isYingdengOk && (/^可|🉑|✅|✔/.test(yingdengField) || yingdengField.includes('營登')));
+                        (isYingdengOk && (yingdengField.includes('營登') || /^可$|^🉑$|^✅$|^✔$/.test(yingdengField)));
     if (hasYingdeng) features.push('營登');
 
-    // 報稅：如果整個欄位只是「可」(或符號)，或明確提到報稅，就勾選
+    // 報稅：只有在明確提到「報稅」或整個字段只是「可」(不包含其他內容)時才勾選
     const hasBashuishui = (pasteData.includes('可報稅') && !pasteData.includes('不可報稅')) ||
-                          (isYingdengOk && (/^可|🉑|✅|✔/.test(yingdengField) || yingdengField.includes('報稅')));
+                          (isYingdengOk && (yingdengField.includes('報稅') || /^可$|^🉑$|^✅$|^✔$/.test(yingdengField)));
     if (hasBashuishui) features.push('報稅');
 
     if (pasteData.includes('挑高')) features.push('挑高');
