@@ -5271,6 +5271,7 @@ async function initCommercialModule() {
     '豐原區', '潭子區', '大雅區',
     '沙鹿區', '清水區', '梧棲區',
     '龍井區', '大肚區', '大甲區', '后里區',
+    '神岡區',
     '其他'
   ];
 
@@ -5611,6 +5612,7 @@ async function addCommercialMarkersToMap() {
         '大肚區': '#FF33FF',
         '大甲區': '#FF6699',
         '后里區': '#FF99CC',
+        '神岡區': '#FF00CC',
         '其他': '#CCCCCC'
       };
       return colorMap[district] || '#FF0000';
@@ -5663,7 +5665,8 @@ async function initCommercialDistrictSelect() {
     '太平區', '大里區', '霧峰區', '烏日區',
     '豐原區', '潭子區', '大雅區',
     '沙鹿區', '清水區', '梧棲區',
-    '龍井區', '大肚區', '大甲區', '后里區'
+    '龍井區', '大肚區', '大甲區', '后里區',
+    '神岡區'
   ];
 
   // 合併數據庫中的區域（如有新增的）
@@ -5884,7 +5887,8 @@ async function aiParseAndFill() {
       '太平區', '大里區', '霧峰區', '烏日區',
       '豐原區', '潭子區', '大雅區',
       '沙鹿區', '清水區', '梧棲區',
-      '龍井區', '大肚區', '大甲區', '后里區'
+      '龍井區', '大肚區', '大甲區', '后里區',
+      '神岡區'
     ];
 
     for (let district of taichungDistricts) {
@@ -5896,7 +5900,7 @@ async function aiParseAndFill() {
         break;
       }
     }
-    
+
     // 設置用途
     if (typeStr) {
       const typeSelect = document.querySelector('input[name="c-type"]');
