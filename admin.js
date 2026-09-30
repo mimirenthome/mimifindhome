@@ -206,7 +206,6 @@ async function initAdmin() {
   // 初始化商業物件模組
   await initCommercialDatabase();
   await loadCommercialProperties();
-  await initCommercialDistrictSelect();
 }
 
 // ===== DATA =====
@@ -262,7 +261,6 @@ async function showSection(name) {
   // 商業物件相關
   if (name === 'commercial') {
     await loadCommercialProperties();
-    await initCommercialDistrictSelect();
   }
   if (name === 'commercial-map') {
     setTimeout(() => initCommercialModule(), 100);
@@ -272,7 +270,6 @@ async function showSection(name) {
     if (!form.dataset.editId) {
       form.reset();
     }
-    await initCommercialDistrictSelect();
   }
 }
 
@@ -5653,51 +5650,6 @@ async function addCommercialMarkersToMap() {
     });
 
     commercialMapMarkers.push(marker);
-  }
-}
-
-// 初始化區域下拉選單
-async function initCommercialDistrictSelect() {
-  // 台中市所有區域
-  const taichungDistricts = [
-    '中區', '東區', '南區', '西區', '北區',
-    '北屯區', '西屯區', '南屯區',
-    '太平區', '大里區', '霧峰區', '烏日區',
-    '豐原區', '潭子區', '大雅區',
-    '沙鹿區', '清水區', '梧棲區',
-    '龍井區', '大肚區', '大甲區', '后里區',
-    '神岡區'
-  ];
-
-  // 合併數據庫中的區域（如有新增的）
-  try {
-    const response = await fetch(`${SUPABASE_URL}/rest/v1/commercial_properties?select=district`, {
-      headers: { 'apikey': SUPABASE_KEY }
-    });
-    const props = await response.json();
-    const dbDistricts = [...new Set(props.map(p => p.district).filter(Boolean))];
-    const allDistricts = [...new Set([...taichungDistricts, ...dbDistricts])].sort();
-    updateDistrictSelects(allDistricts);
-  } catch (error) {
-    // 如果查詢失敗，使用默認台中區域
-    console.warn('Failed to fetch districts from DB, using default Taichung districts');
-    updateDistrictSelects(taichungDistricts);
-  }
-}
-
-function updateDistrictSelects(districts) {
-  const select = document.getElementById('c-district');
-  if (select) {
-    select.innerHTML = '<option value="">-- 選擇區域 --</option>' +
-      districts.map(d => `<option value="${d}">${d}</option>`).join('') +
-      '<option value="其他">其他</option>';
-  }
-
-  const filterSelect = document.getElementById('commercial-filter-district');
-  if (filterSelect) {
-    filterSelect.innerHTML = '<option value="">全部地區</option>' +
-      districts.map(d => `<option value="${d}">${d}</option>`).join('') +
-      '<option value="其他">其他</option>';
   }
 }
 
