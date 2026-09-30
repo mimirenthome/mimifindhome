@@ -5586,11 +5586,52 @@ async function addCommercialMarkersToMap() {
       return iconMap[type] || '🏢';
     };
 
+    // 根據區域分配顏色
+    const getDistrictColor = (district) => {
+      const colorMap = {
+        '中區': '#FF0000',
+        '東區': '#FF6600',
+        '南區': '#FFAA00',
+        '西區': '#FFFF00',
+        '北區': '#00FF00',
+        '北屯區': '#00FFFF',
+        '西屯區': '#0099FF',
+        '南屯區': '#0000FF',
+        '太平區': '#6600FF',
+        '大里區': '#FF00FF',
+        '霧峰區': '#FF0099',
+        '烏日區': '#FF3333',
+        '豐原區': '#FF9933',
+        '潭子區': '#FFFF33',
+        '大雅區': '#33FF33',
+        '沙鹿區': '#33FFFF',
+        '清水區': '#3366FF',
+        '梧棲區': '#3333FF',
+        '龍井區': '#9933FF',
+        '大肚區': '#FF33FF',
+        '大甲區': '#FF6699',
+        '后里區': '#FF99CC',
+        '其他': '#CCCCCC'
+      };
+      return colorMap[district] || '#FF0000';
+    };
+
+    // 創建彩色marker
+    const markerColor = getDistrictColor(prop.district);
+    const markerSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="${markerColor}" width="40" height="40">
+      <path d="M12 0C7.58 0 4 3.58 4 8c0 6 8 16 8 16s8-10 8-16c0-4.42-3.58-8-8-8zm0 12c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z"/>
+    </svg>`;
+    const markerIcon = {
+      url: 'data:image/svg+xml;base64,' + btoa(markerSvg),
+      scaledSize: new google.maps.Size(40, 40)
+    };
+
     const marker = new google.maps.Marker({
       position: { lat, lng },
       map: commercialMap,
       title: prop.name,
-      label: { text: getMarkerIcon(prop.usage_type), fontSize: '18px' }
+      icon: markerIcon,
+      label: { text: getMarkerIcon(prop.usage_type), fontSize: '14px' }
     });
 
     marker.addListener('click', () => {
