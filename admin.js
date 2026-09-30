@@ -5728,10 +5728,13 @@ async function aiParseAndFill() {
   try {
     showToast('🤖 AI 正在分類數據...', 'info');
     
-    // 使用正則表達式和關鍵字提取數據
+    // 使用正則表達式和關鍵字提取數據（只在有實際內容時才返回）
     const extractField = (pattern, defaultValue = '') => {
       const match = pasteData.match(pattern);
-      return match ? match[1].trim() : defaultValue;
+      if (!match) return defaultValue;
+      const value = match[1].trim();
+      // 只有在實際有內容時才返回，否則返回默認值
+      return value ? value : defaultValue;
     };
     
     // 提取各個字段
@@ -5784,7 +5787,10 @@ async function aiParseAndFill() {
     // 提取鐵門高度 - 只在同一行有實際內容時才填入
     let doorHeightStr = '';
     const doorMatch = pasteData.match(/鐵門高度[：:]\s*(\S.+?)$/m);
-    if (doorMatch) doorHeightStr = doorMatch[1].trim();
+    if (doorMatch) {
+      const matched = doorMatch[1].trim();
+      if (matched) doorHeightStr = matched;
+    }
     
     // 提取特色（只在是「可」的狀態時才打勾）
     const features = [];
