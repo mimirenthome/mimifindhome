@@ -5782,14 +5782,17 @@ async function aiParseAndFill() {
     }
 
     // 營登報稅：可能一起寫，需要分開檢查
-    // 支持三種格式：「可營登」、「可營登報稅」、「營登報稅：可」
+    // 檢查營登
+    const yingdengMatch = pasteData.match(/營登報稅[：:]\s*([^\n]+)/);
+    const yingdengField = yingdengMatch ? yingdengMatch[1] : '';
+
     const hasYingdeng = (pasteData.includes('可營登') && !pasteData.includes('不可營登')) ||
-                        (pasteData.match(/營登報稅[：:]\s*可/) && !pasteData.includes('不可營登'));
+                        (yingdengField.includes('可') && yingdengField.includes('營登') && !yingdengField.includes('不可'));
     if (hasYingdeng) features.push('營登');
 
-    // 報稅：支持「可報稅」、「可報稅+數字%」、「營登報稅：可」
+    // 檢查報稅（只在明確寫了「可報稅」或「營登報稅：可營登報稅」時才打勾）
     const hasBashuishui = (pasteData.includes('可報稅') && !pasteData.includes('不可報稅')) ||
-                          (pasteData.match(/營登報稅[：:]\s*可/) && !pasteData.includes('不可報稅'));
+                          (yingdengField.includes('可') && yingdengField.includes('報稅') && !yingdengField.includes('不可'));
     if (hasBashuishui) features.push('報稅');
 
     if (pasteData.includes('挑高')) features.push('挑高');
