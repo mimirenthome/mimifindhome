@@ -5776,8 +5776,8 @@ async function aiParseAndFill() {
 
     // 營登報稅：可能一起寫，需要分開檢查
     if (pasteData.includes('可營登') && !pasteData.includes('不可營登')) features.push('營登');
-    // 報稅：只在有「可報稅+數字%」時才打勾
-    if (/可報稅\+\d+%/.test(pasteData)) features.push('報稅');
+    // 報稅：只在有「可報稅」時才打勾（支持「可報稅+數字%」或「可報稅」）
+    if ((pasteData.includes('可報稅') && !pasteData.includes('不可報稅'))) features.push('報稅');
 
     if (pasteData.includes('挑高')) features.push('挑高');
 
