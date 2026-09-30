@@ -5818,15 +5818,17 @@ async function aiParseAndFill() {
     // 檢查營登
     const yingdengMatch = pasteData.match(/營登報稅[：:]\s*([^\n]+)/);
     const yingdengField = yingdengMatch ? yingdengMatch[1].trim() : '';
+    // 檢查是否表示「可」（包含「可」、「🉑」等符號，但不包含「不可」）
+    const isYingdengOk = /可|🉑|✅|✔/.test(yingdengField) && !yingdengField.includes('不可');
 
+    // 營登：如果整個欄位只是「可」(或符號)，或明確提到營登，就勾選
     const hasYingdeng = (pasteData.includes('可營登') && !pasteData.includes('不可營登')) ||
-                        (yingdengField.startsWith('可') && !yingdengField.includes('不可')) ||
-                        (yingdengField.includes('可') && yingdengField.includes('營登') && !yingdengField.includes('不可'));
+                        (isYingdengOk && (/^可|🉑|✅|✔/.test(yingdengField) || yingdengField.includes('營登')));
     if (hasYingdeng) features.push('營登');
 
-    // 檢查報稅（只在明確寫了「可報稅」或「營登報稅」中包含「報稅」時才打勾）
+    // 報稅：如果整個欄位只是「可」(或符號)，或明確提到報稅，就勾選
     const hasBashuishui = (pasteData.includes('可報稅') && !pasteData.includes('不可報稅')) ||
-                          (yingdengField.includes('報稅') && yingdengField.includes('可') && !yingdengField.includes('不可'));
+                          (isYingdengOk && (/^可|🉑|✅|✔/.test(yingdengField) || yingdengField.includes('報稅')));
     if (hasBashuishui) features.push('報稅');
 
     if (pasteData.includes('挑高')) features.push('挑高');
