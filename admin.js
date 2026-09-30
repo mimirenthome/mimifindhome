@@ -5758,13 +5758,13 @@ async function aiParseAndFill() {
 
     // 提取滴水高度（支持「滴水高度：」或「高度：滴水...」格式）
     let eaveHeightStr = '';
-    // 先查找「滴水高度：」格式
+    // 優先查找「滴水高度：」
     let eaveMatch = pasteData.match(/滴水高度[：:]\s*([^\n]+)/);
     if (eaveMatch) {
       eaveHeightStr = eaveMatch[1].trim();
-    } else {
-      // 查找包含「滴水」的字段（如「高度：滴水6.2最高7.6」）
-      eaveMatch = pasteData.match(/高度[：:]\s*([^\n]*滴水[^\n]*)/);
+    } else if (pasteData.includes('滴水')) {
+      // 如果整個數據中有「滴水」，查找「高度：」字段
+      eaveMatch = pasteData.match(/高度[：:]\s*([^\n]+)/);
       if (eaveMatch) eaveHeightStr = eaveMatch[1].trim();
     }
 
