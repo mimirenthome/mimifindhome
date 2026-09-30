@@ -5582,12 +5582,15 @@ async function addCommercialMarkersToMap() {
     });
 
     marker.addListener('click', () => {
+      const areaDisplay = prop.usable_area ?
+        `${prop.usable_area}${prop.indoor_area ? ` (室內${prop.indoor_area})` : ''}坪` :
+        'N/A';
       const infoContent = `
         <div style="font-size:14px;max-width:300px;">
           <strong>${prop.name}</strong><br/>
           <small>📍 ${prop.address}</small><br/>
           <small>💰 ${prop.rent?.toLocaleString()}元/月</small><br/>
-          <small>📐 ${prop.area}坪</small><br/>
+          <small>📐 ${areaDisplay}</small><br/>
           <small>🏢 ${prop.usage_type}</small>
         </div>
       `;
