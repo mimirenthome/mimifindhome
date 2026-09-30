@@ -5804,10 +5804,13 @@ async function aiParseAndFill() {
     // 提取特色（只在是「可」的狀態時才打勾）
     const features = [];
 
-    // 廠登：只在有「可廠登」時才打勾，不可廠登不打勾
-    if (pasteData.includes('可廠登') && !pasteData.includes('不可廠登')) {
-      features.push('廠登');
-    }
+    // 廠登：支持「可廠登」或「廠登：可」格式
+    const changgengMatch = pasteData.match(/廠登[：:]\s*([^\n]+)/);
+    const changgengField = changgengMatch ? changgengMatch[1].trim() : '';
+    const hasChanggeng = (pasteData.includes('可廠登') && !pasteData.includes('不可廠登')) ||
+                         (changgengField === '可') ||
+                         (changgengField.includes('可') && !changgengField.includes('不可'));
+    if (hasChanggeng) features.push('廠登');
 
     // 營登報稅：可能一起寫，需要分開檢查
     // 檢查營登
