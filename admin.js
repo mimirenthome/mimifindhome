@@ -5587,6 +5587,7 @@ async function addCommercialMarkersToMap() {
         'N/A';
       const infoContent = `
         <div style="font-size:14px;max-width:300px;">
+          <small>📍 ${prop.address}</small><br/>
           <small>💰 ${prop.rent?.toLocaleString()}元/月</small><br/>
           <small>📐 ${areaDisplay}</small><br/>
           <small>🏢 ${prop.usage_type}</small>
