@@ -5574,11 +5574,23 @@ async function addCommercialMarkersToMap() {
       }
     }
 
+    // 根據用途類型選擇圖示
+    const getMarkerIcon = (type) => {
+      const iconMap = {
+        '店面': '🏪',
+        '廠房': '🏭',
+        '辦公室': '🏢',
+        '倉庫': '📦',
+        '其他': '🏛️'
+      };
+      return iconMap[type] || '🏢';
+    };
+
     const marker = new google.maps.Marker({
       position: { lat, lng },
       map: commercialMap,
       title: prop.name,
-      label: { text: '🏢', fontSize: '18px' }
+      label: { text: getMarkerIcon(prop.usage_type), fontSize: '18px' }
     });
 
     marker.addListener('click', () => {
