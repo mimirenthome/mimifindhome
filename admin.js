@@ -5764,24 +5764,42 @@ async function aiParseAndFill() {
     // 提取寬/深（如：寬17.7深21.6）
     let widthDepthStr = '';
     const widthDepthMatch = pasteData.match(/寬\/深[：:]\s*([^\n]+)/);
-    if (widthDepthMatch) widthDepthStr = widthDepthMatch[1].trim();
+    if (widthDepthMatch) {
+      const matched = widthDepthMatch[1].trim();
+      if (matched && matched !== '' && matched !== '：' && matched !== ':') {
+        widthDepthStr = matched;
+      }
+    }
 
     // 提取滴水高度（支持「滴水高度：」或「高度：滴水...」格式）
     let eaveHeightStr = '';
     // 優先查找「滴水高度：」
     let eaveMatch = pasteData.match(/滴水高度[：:]\s*([^\n]+)/);
     if (eaveMatch) {
-      eaveHeightStr = eaveMatch[1].trim();
+      const matched = eaveMatch[1].trim();
+      if (matched && matched !== '' && matched !== '：' && matched !== ':') {
+        eaveHeightStr = matched;
+      }
     } else if (pasteData.includes('滴水')) {
       // 如果整個數據中有「滴水」，查找「高度：」字段
       eaveMatch = pasteData.match(/高度[：:]\s*([^\n]+)/);
-      if (eaveMatch) eaveHeightStr = eaveMatch[1].trim();
+      if (eaveMatch) {
+        const matched = eaveMatch[1].trim();
+        if (matched && matched !== '' && matched !== '：' && matched !== ':') {
+          eaveHeightStr = matched;
+        }
+      }
     }
 
     // 提取鐵門高度（如：鐵門高度：3 或 鐵門高度：3米）
     let doorHeightStr = '';
     const doorMatch = pasteData.match(/鐵門高度[：:]\s*([^\n]+)/);
-    if (doorMatch) doorHeightStr = doorMatch[1].trim();
+    if (doorMatch) {
+      const matched = doorMatch[1].trim();
+      if (matched && matched !== '' && matched !== '：' && matched !== ':') {
+        doorHeightStr = matched;
+      }
+    }
     
     // 提取特色（只在是「可」的狀態時才打勾）
     const features = [];
