@@ -5761,45 +5761,30 @@ async function aiParseAndFill() {
     const floorStr = extractField(/樓層[：:]\s*([^\n]+)/);
     const typeStr = extractField(/類型[：:]\s*([^\n]+)/);
 
-    // 提取寬/深（如：寬17.7深21.6）- 只匹配有實際數字或尺寸信息的
+    // 提取寬/深 - 只在同一行有實際內容時才填入
     let widthDepthStr = '';
-    const widthDepthMatch = pasteData.match(/寬\/深[：:]\s*(\S.+?)(?:\n|$)/);
-    if (widthDepthMatch) {
-      const matched = widthDepthMatch[1].trim();
-      if (matched && /[\d米米X×深寬]/.test(matched)) {
-        widthDepthStr = matched;
-      }
-    }
+    const widthDepthMatch = pasteData.match(/寬\/深[：:]\s*(\S.+?)$/m);
+    if (widthDepthMatch) widthDepthStr = widthDepthMatch[1].trim();
 
-    // 提取滴水高度（支持「滴水高度：」或「高度：滴水...」格式）
+    // 提取滴水高度 - 只在同一行有實際內容時才填入
     let eaveHeightStr = '';
-    // 優先查找「滴水高度：」
-    let eaveMatch = pasteData.match(/滴水高度[：:]\s*(\S.+?)(?:\n|$)/);
+    let eaveMatch = pasteData.match(/滴水高度[：:]\s*(\S.+?)$/m);
     if (eaveMatch) {
-      const matched = eaveMatch[1].trim();
-      if (matched && /[\d米]/.test(matched)) {
-        eaveHeightStr = matched;
-      }
+      eaveHeightStr = eaveMatch[1].trim();
     } else if (pasteData.includes('滴水')) {
-      // 如果整個數據中有「滴水」，查找「高度：」字段
-      eaveMatch = pasteData.match(/高度[：:]\s*(\S.+?)(?:\n|$)/);
+      eaveMatch = pasteData.match(/高度[：:]\s*(\S.+?)$/m);
       if (eaveMatch) {
         const matched = eaveMatch[1].trim();
-        if (matched && /[\d米]/.test(matched) && !matched.includes('電力')) {
+        if (matched && !matched.match(/^[^\d米]*$/)) {
           eaveHeightStr = matched;
         }
       }
     }
 
-    // 提取鐵門高度（如：鐵門高度：3 或 鐵門高度：3米）
+    // 提取鐵門高度 - 只在同一行有實際內容時才填入
     let doorHeightStr = '';
-    const doorMatch = pasteData.match(/鐵門高度[：:]\s*(\S.+?)(?:\n|$)/);
-    if (doorMatch) {
-      const matched = doorMatch[1].trim();
-      if (matched && /[\d米]/.test(matched)) {
-        doorHeightStr = matched;
-      }
-    }
+    const doorMatch = pasteData.match(/鐵門高度[：:]\s*(\S.+?)$/m);
+    if (doorMatch) doorHeightStr = doorMatch[1].trim();
     
     // 提取特色（只在是「可」的狀態時才打勾）
     const features = [];
