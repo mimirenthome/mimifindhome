@@ -5358,8 +5358,9 @@ function editCommercialProperty(id) {
   document.getElementById('c-eave-height').value = prop.eave_height || '';
   document.getElementById('c-door-height').value = prop.door_height || '';
 
+  const usageTypes = prop.usage_type ? prop.usage_type.split(',').map(t => t.trim()) : [];
   document.querySelectorAll('input[name="c-type"]').forEach(r => {
-    r.checked = r.value === prop.usage_type;
+    r.checked = usageTypes.includes(r.value);
   });
 
   const features = prop.features ? prop.features.split(',') : [];
@@ -5391,7 +5392,7 @@ async function saveCommercialProperty(event) {
     indoor_area: parseFloat(document.getElementById('c-indoor-area').value) || null,
     floor: document.getElementById('c-floor').value,
     age: null,
-    usage_type: document.querySelector('input[name="c-type"]:checked')?.value || '',
+    usage_type: Array.from(document.querySelectorAll('input[name="c-type"]:checked')).map(cb => cb.value).join(',') || '',
     features: features,
     notes: document.getElementById('c-notes').value,
     width_depth: document.getElementById('c-width-depth').value || null,
@@ -5867,17 +5868,14 @@ async function aiParseAndFill() {
       }
     }
 
-    // 設置用途
+    // 設置用途（可多選）
     if (typeStr) {
-      const typeSelect = document.querySelector('input[name="c-type"]');
-      if (typeSelect) {
-        const typeRadios = document.querySelectorAll('input[name="c-type"]');
-        typeRadios.forEach(r => {
-          if (typeStr.includes(r.value) || r.value.includes(typeStr.split(/[（(]/)[0])) {
-            r.checked = true;
-          }
-        });
-      }
+      const typeCheckboxes = document.querySelectorAll('input[name="c-type"]');
+      typeCheckboxes.forEach(cb => {
+        if (typeStr.includes(cb.value)) {
+          cb.checked = true;
+        }
+      });
     }
     
     // 設置特色
