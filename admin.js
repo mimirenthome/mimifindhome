@@ -5294,7 +5294,7 @@ async function initCommercialModule() {
 
 async function loadCommercialProperties() {
   try {
-    const response = await fetch(`${SUPABASE_URL}/rest/v1/commercial_properties?select=*&order=created_at.asc`, {
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/commercial_properties?select=*&order=created_at.desc`, {
       headers: { 'apikey': SUPABASE_KEY }
     });
     commercialProperties = await response.json();
