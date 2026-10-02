@@ -5095,9 +5095,12 @@ function toggleAllDistricts() {
 }
 
 function onMapTagChange() {
+  const layouts = ['套房', '1房', '2房', '3房', '4房', '5房以上'];
+  const types = ['公寓', '電梯大樓', '電梯透天', '透天'];
+
   selectedMapTags.clear();
   document.querySelectorAll('#section-map input[type="checkbox"]:checked').forEach(cb => {
-    if (!cb.parentElement.querySelector('#select-all-districts')) { // 排除區域篩選的全選框
+    if (cb.id !== 'select-all-districts' && !layouts.includes(cb.value) && !types.includes(cb.value)) {
       selectedMapTags.add(cb.value);
     }
   });
