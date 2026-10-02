@@ -5136,8 +5136,10 @@ function onMapQueryClick() {
   });
 
   selectedMapTags.clear();
+  const layouts = ['套房', '1房', '2房', '3房', '4房', '5房以上'];
+  const types = ['公寓', '電梯大樓', '電梯透天', '透天'];
   document.querySelectorAll('#section-map input[type="checkbox"]:checked').forEach(cb => {
-    if (!cb.parentElement.querySelector('#select-all-districts')) {
+    if (cb.id !== 'select-all-districts' && !layouts.includes(cb.value) && !types.includes(cb.value)) {
       selectedMapTags.add(cb.value);
     }
   });
@@ -5530,14 +5532,20 @@ async function addCommercialMarkersToMap() {
 
   for (let prop of commercialProperties) {
     if (commercialSelectedDistricts.size > 0 && !commercialSelectedDistricts.has(prop.district)) continue;
-    if (commercialSelectedTypes.size > 0 && !commercialSelectedTypes.has(prop.usage_type)) continue;
+
+    if (commercialSelectedTypes.size > 0) {
+      const propTypes = prop.usage_type ? prop.usage_type.split(',').map(t => t.trim()) : [];
+      const hasAnyType = propTypes.some(t => commercialSelectedTypes.has(t));
+      if (!hasAnyType) continue;
+    }
+
     if (commercialMinRent !== null && prop.rent < commercialMinRent) continue;
     if (commercialMaxRent !== null && prop.rent > commercialMaxRent) continue;
     if (commercialMinArea !== null && prop.usable_area && prop.usable_area < commercialMinArea) continue;
     if (commercialMaxArea !== null && prop.usable_area && prop.usable_area > commercialMaxArea) continue;
 
     if (commercialSelectedFeatures.size > 0) {
-      const propFeatures = prop.features ? prop.features.split(',') : [];
+      const propFeatures = prop.features ? prop.features.split(',').map(f => f.trim()) : [];
       const hasAnyFeature = Array.from(commercialSelectedFeatures).some(f => propFeatures.includes(f));
       if (!hasAnyFeature) continue;
     }
