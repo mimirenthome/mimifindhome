@@ -5137,6 +5137,9 @@ function onMapLayoutTypeChange() {
 }
 
 function onMapQueryClick() {
+  const layouts = ['套房', '1房', '2房', '3房', '4房', '5房以上'];
+  const types = ['公寓', '電梯大樓', '電梯透天', '透天'];
+
   // 收集所有篩選條件
   selectedDistricts.clear();
   document.querySelectorAll('#district-filter-container input[type="checkbox"]:checked').forEach(cb => {
@@ -5146,8 +5149,6 @@ function onMapQueryClick() {
   });
 
   selectedMapTags.clear();
-  const layouts = ['套房', '1房', '2房', '3房', '4房', '5房以上'];
-  const types = ['公寓', '電梯大樓', '電梯透天', '透天'];
   document.querySelectorAll('#section-map input[type="checkbox"]:checked').forEach(cb => {
     if (cb.id !== 'select-all-districts' && !layouts.includes(cb.value) && !types.includes(cb.value)) {
       selectedMapTags.add(cb.value);
@@ -5162,8 +5163,6 @@ function onMapQueryClick() {
   selectedMapLayouts.clear();
   selectedMapTypes.clear();
   const layoutTypeInputs = document.querySelectorAll('#section-map input[type="checkbox"]');
-  const layouts = ['套房', '1房', '2房', '3房', '4房', '5房以上'];
-  const types = ['公寓', '電梯大樓', '電梯透天', '透天'];
 
   layoutTypeInputs.forEach(cb => {
     if (cb.checked) {
