@@ -28,22 +28,19 @@ async function handleLogin(e) {
   const password = document.getElementById('login-password').value;
   const errEl = document.getElementById('login-error');
   const btn = e.target.querySelector('button[type="submit"]');
+
+  if (!email || !password) {
+    errEl.textContent = '請輸入帳號和密碼';
+    errEl.classList.remove('hidden');
+    return;
+  }
+
   btn.disabled = true;
   btn.textContent = '登入中...';
   errEl.classList.add('hidden');
 
   try {
-    // 先試 Supabase Auth
-    const { error } = await db.auth.signInWithPassword({ email, password });
-    if (!error) {
-      // 成功：auth state change 會接手
-      btn.disabled = false;
-      btn.textContent = '登入';
-      return;
-    }
-    console.warn('Supabase auth error:', error.message);
-
-    // 備用：本地帳密 mimi / mimi0314（方便測試）
+    // 先試本地帳密 mimi / mimi0314（方便測試）
     if ((email === 'mimi' || email === 'mimi.rent.00@gmail.com') && password === 'mimi0314') {
       btn.disabled = false;
       btn.textContent = '登入';
@@ -52,8 +49,21 @@ async function handleLogin(e) {
       return;
     }
 
-    errEl.textContent = '帳號或密碼錯誤。（錯誤：' + error.message + '）';
-    errEl.classList.remove('hidden');
+    // 再試 Supabase Auth
+    if (window.supabase && db && db.auth) {
+      const { error } = await db.auth.signInWithPassword({ email, password });
+      if (!error) {
+        // 成功：auth state change 會接手
+        btn.disabled = false;
+        btn.textContent = '登入';
+        return;
+      }
+      console.warn('Supabase auth error:', error?.message);
+      errEl.textContent = '帳號或密碼錯誤';
+      errEl.classList.remove('hidden');
+    } else {
+      throw new Error('Supabase 未正確載入');
+    }
   } catch(err) {
     console.error('Login exception:', err);
     errEl.textContent = '登入失敗：' + (err.message || '請檢查網路連線');
