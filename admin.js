@@ -5303,6 +5303,9 @@ async function initCommercialModule() {
       zoom: 8,
       center: { lat: 24.1477, lng: 120.6736 }
     });
+
+    // 默認顯示所有物件
+    await addCommercialMarkersToMap();
   }
 }
 
