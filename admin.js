@@ -5362,6 +5362,36 @@ function displayCommercialProperties() {
       </td>
     </tr>
   `).join('');
+
+  // 生成卡片視圖（手機版）
+  const cardsDiv = document.getElementById('commercial-props-cards');
+  if (cardsDiv) {
+    cardsDiv.innerHTML = filtered.map(p => `
+      <div style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:12px;margin-bottom:12px;">
+        <div style="font-weight:600;margin-bottom:8px;color:var(--color-text);">${p.address || '─'}</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px;margin-bottom:8px;">
+          <div><span style="color:#666;">區域：</span>${p.district || '─'}</div>
+          <div><span style="color:#666;">租金：</span>NT$${p.rent ? p.rent.toLocaleString() : '─'}</div>
+          <div><span style="color:#666;">坪數：</span>${p.usable_area ? p.usable_area + '坪' : '─'}</div>
+          <div><span style="color:#666;">樓層：</span>${p.floor || '─'}</div>
+          <div><span style="color:#666;">用途：</span>${p.usage_type || '─'}</div>
+          <div><span style="color:#666;">狀態：</span><span style="background:${p.status ? '#4CAF50' : '#ccc'};color:#fff;padding:2px 6px;border-radius:3px;font-size:11px;">${p.status ? '上架' : '下架'}</span></div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button onclick="editCommercialProperty(${p.id})" style="flex:1;padding:6px;background:var(--color-primary-button);color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:12px;">編輯</button>
+          <button onclick="deleteCommercialProperty(${p.id})" style="flex:1;padding:6px;background:#E53935;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:12px;">刪除</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // 根據屏幕寬度決定顯示表格還是卡片
+  const tableWrap = document.getElementById('commercial-props-table-wrap');
+  if (tableWrap && cardsDiv) {
+    const isMobile = window.innerWidth < 768;
+    tableWrap.style.display = isMobile ? 'none' : 'block';
+    cardsDiv.style.display = isMobile ? 'block' : 'none';
+  }
 }
 
 function editCommercialProperty(id) {
