@@ -5319,6 +5319,13 @@ async function loadCommercialProperties() {
   }
 }
 
+function clearCommercialFilters() {
+  document.getElementById('commercial-filter-status').value = '';
+  document.getElementById('commercial-filter-district').value = '';
+  document.getElementById('commercial-search').value = '';
+  loadCommercialProperties();
+}
+
 function displayCommercialProperties() {
   const tbody = document.getElementById('commercial-props-tbody');
   if (!tbody) return;

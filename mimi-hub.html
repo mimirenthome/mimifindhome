@@ -525,9 +525,10 @@
     <!-- 篩選 -->
     <div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
       <select id="commercial-filter-status" class="form-input" style="flex:1;min-width:120px;"><option value="">全部</option><option value="1">上架中</option><option value="0">已下架</option></select>
-      <select id="commercial-filter-district" class="form-input" style="flex:1;min-width:120px;"><option value="">全部地區</option></select>
+      <select id="commercial-filter-district" class="form-input" style="flex:1;min-width:120px;"></select>
       <input type="text" id="commercial-search" class="form-input" placeholder="名稱關鍵字" style="flex:1;min-width:120px;" />
       <button onclick="loadCommercialProperties()" class="btn btn-secondary">🔍 搜尋</button>
+      <button onclick="clearCommercialFilters()" class="btn btn-outline">✕ 清除</button>
       <button onclick="showSection('commercial-add')" class="btn btn-primary">➕ 新增物件</button>
     </div>
 
