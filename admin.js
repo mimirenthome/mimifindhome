@@ -5140,39 +5140,55 @@ function onMapQueryClick() {
   const layouts = ['套房', '1房', '2房', '3房', '4房', '5房以上'];
   const types = ['公寓', '電梯大樓', '電梯透天', '透天'];
 
-  // 收集所有篩選條件
-  selectedDistricts.clear();
-  document.querySelectorAll('#district-filter-container input[type="checkbox"]:checked').forEach(cb => {
-    if (cb.id !== 'select-all-districts') {
-      selectedDistricts.add(cb.value);
-    }
-  });
+  // 如果沒有選擇任何篩選條件，清除所有篩選並顯示全部
+  const hasDistrictFilter = document.querySelectorAll('#district-filter-container input[type="checkbox"]:checked').length > 1; // >1 because all-select might be counted
+  const hasTagFilter = document.querySelectorAll('#section-map input[type="checkbox"]:checked').length > 0;
+  const hasRentFilter = document.getElementById('min-rent-filter').value || document.getElementById('max-rent-filter').value;
+  const hasLayoutTypeFilter = document.querySelectorAll('#section-map input[type="checkbox"]:checked').length > 0;
 
-  selectedMapTags.clear();
-  document.querySelectorAll('#section-map input[type="checkbox"]:checked').forEach(cb => {
-    if (cb.id !== 'select-all-districts' && !layouts.includes(cb.value) && !types.includes(cb.value)) {
-      selectedMapTags.add(cb.value);
-    }
-  });
-
-  const minInput = document.getElementById('min-rent-filter');
-  const maxInput = document.getElementById('max-rent-filter');
-  minRentFilter = minInput.value ? parseInt(minInput.value) : null;
-  maxRentFilter = maxInput.value ? parseInt(maxInput.value) : null;
-
-  selectedMapLayouts.clear();
-  selectedMapTypes.clear();
-  const layoutTypeInputs = document.querySelectorAll('#section-map input[type="checkbox"]');
-
-  layoutTypeInputs.forEach(cb => {
-    if (cb.checked) {
-      if (layouts.includes(cb.value)) {
-        selectedMapLayouts.add(cb.value);
-      } else if (types.includes(cb.value)) {
-        selectedMapTypes.add(cb.value);
+  if (!hasDistrictFilter && !hasTagFilter && !hasRentFilter && !hasLayoutTypeFilter) {
+    // 沒有任何篩選條件，清除所有篩選並顯示全部
+    selectedDistricts.clear();
+    selectedMapTags.clear();
+    selectedMapLayouts.clear();
+    selectedMapTypes.clear();
+    minRentFilter = null;
+    maxRentFilter = null;
+  } else {
+    // 收集所有篩選條件
+    selectedDistricts.clear();
+    document.querySelectorAll('#district-filter-container input[type="checkbox"]:checked').forEach(cb => {
+      if (cb.id !== 'select-all-districts') {
+        selectedDistricts.add(cb.value);
       }
-    }
-  });
+    });
+
+    selectedMapTags.clear();
+    document.querySelectorAll('#section-map input[type="checkbox"]:checked').forEach(cb => {
+      if (cb.id !== 'select-all-districts' && !layouts.includes(cb.value) && !types.includes(cb.value)) {
+        selectedMapTags.add(cb.value);
+      }
+    });
+
+    const minInput = document.getElementById('min-rent-filter');
+    const maxInput = document.getElementById('max-rent-filter');
+    minRentFilter = minInput.value ? parseInt(minInput.value) : null;
+    maxRentFilter = maxInput.value ? parseInt(maxInput.value) : null;
+
+    selectedMapLayouts.clear();
+    selectedMapTypes.clear();
+    const layoutTypeInputs = document.querySelectorAll('#section-map input[type="checkbox"]');
+
+    layoutTypeInputs.forEach(cb => {
+      if (cb.checked) {
+        if (layouts.includes(cb.value)) {
+          selectedMapLayouts.add(cb.value);
+        } else if (types.includes(cb.value)) {
+          selectedMapTypes.add(cb.value);
+        }
+      }
+    });
+  }
 
   // 重新加載地圖
   addMarkersForLocations();
