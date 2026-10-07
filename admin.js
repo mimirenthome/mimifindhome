@@ -5388,7 +5388,7 @@ function displayCommercialProperties() {
   // 根據屏幕寬度決定顯示表格還是卡片
   const tableWrap = document.getElementById('commercial-props-table-wrap');
   if (tableWrap && cardsDiv) {
-    const isMobile = window.innerWidth < 768;
+    const isMobile = window.innerWidth < 640 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     tableWrap.style.display = isMobile ? 'none' : 'block';
     cardsDiv.style.display = isMobile ? 'block' : 'none';
   }
