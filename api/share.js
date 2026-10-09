@@ -26,7 +26,8 @@ module.exports = async (req, res) => {
 
   if (prop) {
     const images = prop.images || [];
-    const image = images[prop.cover_index || 0] || images[0];
+    const original = images[prop.cover_index || 0] || images[0];
+    const image = original && original.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/').replace(/\?.*$/, '') + '?width=1200&quality=85';
     const title = `${prop.title || '物件'}｜Mimi Home`;
     const description = `NT$${Number(prop.rent || 0).toLocaleString()}/月｜${prop.district || ''}`;
     const pageUrl = `${SITE_URL}/index.html?prop=${encodeURIComponent(propId)}`;
