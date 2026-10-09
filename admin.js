@@ -1999,140 +1999,150 @@ function parsePropertyText(text) {
 
   result.highlights = hl.filter(Boolean).join('、');
 
-  // ===== PROS (完整亮點說明，前面加「・」) =====
-  const pros = [];
+  // ===== PROS (依類別分組) =====
+  const prosByCategory = {
+    '格局採光': [],
+    '衛浴洗曬': [],
+    '生活設施': [],
+    '停車移動': [],
+    '社區福利': [],
+    '租住政策': []
+  };
 
-  // 租客偏好最優先
-  if (tenantPref) pros.push(tenantPref);
+  // 租客偏好最優先（獨立一行）
+  let tenantPrefLine = '';
+  if (tenantPref) tenantPrefLine = `• ${tenantPref}`;
 
-  // 樓層（只有原始資料明確說高採光/景觀，或 8F 以上才寫）
+  // 樓層（格局採光類）
   if (currentFloor >= 8 || /高採光|景觀佳|視野佳|高樓層.*採光|採光.*高樓/.test(text))
-    pros.push(`高樓層（${currentFloor}F）`);
-  if (result.size && result.size >= 30) pros.push(`坪數 ${result.size} 坪`);
-  if (/樓中樓/.test(text)) pros.push('樓中樓格局');
-  if (/獨立出入|獨立門口|獨立入口|專用入口/.test(text)) pros.push('獨立出入口');
-  if (/邊間/.test(text)) pros.push('邊間格局');
-  if (/方正|方便格局/.test(text)) pros.push('格局方正');
-  if (/獨立陽台|専用陽台/.test(text)) pros.push('獨立陽台');
+    prosByCategory['格局採光'].push(`高樓層（${currentFloor}F）`);
+  if (result.size && result.size >= 30) prosByCategory['格局採光'].push(`坪數 ${result.size} 坪`);
+  if (/樓中樓/.test(text)) prosByCategory['格局採光'].push('樓中樓格局');
+  if (/獨立出入|獨立門口|獨立入口|專用入口/.test(text)) prosByCategory['格局採光'].push('獨立出入口');
+  if (/邊間/.test(text)) prosByCategory['格局採光'].push('邊間格局');
+  if (/方正|方便格局/.test(text)) prosByCategory['格局採光'].push('格局方正');
+  if (/獨立陽台|専用陽台/.test(text)) prosByCategory['格局採光'].push('獨立陽台');
 
   // 採光
-  if (/採光佳|採光好|採光充足|全明/.test(text)) pros.push('採光佳');
-  if (/凸窗曬|凸窗.*曬|可凸窗曬/.test(text)) pros.push('凸窗可曬衣');
-  else if (!tags.includes('獨洗曬') && !tags.includes('陽台') && /大凸窗|凸窗/.test(text)) pros.push('大凸窗');
+  if (/採光佳|採光好|採光充足|全明/.test(text)) prosByCategory['格局採光'].push('採光佳');
+  if (/凸窗曬|凸窗.*曬|可凸窗曬/.test(text)) prosByCategory['衛浴洗曬'].push('凸窗可曬衣');
+  else if (!tags.includes('獨洗曬') && !tags.includes('陽台') && /大凸窗|凸窗/.test(text)) prosByCategory['格局採光'].push('大凸窗');
 
   // 洗曬
   if (tags.includes('獨洗曬')) {
-    if (tags.includes('陽台')) pros.push('陽台獨洗曬');
-    else pros.push('獨洗曬');
-  } else if (tags.includes('陽台') && /陽台.*曬|曬.*陽台/.test(text)) pros.push('有陽台可曬衣');
-  else if (tags.includes('陽台'))     pros.push('有陽台');
+    if (tags.includes('陽台')) prosByCategory['衛浴洗曬'].push('陽台獨洗曬');
+    else prosByCategory['衛浴洗曬'].push('獨洗曬');
+  } else if (tags.includes('陽台') && /陽台.*曬|曬.*陽台/.test(text)) prosByCategory['衛浴洗曬'].push('有陽台可曬衣');
+  else if (tags.includes('陽台')) prosByCategory['衛浴洗曬'].push('有陽台');
 
   // 洗衣設備
-  if (/洗脫烘|烘乾洗衣機|洗脫烘洗衣機/.test(text)) pros.push('洗脫烘洗衣機');
+  if (/洗脫烘|烘乾洗衣機|洗脫烘洗衣機/.test(text)) prosByCategory['生活設施'].push('洗脫烘洗衣機');
 
   // 衛浴
-  if (tags.includes('衛浴乾濕分離')) pros.push('衛浴乾濕分離');
-  if (/衛浴開窗|浴室開窗|廁所開窗|衛浴.*有窗|浴室.*有窗/.test(text)) pros.push('衛浴開窗');
-  if (/浴缸/.test(text) && !/無浴缸|沒有浴缸|不含浴缸/.test(text)) pros.push('附浴缸');
+  if (tags.includes('衛浴乾濕分離')) prosByCategory['衛浴洗曬'].push('衛浴乾濕分離');
+  if (/衛浴開窗|浴室開窗|廁所開窗|衛浴.*有窗|浴室.*有窗/.test(text)) prosByCategory['衛浴洗曬'].push('衛浴開窗');
+  if (/浴缸/.test(text) && !/無浴缸|沒有浴缸|不含浴缸/.test(text)) prosByCategory['衛浴洗曬'].push('附浴缸');
 
   // 料理
   if (tags.includes('可開伙')) {
-    if (/電磁爐|可電磁爐/.test(text)) pros.push('可電磁爐');
-    else pros.push('可開伙');
-  } else if (/流理台|流理臺|流理檯|廚台|水槽廚台/.test(text)) pros.push('附流理台');
+    if (/電磁爐|可電磁爐/.test(text)) prosByCategory['租住政策'].push('可電磁爐');
+    else prosByCategory['租住政策'].push('可開伙');
+  } else if (/流理台|流理臺|流理檯|廚台|水槽廚台/.test(text)) prosByCategory['生活設施'].push('附流理台');
 
   // 設備
-  if (/雙門.*冰箱|冰箱.*雙門|大冰箱/.test(text)) pros.push('雙門大冰箱');
-  if (/全室冷氣|全冷/.test(text)) pros.push('全室冷氣配備');
-  else if (tags.includes('變頻冷氣')) pros.push('變頻冷氣');
-  // 🆕 聯網電視已在highlights和網路部分處理，不重複添加
-  if (/RO逆滲透|逆滲透飲水機|RO飲水機/.test(text)) pros.push('RO逆滲透飲水機');
-  else if (tags.includes('飲水機'))   pros.push('附飲水機');
-  // 🆕 排除垃圾代收（子母車已有標籤），只找包裹/郵件代收
+  if (/雙門.*冰箱|冰箱.*雙門|大冰箱/.test(text)) prosByCategory['生活設施'].push('雙門大冰箱');
+  if (/全室冷氣|全冷/.test(text)) prosByCategory['生活設施'].push('全室冷氣配備');
+  else if (tags.includes('變頻冷氣')) prosByCategory['生活設施'].push('變頻冷氣');
+  if (/RO逆滲透|逆滲透飲水機|RO飲水機/.test(text)) prosByCategory['生活設施'].push('RO逆滲透飲水機');
+  else if (tags.includes('飲水機')) prosByCategory['生活設施'].push('附飲水機');
   if (/代收包裹|代收郵件|代收快遞|專人代收|有人代收|管理員代收/.test(text) && !/代收垃圾|垃圾代收/.test(text)) {
-    pros.push('有專人代收包裹');
+    prosByCategory['生活設施'].push('有專人代收包裹');
   }
 
   // 床 / 收納
-  const hasLatex   = /乳膠.*床墊|床墊.*乳膠/.test(text);
+  const hasLatex = /乳膠.*床墊|床墊.*乳膠/.test(text);
   const hasLiftBed = /可掀式|掀床|掀式床板/.test(text);
-  if (hasLatex && hasLiftBed) pros.push('乳膠床墊＋可掀式床板');
-  else if (hasLatex)          pros.push('乳膠床墊');
-  else if (hasLiftBed)        pros.push('可掀式床板');
-  if (/大衣櫃|衣櫃寬|大型衣櫃/.test(text)) pros.push('附大衣櫃');
+  if (hasLatex && hasLiftBed) prosByCategory['生活設施'].push('乳膠床墊＋可掀式床板');
+  else if (hasLatex) prosByCategory['生活設施'].push('乳膠床墊');
+  else if (hasLiftBed) prosByCategory['生活設施'].push('可掀式床板');
+  if (/大衣櫃|衣櫃寬|大型衣櫃/.test(text)) prosByCategory['生活設施'].push('附大衣櫃');
 
   // 停車
-  if (/遮雨棚|有棚|棚式|雨棚/.test(parkingStr + ' ' + text)) pros.push('停車位附遮雨棚');
-
-  // 如果車位字段有詳細描述（例如「室內機車位/管理室可問」），優先用該描述
+  if (/遮雨棚|有棚|棚式|雨棚/.test(parkingStr + ' ' + text)) prosByCategory['停車移動'].push('停車位附遮雨棚');
   if (parkingStr.trim()) {
-    // 檢測是否需要詢問管理室
     const needsConsult = /管理室|可問|詢問|洽詢/.test(parkingStr);
     if (needsConsult) {
-      // 提取車位類型
-      if (/室內機車|機車/.test(parkingStr)) pros.push('室內機車位可詢問管理室');
-      else if (/汽車|平車|機械/.test(parkingStr)) pros.push('停車位可詢問管理室');
-      else if (/附近好停/.test(parkingStr)) pros.push('附近好停車');
-      else pros.push('停車位詳情詢問管理室');
-    } else if (parkingActive && isDoubleParking) pros.push('雙停車位');
-    else if (parkingActive && !isParkingExtra) pros.push('附停車位');
+      if (/室內機車|機車/.test(parkingStr)) prosByCategory['停車移動'].push('室內機車位可詢問管理室');
+      else if (/汽車|平車|機械/.test(parkingStr)) prosByCategory['停車移動'].push('停車位可詢問管理室');
+      else if (/附近好停/.test(parkingStr)) prosByCategory['停車移動'].push('附近好停車');
+      else prosByCategory['停車移動'].push('停車位詳情詢問管理室');
+    } else if (parkingActive && isDoubleParking) prosByCategory['停車移動'].push('雙停車位');
+    else if (parkingActive && !isParkingExtra) prosByCategory['停車移動'].push('附停車位');
   } else {
-    // 如果車位字段為空，用原有邏輯
-    if (parkingActive && isDoubleParking) pros.push('雙停車位');
-    else if (parkingActive && !isParkingExtra) pros.push('附停車位');
+    if (parkingActive && isDoubleParking) prosByCategory['停車移動'].push('雙停車位');
+    else if (parkingActive && !isParkingExtra) prosByCategory['停車移動'].push('附停車位');
   }
 
   // 社區設施
-  if (/健身房/.test(text))                   pros.push('社區附健身房');
-  if (/烹飪室|烹飪教室|公共廚房/.test(text)) pros.push('附社區烹飪室');
-  if (tags.includes('管理室'))               pros.push('設有管理室');
+  if (/健身房/.test(text)) prosByCategory['社區福利'].push('社區附健身房');
+  if (/烹飪室|烹飪教室|公共廚房/.test(text)) prosByCategory['社區福利'].push('附社區烹飪室');
+  if (tags.includes('管理室')) prosByCategory['社區福利'].push('設有管理室');
 
-  // 水電透明（去重：同時有台水和台電才寫一次）
+  // 水電透明
   const hasWaterElectricity = tags.includes('台水') || tags.includes('台電');
   if (hasWaterElectricity) {
-    if (tags.includes('台水') && tags.includes('台電')) pros.push('台水台電');
-    else if (tags.includes('台電')) pros.push('台電分算');
+    if (tags.includes('台水') && tags.includes('台電')) prosByCategory['社區福利'].push('台水台電');
+    else if (tags.includes('台電')) prosByCategory['社區福利'].push('台電分算');
   }
 
   // 子母車
-  if (hasSubmother) pros.push('有子母車');
-
-  // 🆕 水電計費只在highlights顯示，優點不需要寫
+  if (hasSubmother) prosByCategory['停車移動'].push('有子母車');
 
   // 一層幾戶
   const floorUnitsMatch = /一層(\d+)戶|(\d+)戶\/層|每層(\d+)戶/.exec(text);
   if (floorUnitsMatch) {
     const units = floorUnitsMatch[1] || floorUnitsMatch[2] || floorUnitsMatch[3];
-    pros.push(`一層${units}戶`);
+    prosByCategory['社區福利'].push(`一層${units}戶`);
   }
 
   // 寵物
   const hasSmallDog = /小型狗|小型犬|小狗/.test(text);
   if (tags.includes('可狗') && tags.includes('可貓')) {
-    if (hasSmallDog) pros.push('可貓＆小型狗');
-    else pros.push('可貓可狗');
+    if (hasSmallDog) prosByCategory['租住政策'].push('可貓＆小型狗');
+    else prosByCategory['租住政策'].push('可貓可狗');
   } else if (tags.includes('可狗')) {
-    if (hasSmallDog) pros.push('可小型狗');
-    else pros.push('可狗');
-  } else if (tags.includes('可貓'))  pros.push('可貓');
+    if (hasSmallDog) prosByCategory['租住政策'].push('可小型狗');
+    else prosByCategory['租住政策'].push('可狗');
+  } else if (tags.includes('可貓')) prosByCategory['租住政策'].push('可貓');
 
   // 租補
-  if (tags.includes('可雙租補'))   pros.push('可租補＆可雙租補');
-  else if (tags.includes('可租補')) pros.push('可租補');
+  if (tags.includes('可雙租補')) prosByCategory['租住政策'].push('可租補＆可雙租補');
+  else if (tags.includes('可租補')) prosByCategory['租住政策'].push('可租補');
 
-  // 網路（聯網電視已在highlights處理）
+  // 網路
   if (internetFieldYes || (hasNetworkPos && !hasNetworkNeg)) {
-    if (hasSmartTV) pros.push('網路＋聯網電視');
-    else if (hasCableTV) pros.push('網路＋第四台');
-    else pros.push('有網路');
+    if (hasSmartTV) prosByCategory['租住政策'].push('網路＋聯網電視');
+    else if (hasCableTV) prosByCategory['租住政策'].push('網路＋第四台');
+    else prosByCategory['租住政策'].push('有網路');
   }
 
-  // 獨洗曬 - 只在有凸窗曬時才寫，否則已在highlights中有"獨洗曬"相關內容
+  // 獨洗曬
   if (tags.includes('獨洗曬') && /凸窗曬|凸窗.*曬|可凸窗曬/.test(text)) {
-    pros.push('獨洗＋凸窗曬');
+    prosByCategory['衛浴洗曬'].push('獨洗＋凸窗曬');
   }
 
-  if (pros.length > 0) result.pros = pros.map(p => `• ${p}`).join('\n');
+  // 格式化優點：先顯示租客偏好，再按類別顯示
+  const prosLines = [];
+  if (tenantPrefLine) prosLines.push(tenantPrefLine);
+
+  Object.entries(prosByCategory).forEach(([category, items]) => {
+    if (items.length > 0) {
+      prosLines.push(`【${category}】`);
+      items.forEach(item => prosLines.push(`• ${item}`));
+    }
+  });
+
+  if (prosLines.length > 0) result.pros = prosLines.join('\n');
 
   // ===== CONS (⚠️ 可能需要注意的地方) =====
   const cons = [];
