@@ -5338,8 +5338,12 @@ async function loadCommercialProperties() {
       headers: { 'apikey': SUPABASE_KEY }
     });
     commercialProperties = await response.json();
-    await initCommercialModule();
     displayCommercialProperties();
+    try {
+      await initCommercialModule();
+    } catch (error) {
+      console.error('Error initializing commercial module:', error);
+    }
   } catch (error) {
     console.error('Error loading commercial properties:', error);
   }
@@ -5516,10 +5520,14 @@ async function deleteCommercialProperty(id) {
   if (!confirm('確定要刪除此物件嗎？')) return;
 
   try {
-    await fetch(`${SUPABASE_URL}/rest/v1/commercial_properties?id=eq.${id}`, {
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/commercial_properties?id=eq.${id}`, {
       method: 'DELETE',
       headers: { 'apikey': SUPABASE_KEY }
     });
+    if (!response.ok) {
+      alert(`刪除失敗 (${response.status})`);
+      return;
+    }
     await loadCommercialProperties();
   } catch (error) {
     console.error('Error deleting property:', error);

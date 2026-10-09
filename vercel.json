@@ -1,0 +1,19 @@
+{
+  "functions": {
+    "api/share.js": {
+      "includeFiles": "index.html"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/index.html",
+      "has": [{ "type": "query", "key": "prop", "value": "(?<prop>.*)" }],
+      "destination": "/api/share?prop=:prop"
+    },
+    {
+      "source": "/",
+      "has": [{ "type": "query", "key": "prop", "value": "(?<prop>.*)" }],
+      "destination": "/api/share?prop=:prop"
+    }
+  ]
+}
