@@ -4,16 +4,12 @@
       "includeFiles": "index.html"
     }
   },
-  "rewrites": [
+  "routes": [
     {
-      "source": "/index.html",
-      "has": [{ "type": "query", "key": "prop", "value": "(?<prop>.*)" }],
-      "destination": "/api/share?prop=:prop"
+      "src": "^/(index\\.html)?$",
+      "has": [{ "type": "query", "key": "prop", "value": "(?<prop>.+)" }],
+      "dest": "/api/share?prop=$prop"
     },
-    {
-      "source": "/",
-      "has": [{ "type": "query", "key": "prop", "value": "(?<prop>.*)" }],
-      "destination": "/api/share?prop=:prop"
-    }
+    { "handle": "filesystem" }
   ]
 }
