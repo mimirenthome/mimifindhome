@@ -5371,7 +5371,7 @@ function displayCommercialProperties() {
   });
 
   if (filtered.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:20px;">無符合條件的物件</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:20px;">無符合條件的物件</td></tr>';
     return;
   }
 
@@ -5385,6 +5385,7 @@ function displayCommercialProperties() {
       <td>${p.floor || '─'}</td>
       <td>${p.usage_type || '─'}</td>
       <td><span style="background:${p.status ? '#4CAF50' : '#ccc'};color:#fff;padding:4px 8px;border-radius:4px;font-size:12px;">${p.status ? '上架' : '下架'}</span></td>
+      <td>${p.developer || '─'}</td>
       <td style="text-align:center;">
         <button onclick="editCommercialProperty(${p.id})" style="background:none;border:none;color:var(--color-primary-button);cursor:pointer;text-decoration:underline;">編輯</button>
         <span style="margin:0 4px;">│</span>
@@ -5405,6 +5406,7 @@ function displayCommercialProperties() {
           <div><span style="color:#666;">坪數：</span>${p.usable_area ? p.usable_area + '坪' : '─'}</div>
           <div><span style="color:#666;">樓層：</span>${p.floor || '─'}</div>
           <div><span style="color:#666;">用途：</span>${p.usage_type || '─'}</div>
+          <div><span style="color:#666;">開發者：</span>${p.developer || '─'}</div>
           <div><span style="color:#666;">狀態：</span><span style="background:${p.status ? '#4CAF50' : '#ccc'};color:#fff;padding:2px 6px;border-radius:3px;font-size:11px;">${p.status ? '上架' : '下架'}</span></div>
         </div>
         <div style="display:flex;gap:8px;">
@@ -5429,6 +5431,7 @@ function editCommercialProperty(id) {
   if (!prop) return;
 
   document.getElementById('c-address').value = prop.address || '';
+  document.getElementById('c-developer').value = prop.developer || '';
   document.getElementById('c-district').value = prop.district || '';
   document.getElementById('c-rent').value = prop.rent || '';
   document.getElementById('c-usable-area').value = prop.usable_area || '';
@@ -5466,6 +5469,7 @@ async function saveCommercialProperty(event) {
   const data = {
     name: document.getElementById('c-address').value,
     address: document.getElementById('c-address').value,
+    developer: document.getElementById('c-developer').value.trim() || null,
     district: document.getElementById('c-district').value,
     rent: parseInt(document.getElementById('c-rent').value) || 0,
     usable_area: parseFloat(document.getElementById('c-usable-area').value) || null,
