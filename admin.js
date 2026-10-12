@@ -5377,7 +5377,7 @@ function displayCommercialProperties() {
 
   tbody.innerHTML = filtered.map(p => `
     <tr>
-      <td>${p.address || '─'}</td>
+      <td>${p.address || '─'}${p.address ? ` <button onclick="copyCommercialAddress(${p.id})" title="複製地址" style="background:none;border:none;cursor:pointer;font-size:14px;padding:0 4px;">📋</button>` : ''}</td>
       <td>${p.district || '─'}</td>
       <td>${p.rent ? p.rent.toLocaleString() : '─'}</td>
       <td>${p.usable_area ? p.usable_area + '坪' : '─'}</td>
@@ -5398,7 +5398,7 @@ function displayCommercialProperties() {
   if (cardsDiv) {
     cardsDiv.innerHTML = filtered.map(p => `
       <div style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:12px;margin-bottom:12px;">
-        <div style="font-weight:600;margin-bottom:8px;color:var(--color-text);">${p.address || '─'}</div>
+        <div style="font-weight:600;margin-bottom:8px;color:var(--color-text);">${p.address || '─'}${p.address ? ` <button onclick="copyCommercialAddress(${p.id})" title="複製地址" style="background:none;border:none;cursor:pointer;font-size:14px;padding:0 4px;">📋</button>` : ''}</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px;margin-bottom:8px;">
           <div><span style="color:#666;">區域：</span>${p.district || '─'}</div>
           <div><span style="color:#666;">租金：</span>NT$${p.rent ? p.rent.toLocaleString() : '─'}</div>
@@ -5533,6 +5533,14 @@ async function deleteCommercialProperty(id) {
     console.error('Error deleting property:', error);
     alert('刪除失敗');
   }
+}
+
+function copyCommercialAddress(id) {
+  const prop = commercialProperties.find(p => String(p.id) === String(id));
+  if (!prop || !prop.address) { showToast('沒有地址可複製', 'error'); return; }
+  navigator.clipboard.writeText(prop.address)
+    .then(() => showToast('地址已複製', 'success'))
+    .catch(() => showToast('複製失敗，請手動選取', 'error'));
 }
 
 function onCommercialDistrictChange() {
