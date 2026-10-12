@@ -5385,7 +5385,7 @@ function displayCommercialProperties() {
       <td>${p.floor || '─'}</td>
       <td>${p.usage_type || '─'}</td>
       <td><span style="background:${p.status ? '#4CAF50' : '#ccc'};color:#fff;padding:4px 8px;border-radius:4px;font-size:12px;">${p.status ? '上架' : '下架'}</span></td>
-      <td>${p.developer || '─'}</td>
+      <td><input type="text" value="${escapeAttr(p.developer)}" placeholder="開發者" onchange="updateCommercialDeveloper(${p.id}, this.value)" style="width:90px;padding:4px 6px;border:1px solid #ddd;border-radius:4px;font-size:13px;" /></td>
       <td style="text-align:center;">
         <button onclick="editCommercialProperty(${p.id})" style="background:none;border:none;color:var(--color-primary-button);cursor:pointer;text-decoration:underline;">編輯</button>
         <span style="margin:0 4px;">│</span>
@@ -5406,7 +5406,7 @@ function displayCommercialProperties() {
           <div><span style="color:#666;">坪數：</span>${p.usable_area ? p.usable_area + '坪' : '─'}</div>
           <div><span style="color:#666;">樓層：</span>${p.floor || '─'}</div>
           <div><span style="color:#666;">用途：</span>${p.usage_type || '─'}</div>
-          <div><span style="color:#666;">開發者：</span>${p.developer || '─'}</div>
+          <div><span style="color:#666;">開發者：</span><input type="text" value="${escapeAttr(p.developer)}" placeholder="開發者" onchange="updateCommercialDeveloper(${p.id}, this.value)" style="width:90px;padding:2px 4px;border:1px solid #ddd;border-radius:4px;font-size:13px;" /></div>
           <div><span style="color:#666;">狀態：</span><span style="background:${p.status ? '#4CAF50' : '#ccc'};color:#fff;padding:2px 6px;border-radius:3px;font-size:11px;">${p.status ? '上架' : '下架'}</span></div>
         </div>
         <div style="display:flex;gap:8px;">
@@ -5536,6 +5536,31 @@ async function deleteCommercialProperty(id) {
   } catch (error) {
     console.error('Error deleting property:', error);
     alert('刪除失敗');
+  }
+}
+
+function escapeAttr(value) {
+  return String(value || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+}
+
+async function updateCommercialDeveloper(id, value) {
+  const developer = value.trim() || null;
+  try {
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/commercial_properties?id=eq.${id}`, {
+      method: 'PATCH',
+      headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ developer })
+    });
+    if (!response.ok) {
+      alert(`開發者儲存失敗 (${response.status})`);
+      return;
+    }
+    const prop = commercialProperties.find(p => String(p.id) === String(id));
+    if (prop) prop.developer = developer;
+    showToast('開發者已更新', 'success');
+  } catch (error) {
+    console.error('Error updating developer:', error);
+    alert('開發者儲存失敗');
   }
 }
 
