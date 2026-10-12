@@ -5340,7 +5340,7 @@ async function loadCommercialProperties() {
     });
     commercialProperties = await response.json();
     const devResponse = await fetch(`${SUPABASE_URL}/rest/v1/commercial_developers?select=name&order=name.asc`, {
-      headers: { 'apikey': SUPABASE_KEY }
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
     });
     commercialDevelopers = devResponse.ok ? (await devResponse.json()).map(d => d.name) : [];
     displayCommercialProperties();
@@ -5563,7 +5563,7 @@ async function addCommercialDeveloper() {
   try {
     const response = await fetch(`${SUPABASE_URL}/rest/v1/commercial_developers`, {
       method: 'POST',
-      headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' },
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ name })
     });
     if (!response.ok) {
