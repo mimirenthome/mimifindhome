@@ -2135,11 +2135,8 @@ function parsePropertyText(text) {
   const prosLines = [];
   if (tenantPrefLine) prosLines.push(tenantPrefLine);
 
-  Object.entries(prosByCategory).forEach(([category, items]) => {
-    if (items.length > 0) {
-      prosLines.push(`【${category}】`);
-      items.forEach(item => prosLines.push(`• ${item}`));
-    }
+  Object.values(prosByCategory).forEach(items => {
+    items.forEach(item => prosLines.push(`• ${item}`));
   });
 
   if (prosLines.length > 0) result.pros = prosLines.join('\n');
