@@ -3407,10 +3407,9 @@ input[type="datetime-local"].form-input {
 .media-lightbox-content {
   max-width: 98vw;
   max-height: 95vh;
-  width: 100%;
+  width: auto;
   height: auto;
-  aspect-ratio: 4 / 3;
-  object-fit: cover;
+  object-fit: contain;
 }
 
 .media-lightbox-video-wrapper,
