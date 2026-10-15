@@ -1189,7 +1189,8 @@ input[type="datetime-local"].form-input {
 }
 .detail-main-img {
   width: 100%;
-  height: 460px;
+  height: auto;
+  max-height: 560px;
   object-fit: contain;
   display: block;
   background: #eeeee8;
@@ -2327,7 +2328,7 @@ input[type="datetime-local"].form-input {
     text-align: left;
   }
   .admin-mobile-drawer .admin-nav-link:last-child { border-bottom: none; }
-  .detail-main-img { height: 260px; object-fit: contain; background: #eeeee8; }
+  .detail-main-img { height: auto; max-height: 420px; object-fit: contain; background: #eeeee8; }
 
   /* 手機版模態框卡片式 */
   .modal-box {
