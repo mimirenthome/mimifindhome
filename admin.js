@@ -2047,7 +2047,8 @@ function parsePropertyText(text) {
   if (tags.includes('可開伙')) {
     if (/電磁爐|可電磁爐/.test(text)) prosByCategory['租住政策'].push('可電磁爐');
     else prosByCategory['租住政策'].push('可開伙');
-  } else if (/流理台|流理臺|流理檯|廚台|水槽廚台/.test(text)) prosByCategory['生活設施'].push('附流理台');
+  }
+  if (/流理台|流理臺|流理檯|廚台|水槽廚台/.test(text)) prosByCategory['生活設施'].push('有流理台');
 
   // 設備
   if (/雙門.*冰箱|冰箱.*雙門|大冰箱/.test(text)) prosByCategory['生活設施'].push('雙門大冰箱');
