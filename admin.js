@@ -2100,11 +2100,8 @@ function parsePropertyText(text) {
   if (hasSubmother) prosByCategory['停車移動'].push('有子母車');
 
   // 一層幾戶
-  const floorUnitsMatch = /一層(\d+)戶|(\d+)戶\/層|每層(\d+)戶/.exec(text);
-  if (floorUnitsMatch) {
-    const units = floorUnitsMatch[1] || floorUnitsMatch[2] || floorUnitsMatch[3];
-    prosByCategory['社區福利'].push(`一層${units}戶`);
-  }
+  const floorUnitsMatch = /(一層[一二兩三四五六七八九十\d]+戶|每層[一二兩三四五六七八九十\d]+戶|[一二兩三四五六七八九十\d]+戶\/層)/.exec(text);
+  if (floorUnitsMatch) prosByCategory['社區福利'].push(floorUnitsMatch[1]);
 
   // 寵物
   const hasSmallDog = /小型狗|小型犬|小狗/.test(text);
@@ -2165,7 +2162,7 @@ function parsePropertyText(text) {
     [/管理室/, /管理室|管理員/],
     [/台水|台電/, /台水|台電/],
     [/子母車/, /子母車|垃圾/],
-    [/一層\d+戶/, /戶/],
+    [/戶/, /戶/],
     [/寵|貓|狗/, /寵|貓|狗/],
     [/租補/, /租補|雙租補/],
     [/網路|第四台|聯網/, /網路|第四台|聯網電視/]
@@ -2268,7 +2265,7 @@ function parsePropertyText(text) {
   const hasPetTag = tags.includes('可狗') || tags.includes('可貓');
   if (hasPetTag) {
     const petSrc = rawPet + ' ' + (rawNotes || '');
-    if (/安靜|不能吵|不可吵|不吠叫|吵的不行|不擾鄰/.test(petSrc))  cons.push('寵物需安靜不擾鄰');
+    if (/安靜|不吵|不能吵|不可吵|不吠|不吠叫|吵的不行|不擾鄰/.test(petSrc))  cons.push('寵物需安靜不擾鄰');
     if (/寵物條款|寵物契約|簽條款|簽寵條|寵條/.test(petSrc))         cons.push('需簽寵物條款');
     if (/中型犬以下|小型犬|限小型|中小型|不可大型/.test(petSrc))       cons.push('狗限中型犬以下');
     const petCleanM = petSrc.match(/寵[物清]*費?\s*[:\s：]?\s*(\d[\d,]+)|寵清費\s*(\d[\d,]+)/);
