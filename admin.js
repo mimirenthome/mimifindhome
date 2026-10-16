@@ -1928,7 +1928,7 @@ function parsePropertyText(text) {
   const hl = [];
 
   // 1. 管理費（🆕 最前面，租客最關心的）
-  if (rawMgmt) {
+  if (rawMgmt && !/^(無|沒有|否|不用|不收|0|0元)$/.test(rawMgmt.trim())) {
     const mgmtText = rawMgmt.trim();
     if (/^含$|^有$|^已含|^含在內/.test(mgmtText)) {
       hl.push('租金已含管理費');
@@ -1939,9 +1939,9 @@ function parsePropertyText(text) {
     }
   }
 
-  // 2. 水電計費（保留原始短句）
+  // 2. 水電計費（保留原始短句，斜線統一半形）
   if (rawWater) {
-    hl.push(rawWater.replace(/[\/\\]/g, '／').replace(/\s+/g, '').trim());
+    hl.push(rawWater.replace(/[／\\]/g, '/').replace(/\s+/g, '').trim());
   }
 
   // 2. 🆕 冷氣設備（優先級提高）
