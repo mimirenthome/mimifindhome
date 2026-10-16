@@ -2070,18 +2070,12 @@ function parsePropertyText(text) {
 
   // 停車
   if (/遮雨棚|有棚|棚式|雨棚/.test(parkingStr + ' ' + text)) prosByCategory['停車移動'].push('停車位附遮雨棚');
-  if (parkingStr.trim()) {
-    const needsConsult = /管理室|可問|詢問|洽詢/.test(parkingStr);
-    if (needsConsult) {
-      if (/室內機車|機車/.test(parkingStr)) prosByCategory['停車移動'].push('室內機車位可詢問管理室');
-      else if (/汽車|平車|機械/.test(parkingStr)) prosByCategory['停車移動'].push('停車位可詢問管理室');
-      else if (/附近好停/.test(parkingStr)) prosByCategory['停車移動'].push('附近好停車');
-      else prosByCategory['停車移動'].push('停車位詳情詢問管理室');
-    } else if (parkingActive && isDoubleParking) prosByCategory['停車移動'].push('雙停車位');
-    else if (parkingActive && !isParkingExtra) prosByCategory['停車移動'].push('附停車位');
-  } else {
-    if (parkingActive && isDoubleParking) prosByCategory['停車移動'].push('雙停車位');
-    else if (parkingActive && !isParkingExtra) prosByCategory['停車移動'].push('附停車位');
+  if (parkingStr.trim() && !parkingExplicitNo) {
+    prosByCategory['停車移動'].push(parkingStr.trim());
+  } else if (parkingActive && isDoubleParking) {
+    prosByCategory['停車移動'].push('雙停車位');
+  } else if (parkingActive && !isParkingExtra) {
+    prosByCategory['停車移動'].push('附停車位');
   }
 
   // 社區設施
