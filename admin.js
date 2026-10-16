@@ -1680,7 +1680,7 @@ function parsePropertyText(text) {
   const rawNotes   = field(['備註']);
 
   // ===== DISTRICT (from address field or anywhere in text) =====
-  const districts = ['中區','東區','南區','西區','北區','北屯區','西屯區','南屯區','太平區','大里區','霧峰區','烏日區','豐原區','潭子區','大雅區','沙鹿區','清水區','梧棲區','龍井區','大肚區','大甲區','后里區'];
+  const districts = ['中區','東區','南區','西區','北區','北屯區','西屯區','南屯區','太平區','大里區','霧峰區','烏日區','豐原區','潭子區','大雅區','沙鹿區','清水區','梧棲區','龍井區','大肚區','大甲區','后里區','草屯鎮'];
   for (const d of districts) {
     if (text.includes(d)) { result.district = d; break; }
   }
@@ -4938,7 +4938,7 @@ async function loadPropertiesOnMap() {
 
 function extractDistrict(address) {
   // 從地址中提取區域
-  const districtMatch = address.match(/(中區|東區|西區|南區|北區|北屯區|西屯區|南屯區|豐原區|霧峰區|烏日區|大里區|太平區|石岡區|東勢區|和平區|神岡區|后里區|外埔區|大甲區|清水區|梧棲區|沙鹿區|龍井區|大肚區|潭子區|大雅區)/);
+  const districtMatch = address.match(/(中區|東區|西區|南區|北區|北屯區|西屯區|南屯區|豐原區|霧峰區|烏日區|大里區|太平區|石岡區|東勢區|和平區|神岡區|后里區|草屯鎮|外埔區|大甲區|清水區|梧棲區|沙鹿區|龍井區|大肚區|潭子區|大雅區)/);
   return districtMatch ? districtMatch[1] : '其他';
 }
 
@@ -5037,7 +5037,7 @@ function addMarkersForLocations() {
   const districtOrder = [
     '西屯區', '北屯區', '南屯區', '西區', '北區', '南區', '東區', '中區',
     '大雅區', '龍井區', '沙鹿區', '太平區', '大里區', '霧峰區', '烏日區',
-    '豐原區', '潭子區', '清水區', '梧棲區', '大肚區', '大甲區', '后里區'
+    '豐原區', '潭子區', '清水區', '梧棲區', '大肚區', '大甲區', '后里區', '草屯鎮'
   ];
 
   const sortedDistricts = Array.from(displayedDistricts).sort((a, b) => {
@@ -5350,6 +5350,7 @@ async function initCommercialModule() {
     '豐原區', '潭子區', '大雅區',
     '沙鹿區', '清水區', '梧棲區',
     '龍井區', '大肚區', '大甲區', '后里區',
+    '草屯鎮',
     '神岡區',
     '其他'
   ];
@@ -6079,6 +6080,7 @@ async function aiParseAndFill() {
       '豐原區', '潭子區', '大雅區',
       '沙鹿區', '清水區', '梧棲區',
       '龍井區', '大肚區', '大甲區', '后里區',
+    '草屯鎮',
       '神岡區'
     ];
 
