@@ -2132,12 +2132,58 @@ function parsePropertyText(text) {
   }
 
   // 格式化優點：先顯示租客偏好，再按類別顯示
+  const PRO_ORDER_RULES = [
+    [/^高樓層/, /高採光|景觀佳|視野佳|高樓層|\d+樓|\d+F/],
+    [/^坪數/, /坪/],
+    [/樓中樓/, /樓中樓/],
+    [/獨立出入口/, /獨立出入|獨立門口|獨立入口|專用入口/],
+    [/邊間/, /邊間/],
+    [/格局方正/, /方正|方便格局/],
+    [/獨立陽台/, /獨立陽台|専用陽台/],
+    [/採光佳/, /採光佳|採光好|採光充足|全明/],
+    [/凸窗/, /凸窗/],
+    [/獨洗/, /獨洗曬|獨立洗曬|洗曬/],
+    [/陽台/, /陽台/],
+    [/洗脫烘/, /洗脫烘|烘乾洗衣機/],
+    [/乾濕分離/, /乾濕分離/],
+    [/衛浴開窗/, /衛浴開窗|浴室開窗|廁所開窗|衛浴.*有窗|浴室.*有窗/],
+    [/浴缸/, /浴缸/],
+    [/電磁爐|可開伙/, /電磁爐|開伙/],
+    [/流理台/, /流理台|流理臺|流理檯|廚台|水槽廚台/],
+    [/冰箱/, /冰箱/],
+    [/冷氣/, /冷氣|全冷/],
+    [/RO|逆滲透/, /RO|逆滲透/],
+    [/飲水機/, /飲水機/],
+    [/代收/, /代收/],
+    [/床墊|掀式/, /乳膠|可掀式|掀床/],
+    [/大衣櫃/, /大衣櫃|衣櫃/],
+    [/遮雨棚/, /遮雨棚|有棚|雨棚/],
+    [/停車|車位/, /停車|機車位|車位/],
+    [/健身房/, /健身房/],
+    [/烹飪/, /烹飪|公共廚房/],
+    [/管理室/, /管理室|管理員/],
+    [/台水|台電/, /台水|台電/],
+    [/子母車/, /子母車|垃圾/],
+    [/一層\d+戶/, /戶/],
+    [/寵|貓|狗/, /寵|貓|狗/],
+    [/租補/, /租補|雙租補/],
+    [/網路|第四台|聯網/, /網路|第四台|聯網電視/]
+  ];
+  const proPos = label => {
+    const rule = PRO_ORDER_RULES.find(([labelRe]) => labelRe.test(label));
+    if (!rule) return Infinity;
+    const i = text.search(rule[1]);
+    return i < 0 ? Infinity : i;
+  };
+
   const prosLines = [];
   if (tenantPrefLine) prosLines.push(tenantPrefLine);
 
-  Object.values(prosByCategory).forEach(items => {
-    items.forEach(item => prosLines.push(`• ${item}`));
-  });
+  Object.values(prosByCategory)
+    .flat()
+    .map((label, idx) => ({ label, idx, pos: proPos(label) }))
+    .sort((a, b) => (a.pos !== b.pos ? (a.pos < b.pos ? -1 : 1) : a.idx - b.idx))
+    .forEach(({ label }) => prosLines.push(`• ${label}`));
 
   if (prosLines.length > 0) result.pros = prosLines.join('\n');
 
