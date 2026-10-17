@@ -1562,13 +1562,13 @@ async function fetchNearbyLandmarks(address, district, rawText) {
       const added = new Set();
 
       // 🆕 按優先級分類（都按距離排序優先最近的）：學校 > 百貨 > 超知名商圈 > 其他商圈 > 景點 > 最近捷運 > 其他
-      const schools = withDist.filter(lm => lm.dist <= 500 && isSchool(lm.name)).sort((a, b) => a.dist - b.dist);
-      const depts = withDist.filter(lm => lm.dist <= 500 && isDeptStore(lm.name)).sort((a, b) => a.dist - b.dist);
-      const famousMallList = withDist.filter(lm => lm.dist <= 500 && isFamousMall(lm.name)).sort((a, b) => a.dist - b.dist);
-      const malls = withDist.filter(lm => lm.dist <= 500 && isMall(lm.name) && !isFamousMall(lm.name)).sort((a, b) => a.dist - b.dist);
-      const spots = withDist.filter(lm => lm.dist <= 500 && isLandmark(lm.name)).sort((a, b) => a.dist - b.dist);
-      const mrtList = withDist.filter(lm => lm.dist <= 500 && isMRT(lm.name)).sort((a, b) => a.dist - b.dist).slice(0, 1);
-      const others = withDist.filter(lm => lm.dist <= 500 && !isSchool(lm.name) && !isDeptStore(lm.name) && !isLandmark(lm.name) && !isFamousMall(lm.name) && !isMRT(lm.name) && !isMall(lm.name)).sort((a, b) => a.dist - b.dist);
+      const schools = withDist.filter(lm => lm.dist <= 1500 && isSchool(lm.name)).sort((a, b) => a.dist - b.dist);
+      const depts = withDist.filter(lm => lm.dist <= 1500 && isDeptStore(lm.name)).sort((a, b) => a.dist - b.dist);
+      const famousMallList = withDist.filter(lm => lm.dist <= 1500 && isFamousMall(lm.name)).sort((a, b) => a.dist - b.dist);
+      const malls = withDist.filter(lm => lm.dist <= 1500 && isMall(lm.name) && !isFamousMall(lm.name)).sort((a, b) => a.dist - b.dist);
+      const spots = withDist.filter(lm => lm.dist <= 1500 && isLandmark(lm.name)).sort((a, b) => a.dist - b.dist);
+      const mrtList = withDist.filter(lm => lm.dist <= 1500 && isMRT(lm.name)).sort((a, b) => a.dist - b.dist).slice(0, 1);
+      const others = withDist.filter(lm => lm.dist <= 1500 && !isSchool(lm.name) && !isDeptStore(lm.name) && !isLandmark(lm.name) && !isFamousMall(lm.name) && !isMRT(lm.name) && !isMall(lm.name)).sort((a, b) => a.dist - b.dist);
 
       // 按優先級 + 距離加入：所有學校(按距離) > 最近百貨 > 超知名商圈(按距離) > 其他商圈(按距離) > 景點 > 最近捷運(1個) > 其他（最多5個）
       [
