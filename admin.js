@@ -5396,23 +5396,32 @@ function clearCommercialFilters() {
   loadCommercialProperties();
 }
 
+function normalizeSearchText(value) {
+  return String(value || '')
+    .replace(/[Ａ-Ｚａ-ｚ０-９]/g, c => String.fromCharCode(c.charCodeAt(0) - 0xFEE0))
+    .replace(/\s+/g, '')
+    .toLowerCase();
+}
+
 function displayCommercialProperties() {
   const tbody = document.getElementById('commercial-props-tbody');
   if (!tbody) return;
 
   const statusFilter = document.getElementById('commercial-filter-status')?.value || '';
   const districtFilter = document.getElementById('commercial-filter-district')?.value || '';
-  const searchText = document.getElementById('commercial-search')?.value?.toLowerCase() || '';
+  const searchText = normalizeSearchText(document.getElementById('commercial-search')?.value);
 
   let filtered = commercialProperties.filter(p => {
     if (statusFilter && p.status?.toString() !== statusFilter) return false;
     if (districtFilter && p.district !== districtFilter) return false;
-    if (searchText && !p.address?.toLowerCase().includes(searchText)) return false;
+    if (searchText && !normalizeSearchText(p.address).includes(searchText)) return false;
     return true;
   });
 
   if (filtered.length === 0) {
     tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:20px;">無符合條件的物件</td></tr>';
+    const emptyCards = document.getElementById('commercial-props-cards');
+    if (emptyCards) emptyCards.innerHTML = '<div style="text-align:center;padding:20px;">無符合條件的物件</div>';
     return;
   }
 
@@ -5588,35 +5597,6 @@ function developerSelectHtml(p) {
   return `<select onchange="updateCommercialDeveloper(${p.id}, this.value)" style="padding:4px 6px;border:1px solid #ddd;border-radius:4px;font-size:13px;max-width:130px;">${options}</select>`;
 }
 
-async function addCommercialDeveloper() {
-  const input = document.getElementById('new-developer-name');
-  const name = input.value.trim();
-  if (!name) return;
-  if (commercialDevelopers.includes(name)) {
-    showToast('這位開發者已在名單中', 'error');
-    return;
-  }
-  try {
-    const response = await fetch(`${SUPABASE_URL}/rest/v1/commercial_developers`, {
-      method: 'POST',
-      headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name })
-    });
-    if (!response.ok) {
-      alert(`新增開發者失敗 (${response.status})`);
-      return;
-    }
-    commercialDevelopers.push(name);
-    commercialDevelopers.sort((a, b) => a.localeCompare(b, 'zh-Hant'));
-    input.value = '';
-    displayCommercialProperties();
-    showToast('已新增開發者', 'success');
-  } catch (error) {
-    console.error('Error adding developer:', error);
-    alert('新增開發者失敗');
-  }
-}
-
 function escapeAttr(value) {
   return String(value || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
 }
@@ -5743,8 +5723,8 @@ async function addCommercialMarkersToMap() {
 
     if (commercialSelectedFeatures.size > 0) {
       const propFeatures = prop.features ? prop.features.split(',').map(f => f.trim()) : [];
-      const hasAnyFeature = Array.from(commercialSelectedFeatures).some(f => propFeatures.includes(f));
-      if (!hasAnyFeature) continue;
+      const hasAllFeatures = Array.from(commercialSelectedFeatures).every(f => propFeatures.includes(f));
+      if (!hasAllFeatures) continue;
     }
 
     let lat = prop.latitude;
