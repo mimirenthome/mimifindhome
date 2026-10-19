@@ -15,7 +15,6 @@
   <link rel="stylesheet" href="style.css?v=20260805q" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase.js?v=20260830a"></script>
-  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBaLShxDpDsor-KxAt9HeXiKzWNgt8h2FA&libraries=geocoding"></script>
 </head>
 <body class="admin-page">
 
@@ -60,9 +59,7 @@
   </div>
   <nav class="admin-nav" id="admin-nav">
     <button class="admin-nav-link active" onclick="showSection('props')">📦 物件管理</button>
-    <button class="admin-nav-link" onclick="showSection('map')">📍 地圖查詢</button>
     <button class="admin-nav-link" onclick="showSection('commercial')">🏢 商業物件</button>
-    <button class="admin-nav-link" onclick="showSection('commercial-map')">🗺️ 商業地圖</button>
     <button class="admin-nav-link" onclick="showSection('appts')" hidden>📅 預約資料</button>
     <button class="admin-nav-link" onclick="showSection('pw')">⚙️ 帳號設定</button>
     <button class="admin-nav-link" onclick="showSection('feedback')">💌 回饋中心</button>
@@ -75,9 +72,7 @@
 </header>
 <nav class="admin-mobile-nav" id="admin-mobile-nav">
   <button class="admin-nav-link" onclick="showSection('props');closeAdminMobileNav()">📦 物件管理</button>
-  <button class="admin-nav-link" onclick="showSection('map');closeAdminMobileNav()">📍 地圖查詢</button>
   <button class="admin-nav-link" onclick="showSection('commercial');closeAdminMobileNav()">🏢 商業物件</button>
-  <button class="admin-nav-link" onclick="showSection('commercial-map');closeAdminMobileNav()">🗺️ 商業地圖</button>
   <button class="admin-nav-link" onclick="showSection('appts');closeAdminMobileNav()" hidden>📅 預約資料</button>
   <button class="admin-nav-link" onclick="showSection('pw');closeAdminMobileNav()">⚙️ 帳號設定</button>
   <button class="admin-nav-link" onclick="showSection('feedback');closeAdminMobileNav()">💌 回饋中心</button>
@@ -431,92 +426,6 @@
     </div>
   </div>
 
-  <!-- ===== 地圖查詢 ===== -->
-  <div class="admin-section" id="section-map">
-    <div class="admin-section-title">📍 物件區域查詢</div>
-    <div class="admin-section-sub">在地圖上查看所有物件的地理分佈</div>
-
-    <!-- 篩選容器 -->
-    <div style="background: var(--color-cream); border: 2px solid var(--color-border); border-radius: 8px; padding: 16px; margin-top: 12px;">
-      <!-- 區域篩選 -->
-      <div id="district-filter-container" style="margin-bottom: 16px;"></div>
-
-      <!-- 租金、格局、類型篩選 -->
-      <div style="padding: 12px; background: var(--color-soft-green); border-radius: 6px; margin-bottom: 16px;">
-        <!-- 租金篩選 -->
-        <div style="margin-bottom: 12px;">
-          <div style="font-weight: 600; color: var(--color-text); margin-bottom: 8px;">💰 租金篩選</div>
-          <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
-            <div>
-              <label style="display: block; font-size: 12px; color: var(--color-text-muted); margin-bottom: 4px;">最低</label>
-              <input type="number" id="min-rent-filter" placeholder="0" min="0" onchange="onMapRentChange()" class="form-input" style="width: 120px;" />
-            </div>
-            <div style="color: var(--color-text-muted);">～</div>
-            <div>
-              <label style="display: block; font-size: 12px; color: var(--color-text-muted); margin-bottom: 4px;">最高</label>
-              <input type="number" id="max-rent-filter" placeholder="不限" min="0" onchange="onMapRentChange()" class="form-input" style="width: 120px;" />
-            </div>
-            <div style="color: var(--color-text-muted); margin-top: 20px;">元</div>
-          </div>
-        </div>
-
-        <!-- 格局篩選 -->
-        <div style="margin-bottom: 12px;">
-          <div style="font-weight: 600; color: var(--color-text); margin-bottom: 8px;">🏠 格局</div>
-          <div style="display: flex; flex-wrap: wrap; gap: 6px;">
-            <label style="cursor: pointer;"><input type="checkbox" class="map-layout-type" value="套房" onchange="onMapLayoutTypeChange()" /> 套房</label>
-            <label style="cursor: pointer;"><input type="checkbox" class="map-layout-type" value="1房" onchange="onMapLayoutTypeChange()" /> 1房</label>
-            <label style="cursor: pointer;"><input type="checkbox" class="map-layout-type" value="2房" onchange="onMapLayoutTypeChange()" /> 2房</label>
-            <label style="cursor: pointer;"><input type="checkbox" class="map-layout-type" value="3房" onchange="onMapLayoutTypeChange()" /> 3房</label>
-            <label style="cursor: pointer;"><input type="checkbox" class="map-layout-type" value="4房" onchange="onMapLayoutTypeChange()" /> 4房</label>
-            <label style="cursor: pointer;"><input type="checkbox" class="map-layout-type" value="5房以上" onchange="onMapLayoutTypeChange()" /> 5房以上</label>
-          </div>
-        </div>
-
-        <!-- 類型篩選 -->
-        <div>
-          <div style="font-weight: 600; color: var(--color-text); margin-bottom: 8px;">🏢 類型</div>
-          <div style="display: flex; flex-wrap: wrap; gap: 6px;">
-            <label style="cursor: pointer;"><input type="checkbox" class="map-layout-type" value="公寓" onchange="onMapLayoutTypeChange()" /> 公寓</label>
-            <label style="cursor: pointer;"><input type="checkbox" class="map-layout-type" value="電梯大樓" onchange="onMapLayoutTypeChange()" /> 電梯大樓</label>
-            <label style="cursor: pointer;"><input type="checkbox" class="map-layout-type" value="電梯透天" onchange="onMapLayoutTypeChange()" /> 電梯透天</label>
-            <label style="cursor: pointer;"><input type="checkbox" class="map-layout-type" value="透天" onchange="onMapLayoutTypeChange()" /> 透天</label>
-          </div>
-        </div>
-      </div>
-
-      <!-- 標籤篩選 -->
-      <div style="padding: 12px; background: var(--color-soft-green); border-radius: 6px;">
-        <div style="font-weight: 600; color: var(--color-text); margin-bottom: 8px;">🏷️ 特色標籤（可多選）</div>
-        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-        <label style="cursor: pointer;"><input type="checkbox" value="可租補" onchange="onMapTagChange()" /> 可租補</label>
-        <label style="cursor: pointer;"><input type="checkbox" value="可狗" onchange="onMapTagChange()" /> 可狗</label>
-        <label style="cursor: pointer;"><input type="checkbox" value="可貓" onchange="onMapTagChange()" /> 可貓</label>
-        <label style="cursor: pointer;"><input type="checkbox" value="獨洗曬" onchange="onMapTagChange()" /> 獨洗曬</label>
-        <label style="cursor: pointer;"><input type="checkbox" value="可開伙" onchange="onMapTagChange()" /> 可開伙</label>
-        <label style="cursor: pointer;"><input type="checkbox" value="車位" onchange="onMapTagChange()" /> 車位</label>
-        <label style="cursor: pointer;"><input type="checkbox" value="陽台" onchange="onMapTagChange()" /> 陽台</label>
-        <label style="cursor: pointer;"><input type="checkbox" value="台水" onchange="onMapTagChange()" /> 台水</label>
-        <label style="cursor: pointer;"><input type="checkbox" value="台電" onchange="onMapTagChange()" /> 台電</label>
-        <label style="cursor: pointer;"><input type="checkbox" value="衛浴乾濕分離" onchange="onMapTagChange()" /> 衛浴乾濕分離</label>
-        <label style="cursor: pointer;"><input type="checkbox" value="變頻冷氣" onchange="onMapTagChange()" /> 變頻冷氣</label>
-        <label style="cursor: pointer;"><input type="checkbox" value="管理室" onchange="onMapTagChange()" /> 管理室</label>
-        <label style="cursor: pointer;"><input type="checkbox" value="子母車" onchange="onMapTagChange()" /> 子母車</label>
-        <label style="cursor: pointer;"><input type="checkbox" value="飲水機" onchange="onMapTagChange()" /> 飲水機</label>
-        <label style="cursor: pointer;"><input type="checkbox" value="網路" onchange="onMapTagChange()" /> 網路</label>
-        </div>
-      </div>
-
-      <!-- 查詢和清除按鈕 -->
-      <div style="display:flex;gap:12px;margin-top:12px;">
-        <button onclick="onMapQueryClick()" style="flex:1;padding:12px;background:var(--color-primary-button);color:#fff;border:none;border-radius:6px;font-weight:600;font-size:16px;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.opacity='0.85';" onmouseout="this.style.opacity='1';">🔍 查詢地圖</button>
-        <button onclick="onMapClearClick()" style="flex:1;padding:12px;background:#999;color:#fff;border:none;border-radius:6px;font-weight:600;font-size:16px;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.opacity='0.85';" onmouseout="this.style.opacity='1';">🗑️ 清除條件</button>
-      </div>
-    </div>
-
-    <div id="map-container" style="width:100%;height:600px;border-radius:8px;border:3px solid var(--color-primary-button);margin-top:12px;"></div>
-  </div>
-
   <!-- ===== 商業物件管理 ===== -->
   <div class="admin-section" id="section-commercial">
     <div class="admin-section-title">🏢 商業物件管理</div>
@@ -623,70 +532,7 @@
     </form>
   </div>
 
-  <!-- ===== 商業物件地圖查詢 ===== -->
-  <div class="admin-section" id="section-commercial-map">
-    <div class="admin-section-title">🗺️ 商業物件地圖查詢</div>
-    <div class="admin-section-sub">在地圖上查看所有商業物件的地理分佈</div>
-
-    <div style="background: var(--color-cream); border: 2px solid var(--color-border); border-radius: 8px; padding: 16px; margin-top: 12px;">
-      <!-- 區域篩選 -->
-      <div id="commercial-district-filter-container" style="margin-bottom: 16px;"></div>
-
-      <!-- 租金、樓層、屋齡篩選 -->
-      <div style="padding: 12px; background: var(--color-soft-green); border-radius: 6px; margin-bottom: 16px;">
-        <div style="margin-bottom: 12px;">
-          <div style="font-weight: 600; color: var(--color-text); margin-bottom: 8px;">💰 租金篩選</div>
-          <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
-            <div><label style="display: block; font-size: 12px; color: var(--color-text-muted); margin-bottom: 4px;">最低</label><input type="number" id="c-min-rent" placeholder="0" class="form-input" style="width: 120px;" /></div>
-            <div style="color: var(--color-text-muted);">～</div>
-            <div><label style="display: block; font-size: 12px; color: var(--color-text-muted); margin-bottom: 4px;">最高</label><input type="number" id="c-max-rent" placeholder="不限" class="form-input" style="width: 120px;" /></div>
-            <div style="color: var(--color-text-muted); margin-top: 20px;">元</div>
-          </div>
-        </div>
-
-        <div style="margin-bottom: 12px;">
-          <div style="font-weight: 600; color: var(--color-text); margin-bottom: 8px;">📐 面積篩選</div>
-          <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
-            <div><label style="display: block; font-size: 12px; color: var(--color-text-muted); margin-bottom: 4px;">最小</label><input type="number" id="c-min-area" placeholder="0" class="form-input" style="width: 120px;" /></div>
-            <div style="color: var(--color-text-muted);">～</div>
-            <div><label style="display: block; font-size: 12px; color: var(--color-text-muted); margin-bottom: 4px;">最大</label><input type="number" id="c-max-area" placeholder="不限" class="form-input" style="width: 120px;" /></div>
-            <div style="color: var(--color-text-muted); margin-top: 20px;">坪</div>
-          </div>
-        </div>
-
-        <div style="margin-bottom: 12px;">
-          <div style="font-weight: 600; color: var(--color-text); margin-bottom: 8px;">🏭 用途</div>
-          <div style="display: flex; flex-wrap: wrap; gap: 6px;">
-            <label><input type="checkbox" name="c-map-type" value="店面" onchange="onCommercialMapFilter()" /> 店面</label>
-            <label><input type="checkbox" name="c-map-type" value="廠房" onchange="onCommercialMapFilter()" /> 廠房</label>
-            <label><input type="checkbox" name="c-map-type" value="辦公室" onchange="onCommercialMapFilter()" /> 辦公室</label>
-            <label><input type="checkbox" name="c-map-type" value="倉庫" onchange="onCommercialMapFilter()" /> 倉庫</label>
-            <label><input type="checkbox" name="c-map-type" value="其他" onchange="onCommercialMapFilter()" /> 其他</label>
-          </div>
-        </div>
-
-        <div>
-          <div style="font-weight: 600; color: var(--color-text); margin-bottom: 8px;">✨ 特色</div>
-          <div style="display: flex; flex-wrap: wrap; gap: 6px;">
-            <label><input type="checkbox" name="c-map-feature" value="挑高" onchange="onCommercialMapFilter()" /> 挑高</label>
-            <label><input type="checkbox" name="c-map-feature" value="廠登" onchange="onCommercialMapFilter()" /> 廠登</label>
-            <label><input type="checkbox" name="c-map-feature" value="營登" onchange="onCommercialMapFilter()" /> 營登</label>
-            <label><input type="checkbox" name="c-map-feature" value="報稅" onchange="onCommercialMapFilter()" /> 報稅</label>
-          </div>
-        </div>
-      </div>
-
-      <!-- 查詢和清除按鈕 -->
-      <div style="display:flex;gap:12px;margin-top:12px;">
-        <button onclick="onCommercialMapQueryClick()" style="flex:1;padding:12px;background:var(--color-primary-button);color:#fff;border:none;border-radius:6px;font-weight:600;font-size:16px;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.opacity='0.85';" onmouseout="this.style.opacity='1';">🔍 查詢地圖</button>
-        <button onclick="onCommercialMapClearClick()" style="flex:1;padding:12px;background:#999;color:#fff;border:none;border-radius:6px;font-weight:600;font-size:16px;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.opacity='0.85';" onmouseout="this.style.opacity='1';">🗑️ 清除條件</button>
-      </div>
-    </div>
-
-    <div id="commercial-map-container" style="width:100%;height:600px;border-radius:8px;border:3px solid var(--color-primary-button);margin-top:12px;"></div>
-  </div>
-
-  <!-- ===== 帳號設定（修改密碼 + Google Key）===== -->
+  <!-- ===== 帳號設定（修改密碼）===== -->
   <div class="admin-section" id="section-pw">
     <div class="admin-section-title">⚙️ 帳號與設定</div>
 
@@ -708,26 +554,6 @@
           </div>
           <button type="submit" class="btn btn-primary">確認修改密碼</button>
         </form>
-      </div>
-
-      <!-- Google Maps API Key -->
-      <div>
-        <div class="admin-section-sub" style="font-weight:600;color:var(--color-text);margin-bottom:12px;">🗺️ Google Maps API Key（地標查詢）</div>
-        <div class="form-group">
-          <div style="display:flex;gap:8px;align-items:center;">
-            <input type="password" class="form-input" id="settings-google-key" placeholder="貼上你的 Google Maps Geocoding API Key" autocomplete="off" style="flex:1;" />
-            <button type="button" class="btn btn-primary btn-sm" onclick="saveGoogleKey()">儲存</button>
-            <button type="button" class="btn btn-ghost btn-sm" onclick="clearGoogleKey()">清除</button>
-          </div>
-          <div id="settings-key-status" style="margin-top:8px;font-size:13px;"></div>
-        </div>
-        <div style="background:#f5f5ef;border-radius:10px;padding:14px;font-size:13px;line-height:1.8;color:var(--color-text-muted);">
-          1. 前往 <b>console.cloud.google.com</b><br>
-          2. 左側「API 和服務」→「程式庫」→ 搜尋啟用「<b>Geocoding API</b>」<br>
-          3. 左側「API 和服務」→「<b>憑證</b>」→「建立憑證」→「API 金鑰」<br>
-          4. 複製金鑰貼到上方儲存<br><br>
-          <b style="color:var(--color-primary-dark);">每月 $200 免費額度（約 4 萬次），後台日常使用完全免費。</b>
-        </div>
       </div>
 
     </div>
