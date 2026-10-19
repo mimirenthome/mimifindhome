@@ -58,7 +58,7 @@
     <span>Mimi Home 後台</span>
   </div>
   <nav class="admin-nav" id="admin-nav">
-    <button class="admin-nav-link active" onclick="showSection('props')">📦 物件管理</button>
+    <button class="admin-nav-link active" onclick="showSection('props')">📦 住用管理</button>
     <button class="admin-nav-link" onclick="showSection('commercial')">🏢 商業物件</button>
     <button class="admin-nav-link" onclick="showSection('appts')" hidden>📅 預約資料</button>
     <button class="admin-nav-link" onclick="showSection('pw')">⚙️ 帳號設定</button>
@@ -71,7 +71,7 @@
   </div>
 </header>
 <nav class="admin-mobile-nav" id="admin-mobile-nav">
-  <button class="admin-nav-link" onclick="showSection('props');closeAdminMobileNav()">📦 物件管理</button>
+  <button class="admin-nav-link" onclick="showSection('props');closeAdminMobileNav()">📦 住用管理</button>
   <button class="admin-nav-link" onclick="showSection('commercial');closeAdminMobileNav()">🏢 商業物件</button>
   <button class="admin-nav-link" onclick="showSection('appts');closeAdminMobileNav()" hidden>📅 預約資料</button>
   <button class="admin-nav-link" onclick="showSection('pw');closeAdminMobileNav()">⚙️ 帳號設定</button>
@@ -87,7 +87,7 @@
 
   <!-- ===== PROPERTY LIST ===== -->
   <div class="admin-section active" id="section-props">
-    <div class="admin-section-title">物件管理</div>
+    <div class="admin-section-title">住用管理</div>
     <div class="admin-section-sub">管理所有租屋物件，可新增、編輯、刪除、上下架。</div>
 
 
@@ -434,7 +434,7 @@
     <!-- 篩選 -->
     <div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
       <select id="commercial-filter-status" class="form-input" style="flex:1;min-width:120px;" onchange="loadCommercialProperties()"><option value="">全部</option><option value="1">上架中</option><option value="0">已下架</option></select>
-      <input type="text" id="commercial-search" class="form-input" placeholder="名稱關鍵字" style="flex:1;min-width:120px;" oninput="displayCommercialProperties()" />
+      <input type="text" id="commercial-search" class="form-input" placeholder="地址／備註關鍵字" style="flex:1;min-width:120px;" oninput="displayCommercialProperties()" />
       <button onclick="displayCommercialProperties()" class="btn btn-secondary">🔍 搜尋</button>
       <button onclick="clearCommercialFilters()" class="btn btn-outline">✕ 清除</button>
       <button onclick="showSection('commercial-add')" class="btn btn-primary">➕ 新增物件</button>

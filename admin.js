@@ -4417,7 +4417,7 @@ function displayCommercialProperties() {
   let filtered = commercialProperties.filter(p => {
     if (statusFilter && p.status?.toString() !== statusFilter) return false;
     if (districtFilter && p.district !== districtFilter) return false;
-    if (searchText && !normalizeSearchText(p.address).includes(searchText)) return false;
+    if (searchText && !normalizeSearchText(`${p.address || ''} ${p.notes || ''}`).includes(searchText)) return false;
     return true;
   });
 
@@ -4437,7 +4437,7 @@ function displayCommercialProperties() {
       <td>${p.indoor_area ? p.indoor_area + '坪' : '─'}</td>
       <td>${p.floor || '─'}</td>
       <td>${p.usage_type || '─'}</td>
-      <td><span style="background:${p.status ? '#4CAF50' : '#ccc'};color:#fff;padding:4px 8px;border-radius:4px;font-size:12px;">${p.status ? '上架' : '下架'}</span></td>
+      <td><span style="background:${p.status ? '#4CAF50' : '#ccc'};color:#fff;padding:3px 6px;border-radius:4px;font-size:11px;white-space:nowrap;">${p.status ? '上架' : '下架'}</span></td>
       <td>${developerSelectHtml(p)}</td>
       <td style="text-align:center;">
         <button onclick="editCommercialProperty(${p.id})" style="background:none;border:none;color:var(--color-primary-button);cursor:pointer;text-decoration:underline;">編輯</button>
