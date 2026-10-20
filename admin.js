@@ -4416,6 +4416,23 @@ function renderCommercialFilterOptions() {
       + commercialDevelopers.map(n => `<option value="${escapeAttr(n)}">${escapeAttr(n)}</option>`).join('');
     sel.value = cur;
   }
+  const formSel = document.getElementById('c-developer');
+  if (formSel) {
+    const cur = formSel.value;
+    formSel.innerHTML = '<option value="">未指定</option>'
+      + commercialDevelopers.map(n => `<option value="${escapeAttr(n)}">${escapeAttr(n)}</option>`).join('');
+    formSel.value = cur;
+  }
+}
+
+function setCommercialDeveloper(name) {
+  const sel = document.getElementById('c-developer');
+  if (!sel) return;
+  const value = (name || '').trim();
+  if (value && !Array.from(sel.options).some(o => o.value === value)) {
+    sel.add(new Option(value, value));
+  }
+  sel.value = value;
 }
 
 function normalizeSearchText(value) {
@@ -4528,7 +4545,7 @@ function editCommercialProperty(id) {
   if (!prop) return;
 
   document.getElementById('c-address').value = prop.address || '';
-  document.getElementById('c-developer').value = prop.developer || '';
+  setCommercialDeveloper(prop.developer);
   document.getElementById('c-district').value = prop.district || '';
   document.getElementById('c-rent').value = prop.rent || '';
   document.getElementById('c-usable-area').value = prop.usable_area || '';
@@ -4858,6 +4875,9 @@ async function aiParseAndFill() {
     
     // 填充備註
     if (notes) document.getElementById('c-notes').value = notes;
+
+    const developer = extractField(/開發者[：:]\s*([^\n]+)/);
+    if (developer) setCommercialDeveloper(developer);
     
     // 清空粘貼區域
     document.getElementById('c-paste-data').value = '';
