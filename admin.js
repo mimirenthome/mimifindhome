@@ -1574,7 +1574,7 @@ function parsePropertyText(text) {
   // 2. 🆕 冷氣設備（優先級提高）
   const hasFullAC = /全室冷氣|全冷/.test(text);
   if (hasFullAC) hl.push('全室冷氣');
-  else if (tags.includes('變頻冷氣')) hl.push('變頻冷氣');
+  else if (tags.includes('變頻冷氣')) hl.push(/全新[^\n]*變頻冷氣|變頻冷氣[^\n]*全新/.test(text) ? '全新變頻冷氣' : '變頻冷氣');
 
   // 3. 設備狀況（只寫「設備全配」或「設備全配（無X）」，不寫管理費）
   const hasFullEquip = /設備全配|全配|設備齊全|家電齊全|傢俱家電齊|全套家電/.test(text);
@@ -1680,7 +1680,7 @@ function parsePropertyText(text) {
   // 設備
   if (/雙門.*冰箱|冰箱.*雙門|大冰箱/.test(text)) prosByCategory['生活設施'].push('雙門大冰箱');
   if (/全室冷氣|全冷/.test(text)) prosByCategory['生活設施'].push('全室冷氣配備');
-  else if (tags.includes('變頻冷氣')) prosByCategory['生活設施'].push('變頻冷氣');
+  else if (tags.includes('變頻冷氣')) prosByCategory['生活設施'].push(/全新[^\n]*變頻冷氣|變頻冷氣[^\n]*全新/.test(text) ? '全新變頻冷氣' : '變頻冷氣');
   if (/RO逆滲透|逆滲透飲水機|RO飲水機/.test(text)) prosByCategory['生活設施'].push('RO逆滲透飲水機');
   else if (tags.includes('飲水機')) prosByCategory['生活設施'].push('附飲水機');
   if (/代收包裹|代收郵件|代收快遞|專人代收|有人代收|管理員代收/.test(text) && !/代收垃圾|垃圾代收/.test(text)) {
