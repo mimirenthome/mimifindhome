@@ -440,6 +440,41 @@
       <button onclick="showSection('commercial-add')" class="btn btn-primary">➕ 新增物件</button>
     </div>
 
+    <details style="margin-bottom:16px;background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:12px 14px;">
+      <summary style="cursor:pointer;font-weight:600;">🔍 進階篩選（可複選，即時套用）</summary>
+      <div style="display:grid;gap:14px;padding-top:12px;">
+        <div><div class="form-label">區域</div><div id="cf-districts" style="display:flex;flex-wrap:wrap;gap:8px 14px;"></div></div>
+        <div><div class="form-label">用途（符合任一）</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px 14px;">
+            <label><input type="checkbox" name="cf-filter-type" value="店面" onchange="displayCommercialProperties()" /> 店面</label>
+            <label><input type="checkbox" name="cf-filter-type" value="廠房" onchange="displayCommercialProperties()" /> 廠房</label>
+            <label><input type="checkbox" name="cf-filter-type" value="辦公室" onchange="displayCommercialProperties()" /> 辦公室</label>
+            <label><input type="checkbox" name="cf-filter-type" value="倉庫" onchange="displayCommercialProperties()" /> 倉庫</label>
+            <label><input type="checkbox" name="cf-filter-type" value="其他" onchange="displayCommercialProperties()" /> 其他</label>
+          </div>
+        </div>
+        <div><div class="form-label">特色（需同時符合）</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px 14px;">
+            <label><input type="checkbox" name="cf-filter-feature" value="挑高" onchange="displayCommercialProperties()" /> 挑高</label>
+            <label><input type="checkbox" name="cf-filter-feature" value="廠登" onchange="displayCommercialProperties()" /> 廠登</label>
+            <label><input type="checkbox" name="cf-filter-feature" value="營登" onchange="displayCommercialProperties()" /> 營登</label>
+            <label><input type="checkbox" name="cf-filter-feature" value="報稅" onchange="displayCommercialProperties()" /> 報稅</label>
+          </div>
+        </div>
+        <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end;">
+          <div><div class="form-label">租金（元）</div>
+            <div style="display:flex;gap:6px;align-items:center;"><input type="number" id="cf-min-rent" class="form-input" placeholder="最低" style="width:110px;" oninput="displayCommercialProperties()" />～<input type="number" id="cf-max-rent" class="form-input" placeholder="最高" style="width:110px;" oninput="displayCommercialProperties()" /></div>
+          </div>
+          <div><div class="form-label">使用坪數</div>
+            <div style="display:flex;gap:6px;align-items:center;"><input type="number" id="cf-min-area" class="form-input" placeholder="最小" style="width:110px;" oninput="displayCommercialProperties()" />～<input type="number" id="cf-max-area" class="form-input" placeholder="最大" style="width:110px;" oninput="displayCommercialProperties()" /></div>
+          </div>
+          <div><div class="form-label">開發者</div>
+            <select id="cf-developer" class="form-input" style="width:160px;" onchange="displayCommercialProperties()"></select>
+          </div>
+        </div>
+      </div>
+    </details>
+
     <!-- 表格 -->
     <div id="commercial-props-table-wrap" style="overflow-x:auto;">
       <table class="admin-table" id="commercial-props-table">

@@ -4396,7 +4396,26 @@ async function loadCommercialProperties() {
 function clearCommercialFilters() {
   document.getElementById('commercial-filter-status').value = '';
   document.getElementById('commercial-search').value = '';
+  document.querySelectorAll('input[name^="cf-"]').forEach(cb => cb.checked = false);
+  ['cf-min-rent', 'cf-max-rent', 'cf-min-area', 'cf-max-area'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('cf-developer').value = '';
   loadCommercialProperties();
+}
+
+const COMMERCIAL_FILTER_DISTRICTS = ['中區','東區','南區','西區','北區','北屯區','西屯區','南屯區','太平區','大里區','霧峰區','烏日區','豐原區','潭子區','大雅區','沙鹿區','清水區','梧棲區','龍井區','大肚區','大甲區','后里區','神岡區','草屯鎮','其他'];
+
+function renderCommercialFilterOptions() {
+  const box = document.getElementById('cf-districts');
+  if (box && !box.children.length) {
+    box.innerHTML = COMMERCIAL_FILTER_DISTRICTS.map(d => `<label><input type="checkbox" name="cf-district" value="${d}" onchange="displayCommercialProperties()" /> ${d}</label>`).join('');
+  }
+  const sel = document.getElementById('cf-developer');
+  if (sel) {
+    const cur = sel.value;
+    sel.innerHTML = '<option value="">全部</option><option value="__none__">未指定</option>'
+      + commercialDevelopers.map(n => `<option value="${escapeAttr(n)}">${escapeAttr(n)}</option>`).join('');
+    sel.value = cur;
+  }
 }
 
 function normalizeSearchText(value) {
@@ -4410,14 +4429,37 @@ function displayCommercialProperties() {
   const tbody = document.getElementById('commercial-props-tbody');
   if (!tbody) return;
 
+  renderCommercialFilterOptions();
   const statusFilter = document.getElementById('commercial-filter-status')?.value || '';
-  const districtFilter = document.getElementById('commercial-filter-district')?.value || '';
   const searchText = normalizeSearchText(document.getElementById('commercial-search')?.value);
+  const checkedValues = name => Array.from(document.querySelectorAll(`input[name="${name}"]:checked`)).map(cb => cb.value);
+  const numberValue = id => parseFloat(document.getElementById(id)?.value);
+  const districts = checkedValues('cf-district');
+  const types = checkedValues('cf-filter-type');
+  const features = checkedValues('cf-filter-feature');
+  const minRent = numberValue('cf-min-rent');
+  const maxRent = numberValue('cf-max-rent');
+  const minArea = numberValue('cf-min-area');
+  const maxArea = numberValue('cf-max-area');
+  const developer = document.getElementById('cf-developer')?.value || '';
 
   let filtered = commercialProperties.filter(p => {
     if (statusFilter && p.status?.toString() !== statusFilter) return false;
-    if (districtFilter && p.district !== districtFilter) return false;
     if (searchText && !normalizeSearchText(`${p.address || ''} ${p.notes || ''}`).includes(searchText)) return false;
+    if (districts.length && !districts.includes(p.district)) return false;
+    if (types.length) {
+      const propTypes = (p.usage_type || '').split(',').map(t => t.trim());
+      if (!types.some(t => propTypes.includes(t))) return false;
+    }
+    if (features.length) {
+      const propFeatures = (p.features || '').split(',').map(f => f.trim());
+      if (!features.every(f => propFeatures.includes(f))) return false;
+    }
+    if (!isNaN(minRent) && !(p.rent >= minRent)) return false;
+    if (!isNaN(maxRent) && !(p.rent <= maxRent)) return false;
+    if (!isNaN(minArea) && !((p.usable_area || 0) >= minArea)) return false;
+    if (!isNaN(maxArea) && !((p.usable_area || 0) <= maxArea)) return false;
+    if (developer && (developer === '__none__' ? p.developer : p.developer !== developer)) return false;
     return true;
   });
 
