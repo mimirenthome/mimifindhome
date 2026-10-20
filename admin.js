@@ -4520,6 +4520,7 @@ function displayCommercialProperties() {
           <div><span style="color:#666;">坪數：</span>${p.usable_area ? p.usable_area + '坪' : '─'}</div>
           <div><span style="color:#666;">樓層：</span>${p.floor || '─'}</div>
           <div><span style="color:#666;">用途：</span>${p.usage_type || '─'}</div>
+          <div><span style="color:#666;">特色：</span>${p.features ? p.features.split(',').join('、') : '─'}</div>
           <div><span style="color:#666;">開發者：</span>${developerSelectHtml(p)}</div>
           <div><span style="color:#666;">狀態：</span><span style="background:${p.status ? '#4CAF50' : '#ccc'};color:#fff;padding:2px 6px;border-radius:3px;font-size:11px;">${p.status ? '上架' : '下架'}</span></div>
         </div>
