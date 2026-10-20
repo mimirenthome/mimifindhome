@@ -4876,7 +4876,7 @@ async function aiParseAndFill() {
     // 填充備註
     if (notes) document.getElementById('c-notes').value = notes;
 
-    const developer = extractField(/開發者[：:]\s*([^\n]+)/);
+    const developer = extractField(/開發(?:者|人)?[：:]\s*([^\n]+)/);
     if (developer) setCommercialDeveloper(developer);
     
     // 清空粘貼區域
