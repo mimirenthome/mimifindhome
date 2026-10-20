@@ -4431,7 +4431,8 @@ function displayCommercialProperties() {
 
   renderCommercialFilterOptions();
   const statusFilter = document.getElementById('commercial-filter-status')?.value || '';
-  const searchText = normalizeSearchText(document.getElementById('commercial-search')?.value);
+  const searchTerms = String(document.getElementById('commercial-search')?.value || '')
+    .split(/\s+/).map(normalizeSearchText).filter(Boolean);
   const checkedValues = name => Array.from(document.querySelectorAll(`input[name="${name}"]:checked`)).map(cb => cb.value);
   const numberValue = id => parseFloat(document.getElementById(id)?.value);
   const districts = checkedValues('cf-district');
@@ -4444,8 +4445,9 @@ function displayCommercialProperties() {
   const developer = document.getElementById('cf-developer')?.value || '';
 
   let filtered = commercialProperties.filter(p => {
+    const haystack = normalizeSearchText(`${p.address || ''} ${p.notes || ''}`);
     if (statusFilter && p.status?.toString() !== statusFilter) return false;
-    if (searchText && !normalizeSearchText(`${p.address || ''} ${p.notes || ''}`).includes(searchText)) return false;
+    if (searchTerms.length && !searchTerms.every(term => haystack.includes(term))) return false;
     if (districts.length && !districts.includes(p.district)) return false;
     if (types.length) {
       const propTypes = (p.usage_type || '').split(',').map(t => t.trim());
